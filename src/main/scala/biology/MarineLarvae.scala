@@ -1,25 +1,23 @@
 package biology
 
 
-import physical.GeoCoordinate
-import physical.habitat.HabitatPolygon
+import com.github.nscala_time.time.Imports._
 import locals.PelagicLarvaeState
 import locals.PelagicLarvaeState.PelagicLarvaeState
-import com.github.nscala_time.time.Imports._
+import physical.GeoCoordinate
+import physical.habitat.HabitatPolygon
 
 
-abstract class MarineLarvae {
-  val id: Int
-  var age: Int
-  val birthday: DateTime
-  var settlementDate: DateTime
+abstract class MarineLarvae(val id: Int, val pelagicLarvalDuration: Int, val maximumLifeSpan: Int) {
+  val birthday = DateTime.now
+  val history: Vector[TimeCapsule] = Vector.empty[TimeCapsule]
+  //val id: Int
+  var age: Int = 0
+  var settlementDate: DateTime = null
   var state: PelagicLarvaeState
-  val pelagicLarvalDuration: Int
-  val maximumLifeSpan: Int
-  var currentPosition: GeoCoordinate
+  var currentPosition: GeoCoordinate = new GeoCoordinate()
   var currentPolygon: HabitatPolygon
-  var hasSettled: Boolean
-  val history: Vector[TimeCapsule]
+  var hasSettled: Boolean = false
 
   def attainedPld = age >= pelagicLarvalDuration
 
