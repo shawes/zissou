@@ -1,0 +1,23 @@
+<step timestep="day" date="Tue Jan 01 00:00:00 EST 2002">
+    <properties>
+        <dimensions longitude="11" latitude="11" depth="6"/>
+        <cell width="0.1" depth="10.0"/>
+        <longitude start="142.0" end="143.0"/>
+        <latitude start="-11.0" end="-10.0"/>
+        <depth start="0.0" end="65.0"/>
+    </properties>
+    <flow id="1">
+        <depth value="5.0"/>
+        <salt value="35.004253"/>
+        <temp value="30.268433"/>
+        <velocity u="NaN" v="NaN" w="1.7149358E-5"/>
+        <locus lat="142.00035" lon="-11.000576"/>
+    </flow>
+    <flow id="2">
+        <depth value="5.0"/>
+        <salt value="35.000576"/>
+        <temp value="30.28436"/>
+        <velocity u="NaN" v="NaN" w="4.0065993E-6"/>
+        <locus lat="142.10036" lon="-11.000576"/>
+    </flow>
+</step>

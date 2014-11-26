@@ -1,0 +1,53 @@
+package locals
+
+object HabitatType extends Enumeration {
+  type HabitatType = Value
+  val Beach, Land, Mangrove, Reef, RockyIntertidal, Saltmarsh, Seagrass, SubtidalSand, Ocean, Other = Value
+}
+
+object PelagicLarvaeState extends Enumeration {
+  type PelagicLarvaeState = Value
+  val Pelagic, Dead, Settled = Value
+}
+
+object Direction extends Enumeration {
+  type Direction = Value
+  val North, East, South, West = Value
+}
+
+object TimeStepType extends Enumeration {
+  type TimeStepType = Value
+  val Second, Hour, Day = Value
+}
+
+object OntogeneticVerticalMigrationType extends Enumeration {
+  type OntogeneticVerticalMigrationType = Value
+  val Shallow, Deep = Value
+}
+
+object DistributionType extends Enumeration {
+  type DistributionType = Value
+  val Normal, Skewed = Value
+}
+
+object VerticalMigrationPattern extends Enumeration {
+  type VerticalMigrationPattern = Value
+  val None, Dial, Ontogenetic = Value
+}
+
+object SwimmingAbility extends Enumeration {
+  type SwimmingAbility = Value
+  val Passive, Random, Directed, Undirected = Value
+}
+
+object ShapeFileType extends Enumeration {
+  type ShapeFileType = Value
+  val Point, Line = Value
+}
+
+object LoggingLevel extends Enumeration {
+  type LoggingLevel = Value
+  val None, Concise, Verbose = Value
+}
+
+
