@@ -17,6 +17,9 @@ class ReefFishTest extends FlatSpec {
 
   it should "know when it was born" in {
     val fish = new ReefFish(0, pld, 0)
-    assert(fish.birthday.date.compareTo(DateTime.now.date) == 0)
+    val now =  DateTime.now
+    assert(fish.birthday.dayOfMonth()== now.dayOfMonth())
+    assert(fish.birthday.dayOfWeek()== now.dayOfWeek())
+    assert(fish.birthday.year()== now.year())
   }
 }
