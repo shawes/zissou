@@ -9,7 +9,7 @@ class SpawningLocation(val title: String,
                        val releasePeriod: Interval,
                        val interval: Int) {
 
-  def CanSpawn(time: DateTime): Boolean = {
+  def canSpawn(time: DateTime): Boolean = {
     releasePeriod.contains(time)
   }
 

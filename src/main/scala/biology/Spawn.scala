@@ -14,12 +14,12 @@ class Spawn(val spawningLocations: mutable.Buffer[SpawningLocation]) {
     // only spawns at midnight
     //if(date.hourOfDay()!=0) return List[SpawningLocation]
 
-    spawningLocations.filter(x => x.CanSpawn(date))
+    spawningLocations.filter(x => x.canSpawn(date))
 
   }
 
   def isItSpawningSeason(date: DateTime): Boolean = {
-    spawningLocations.count(x => x.CanSpawn(date)) > 0
+    spawningLocations.count(x => x.canSpawn(date)) > 0
 
   }
 }
