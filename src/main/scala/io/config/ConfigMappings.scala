@@ -2,13 +2,17 @@ package io.config
 
 import java.io.File
 
+import biology.SpawningLocation
 import com.github.nscala_time.time.Imports._
 import io.InputFiles
 import locals.TimeStepType
+import org.joda.time.DateTime
 import physical.flow.{Depth, Flow}
 import physical.habitat.Buffer
-import physical.{Grid, TimeStep}
+import physical.{GeoCoordinate, Grid, TimeStep}
 
+import scala.collection.JavaConversions._
+import scala.collection.mutable
 import scala.language.implicitConversions
 
 /**
@@ -30,5 +34,12 @@ object ConfigMappings {
   implicit def depthConfigMap(d: DepthConfig): Depth =
     new Depth(d.average, d.averageOverAllDepths, d.maximumDepthForAverage, null)
 
-  //def spawnConfigMap(s: SpawnConfig) : Spawn = new Spawn(JavaConversions.asScalaBuffer[SpawningLocationConfig](s.spawningLocation).toVector)
+  implicit def releasePeriodConfigMap(r: ReleasePeriodConfig): Interval =
+    new Interval(new DateTime(r.start), new DateTime(r.end))
+
+  implicit def spawnConfigMap(s: SpawnConfig): mutable.Buffer[SpawningLocation] =
+    s.spawningLocation.map(x => spawningLocationConfigMap(x))
+
+  implicit def spawningLocationConfigMap(s: SpawningLocationConfig): SpawningLocation =
+    new SpawningLocation(s.name, s.numberOfLarvae, new GeoCoordinate(s.site.latitude, s.site.longitude), s.releasePeriod, s.interval)
 }
