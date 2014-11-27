@@ -41,10 +41,12 @@ class LarvaeDisperser(params: io.config.Configuration) {
   def run(): Unit = {
     startRun = DateTime.now
     Logger.info("Simulation run started at " + startTime)
-    var iteration: Int = 0
+    var iteration: Int = 1
     while (currentTime <= finishTime && (spawn.isItSpawningSeason(currentTime) || pelagicLarvaeCount > 0)) {
       currentTime = currentTime.plusSeconds(timeStep)
       if (currentTime.getHourOfDay == 0) readNextFlowTimeStep()
+
+
       iteration += 1
       Logger.info("Time is now " + currentTime)
     }
@@ -58,6 +60,8 @@ class LarvaeDisperser(params: io.config.Configuration) {
     Logger.info("There are this many polygons " + flowController.flowDataQueue.head.length)
     Logger.info("There are this many days loaded " + flowController.flowDataQueue.length)
   }
+
+  private def calculateMortalityRate(i: Int) = mortality.calculateMortalityRate(i)
 
 
 
