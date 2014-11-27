@@ -10,9 +10,10 @@ import physical.habitat.HabitatPolygon
 
 abstract class MarineLarvae(val id: Int, val pelagicLarvalDuration: Int, val maximumLifeSpan: Int) {
   val birthday = DateTime.now
-  val history: Vector[TimeCapsule] = Vector.empty[TimeCapsule]
+
+  def history: Vector[TimeCapsule]
   //val id: Int
-  var age: Int = 0
+  def age: Int
   var settlementDate: DateTime = null
   var state: PelagicLarvaeState
   var currentPosition: GeoCoordinate = new GeoCoordinate()

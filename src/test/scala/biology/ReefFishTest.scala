@@ -1,10 +1,12 @@
 package biology
 
 import com.github.nscala_time.time.Imports._
+import locals.PelagicLarvaeState
 import org.scalatest.FlatSpec
 
 class ReefFishTest extends FlatSpec {
   val pld: Int = 30
+
   "A fish" should "start at age zero" in {
     val fish = new ReefFish(0, pld, 0)
     assert(fish.age == 0)
@@ -22,4 +24,16 @@ class ReefFishTest extends FlatSpec {
     assert(fish.birthday.dayOfWeek()== now.dayOfWeek())
     assert(fish.birthday.year()== now.year())
   }
+
+  it should "be pelagic when it is born" in {
+    val fish = new ReefFish(1, 2, 3)
+    assert(fish.state == PelagicLarvaeState.Pelagic)
+  }
+
+  it should "have no history when its born" in {
+    val fish = new ReefFish(1, 2, 3)
+    assert(fish.history.isEmpty)
+  }
+
+
 }
