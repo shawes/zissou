@@ -16,18 +16,18 @@ import scala.compat.Platform
 
 
 class LarvaeDisperser(params: io.config.Configuration) {
+  require(params != null)
 
   val god = new TheMaker(params.fish, false)
   val mortality = new Mortality(params.fish.pelagicLarvalDuration.mean)
   val random = new MersenneTwister(Platform.currentTime)
-  val FlowController = new FlowController(params.flow)
+  val flowController = new FlowController(params.flow)
   val spawn = new Spawn(params.spawn)
   val flowDataReader = new FlowReader(params.inputFiles, params.flow.depth)
-  //configMappings.flowConfigToFlow()
-  val startTime: DateTime = new DateTime(FlowController.flow.period.start)
-  val finishTime: DateTime = new DateTime(FlowController.flow.period.end)
+  val startTime: DateTime = new DateTime(flowController.flow.period.start)
+  val finishTime: DateTime = new DateTime(flowController.flow.period.end)
   val totalDays: Int = Days.daysBetween(startTime, finishTime).getDays
-  val timeStep = FlowController.flow.timeStep.totalSeconds
+  val timeStep = flowController.flow.timeStep.totalSeconds
   val turbulence: Turbulence = new Turbulence(Math.pow((2 * params.turbulence.horizontalDiffusionCoefficient) / timeStep, 0.5),
     Math.pow((2 * params.turbulence.verticalDiffusionCoefficient) / timeStep, 0.5))
   var habitatFile = new File(params.inputFiles.habitatFilePath)
@@ -39,8 +39,6 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
 
   def run(): Unit = {
-
-
     startRun = DateTime.now
     Logger.info("Simulation run started at " + startTime)
     var iteration: Int = 0
@@ -53,12 +51,12 @@ class LarvaeDisperser(params: io.config.Configuration) {
   }
 
 
-  def readNextFlowTimeStep() = if (flowDataReader.hasNext) FlowController.refresh(flowDataReader.next())
+  def readNextFlowTimeStep() = if (flowDataReader.hasNext) flowController.refresh(flowDataReader.next())
 
   def readInitialFlowData() = {
-    FlowController.initialiseFlow(flowDataReader)
-    Logger.info("There are this many polygons " + FlowController.flowDataQueue.head.length)
-    Logger.info("There are this many days loaded " + FlowController.flowDataQueue.length)
+    flowController.initialiseFlow(flowDataReader)
+    Logger.info("There are this many polygons " + flowController.flowDataQueue.head.length)
+    Logger.info("There are this many days loaded " + flowController.flowDataQueue.length)
   }
 
 
