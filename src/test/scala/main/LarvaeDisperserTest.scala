@@ -13,11 +13,11 @@ class LarvaeDisperserTest extends FlatSpec with PrivateMethodTester {
     }
   }
 
-  it should "calculate the mortality rate using the step" in {
-    val ld = new LarvaeDisperser(new Configuration())
-
-    val calculateMortalityRate = PrivateMethod[Double]('calculateMortalityRate)
-    ld invokePrivate calculateMortalityRate(1)
-
-  }
+  //  it should "calculate the mortality rate using the step" in {
+  //    val ld = new LarvaeDisperser(new Configuration())
+  //
+  //    val calculateMortalityRate = PrivateMethod[Double]('calculateMortalityRate)
+  //    ld invokePrivate calculateMortalityRate(1)
+  //
+  //  }
 }
