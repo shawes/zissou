@@ -6,6 +6,7 @@ import maths.ContinuousRange
 import physical.flow.{Flow, FlowPolygon}
 import physical.{Cell, GeoCoordinate, Velocity}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.xml.MetaData
 import scala.xml.pull._
@@ -31,7 +32,7 @@ class FlowXmlReader(val oceanData: Flow) {
   }
 
   private def readXmlElements(xml: XMLEventReader): Vector[FlowPolygon] = {
-    var polygons: Vector[FlowPolygon] = Vector.empty
+    var polygons: ArrayBuffer[FlowPolygon] = ArrayBuffer.empty
     var polygon: FlowPolygon = new FlowPolygon()
 
     while (xml.hasNext) {
@@ -74,19 +75,14 @@ class FlowXmlReader(val oceanData: Flow) {
           polygon.centroid.longitude = locus.longitude
           constructArakawaAGrid(polygon, locus, oceanData.grid.cell.width * 0.5)
         case EvElemEnd(_, "flow") =>
-          polygons = polygons :+ polygon
+          polygons += polygon
         case _ => ()
       }
     }
     xml.stop()
     Logger.info("Returning " + polygons.size + " polygons")
-    polygons
+    polygons.toVector
   }
-
-  def printElements(xml: XMLEventReader) {
-    while (xml.hasNext) Logger.info(xml.next().toString)
-  }
-
 
   private def readVelocityElement(velocities: MetaData): Velocity = {
     val u = velocities("u").text.toDouble
@@ -106,6 +102,10 @@ class FlowXmlReader(val oceanData: Flow) {
     polygon.vertices += new GeoCoordinate(locus.latitude - halfLength, locus.longitude + halfLength)
     polygon.vertices += new GeoCoordinate(locus.latitude + halfLength, locus.longitude + halfLength)
     polygon.vertices += new GeoCoordinate(locus.latitude + halfLength, locus.longitude - halfLength)
+  }
+
+  def printElements(xml: XMLEventReader) {
+    while (xml.hasNext) Logger.info(xml.next().toString)
   }
 
 }

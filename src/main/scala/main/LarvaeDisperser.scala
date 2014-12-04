@@ -46,12 +46,17 @@ class LarvaeDisperser(params: io.config.Configuration) {
     startRun = DateTime.now
     Logger.info("Simulation run started at " + startTime)
     var iteration: Int = 1
+    readInitialFlowData()
+
     while (currentTime <= finishTime && (spawn.isItSpawningSeason(currentTime) || pelagicLarvaeCount > 0)) {
       currentTime = currentTime.plusSeconds(timeStep)
-      if (currentTime.getHourOfDay == 0) readNextFlowTimeStep()
+
 
       calculateMortalityRate(iteration)
       spawnLarvae()
+      cycleThroughLarvae()
+      incrementTime()
+      if (currentTime.getHourOfDay == 0) readNextFlowTimeStep()
       iteration += 1
       Logger.info("Time is now " + currentTime)
     }
@@ -59,6 +64,8 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
 
   def readNextFlowTimeStep() = if (flowDataReader.hasNext) flowController.refresh(flowDataReader.next())
+
+  //def readInitialFlowData() = flowController.initialiseFlow(flowDataReader)
 
   private def calculateMortalityRate(iteration: Int) = mortality.calculateMortalityRate(iteration)
 
@@ -72,14 +79,10 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
   private def spawnFish(sites: mutable.Buffer[SpawningLocation]) = {
     val freshLarvae = god.create(sites.toList)
-
     freshLarvae.foreach(x => fishLarvae :: x)
-    //fishLarvae :: freshLarvae
     for (spawned <- freshLarvae) {
       fishLarvae += spawned.asInstanceOf[List[ReefFish]]
     }
-
-    //pelagicLarvaeCount += freshLarvae.size
     Logger.info("Now spawned " + fishLarvae.size + " fish larvae")
   }
 
@@ -97,21 +100,24 @@ class LarvaeDisperser(params: io.config.Configuration) {
   private def moveLarvae(larvae: List[ReefFish], iterator: RungeKuttaIntegration) {
     val swimmingLarvae = larvae.filter(x => x.canMove && x != null)
 
+
     for (larva <- swimmingLarvae) {
 
       if (fish.isMortal && random.nextDouble() < mortality.getRate) larva.kill()
 
       val speed: Double = if (fish.canSwim) fish.swimmingSpeed else 0
       val position = iterator.integrate(larva.currentPosition, currentTime, speed)
+      if (larva.id % 1000 == 0) Logger.info("The new position is " + position)
       larva.move(position)
       larva.age += timeStep
+
     }
+  }
+
+  private def incrementTime() = currentTime = currentTime.plusSeconds(timeStep)
 
 
-
-
-
-    //            if (larva.CanSettle())
+  //            if (larva.CanSettle())
     //            {
     //              int indexOfReef;
     //              if (habitatManager.IsCoordinateOverReef(larva.Position, out indexOfReef))
@@ -130,7 +136,6 @@ class LarvaeDisperser(params: io.config.Configuration) {
     //            if (larva.State == LarvaState.Dead || larva.State == LarvaState.Recruited) pelagicLarveCount--;
     //          }
     //        }
-  }
 
 
 }

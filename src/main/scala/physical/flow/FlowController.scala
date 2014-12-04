@@ -1,9 +1,10 @@
 package physical.flow
 
 import com.github.nscala_time.time.Imports._
-import io.{FlowReader, Logger}
+import io.FlowReader
 import locals.Constants
 import org.apache.commons.math.random.MersenneTwister
+import org.clapper.avsl.Logger
 import physical.{GeoCoordinate, Velocity}
 
 import scala.collection.mutable
@@ -12,7 +13,8 @@ import scala.compat.Platform
 class FlowController(var flow: Flow) {
 
   val SizeOfQueue = 2
-  val flowDataQueue: mutable.Queue[Array[FlowPolygon]] = new mutable.Queue[Array[FlowPolygon]]
+  val flowDataQueue: mutable.Queue[Array[FlowPolygon]] = mutable.Queue.empty
+  val logger = Logger(classOf[FlowController])
 
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Velocity = {
@@ -37,7 +39,10 @@ class FlowController(var flow: Flow) {
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, isFuture: Boolean): Velocity = {
 
     var index: Int = 0
+
     val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
+    logger.debug("Flow polygons is size " + flowPolygons.length)
+    logger.debug("Coordinate is " + coordinate)
 
     try {
       index = getIndexOfPolygon(coordinate)
@@ -88,7 +93,7 @@ class FlowController(var flow: Flow) {
 
   def initialiseFlow(reader: FlowReader) {
     for (i <- 0 until SizeOfQueue) {
-      Logger.info("Reading the first flow data")
+      logger.debug("Reading the first flow data")
       if (reader.hasNext) flowDataQueue.enqueue(reader.next())
     }
     flow = reader.flow
