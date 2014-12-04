@@ -13,4 +13,6 @@ class SpawningLocation(val title: String,
     releasePeriod.contains(time)
   }
 
+  override def toString = "Site: " + title + ", with " + numberOfLarvae + " larvae"
+
 }

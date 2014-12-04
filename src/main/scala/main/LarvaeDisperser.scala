@@ -14,6 +14,7 @@ import physical.flow.FlowController
 import physical.habitat.HabitatManager
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.compat.Platform
 
 
@@ -35,7 +36,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
     Math.pow((2 * params.turbulence.verticalDiffusionCoefficient) / timeStep, 0.5))
   var habitatFile = new File(params.inputFiles.habitatFilePath)
   var habitatMgr: HabitatManager = new HabitatManager(habitatFile, params.habitat.buffer, Array("Reef", "Other"))
-  var fishLarvae: Vector[Array[ReefFish]] = Vector.empty
+  var fishLarvae: ListBuffer[List[ReefFish]] = ListBuffer.empty
   var currentTime = startTime
   var pelagicLarvaeCount = 0
   var startRun: DateTime = null
@@ -63,13 +64,23 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
   private def spawnLarvae() = {
     val spawningSites = spawn.getSitesWhereFishAreSpawning(currentTime)
-    if (spawningSites.nonEmpty) spawnFish(spawningSites)
+    if (spawningSites.nonEmpty) {
+      Logger.info("Found non-empty spawning site")
+      spawnFish(spawningSites)
+    }
   }
 
   private def spawnFish(sites: mutable.Buffer[SpawningLocation]) = {
     val freshLarvae = god.create(sites.toList)
-    freshLarvae.foreach(x => fishLarvae :+ x)
-    pelagicLarvaeCount += freshLarvae.size
+
+    freshLarvae.foreach(x => fishLarvae :: x)
+    //fishLarvae :: freshLarvae
+    for (spawned <- freshLarvae) {
+      fishLarvae += spawned.asInstanceOf[List[ReefFish]]
+    }
+
+    //pelagicLarvaeCount += freshLarvae.size
+    Logger.info("Now spawned " + fishLarvae.size + " fish larvae")
   }
 
   def readInitialFlowData() = {
@@ -83,7 +94,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
     fishLarvae.foreach(x => moveLarvae(x, rungeKuttaIntegrator))
   }
 
-  private def moveLarvae(larvae: Array[ReefFish], iterator: RungeKuttaIntegration) {
+  private def moveLarvae(larvae: List[ReefFish], iterator: RungeKuttaIntegration) {
     val swimmingLarvae = larvae.filter(x => x.canMove && x != null)
 
     for (larva <- swimmingLarvae) {
