@@ -9,9 +9,9 @@ class RungeKuttaIntegration(FlowController: FlowController, timeStep: Int) {
 
   val geometry = new Geometry
 
-  def integrate(coordinate: GeoCoordinate, velocity: Velocity, time: DateTime, speed: Double): GeoCoordinate = {
+  def integrate(coordinate: GeoCoordinate, time: DateTime, speed: Double): GeoCoordinate = {
 
-    //val velocity : Velocity = FlowController.getVelocityOfCoordinate(geoCoo)
+    val velocity: Velocity = FlowController.getVelocityOfCoordinate(coordinate, isFuture = false)
     val step1 = performRungeKuttaIteration(coordinate, velocity, timeStep, time)
     if (step1.noValueFound) return new GeoCoordinate(Double.NaN, Double.NaN) //TODO Turn into exception
 

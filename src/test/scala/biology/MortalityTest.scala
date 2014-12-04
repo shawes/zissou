@@ -17,7 +17,8 @@ class MortalityTest extends FlatSpec {
   it should "calculated the mortality rate given the step" in {
     val step = 5
     val rate = scala.math.exp(-1 * mortality.lambda * step)
-    assert(mortality.calculateMortalityRate(step) == rate)
+    mortality.calculateMortalityRate(step)
+    assert(mortality.getRate == rate)
   }
 
   it should "mortality decreased with age" in {
