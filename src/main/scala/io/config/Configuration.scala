@@ -6,10 +6,7 @@ import javax.xml.bind.annotation._
 @XmlRootElement(name = "simulationVariables")
 @XmlAccessorType(XmlAccessType.FIELD)
 case class Configuration(
-
-                          //@XmlElement(required = true, name="Fish") val fish : FishConfig,
                           @XmlElementWrapper inputFiles: InputFilesConfig,
-                          //@XmlElementWrapper(name="spawn") @XmlElement spawningLocation: java.util.List[SpawningLocationConfig],
                           @XmlElementWrapper spawn: SpawnConfig,
                           @XmlElementWrapper turbulence: TurbulenceConfig,
                           @XmlElementWrapper fish: FishConfig,

@@ -2,16 +2,18 @@ package main
 
 import java.io.File
 
-import biology.{Mortality, ReefFish, Spawn, TheMaker}
+import biology._
 import com.github.nscala_time.time.Imports._
 import io.config.ConfigMappings._
 import io.{FlowReader, Logger}
+import maths.integration.RungeKuttaIntegration
 import org.apache.commons.math.random.MersenneTwister
 import org.joda.time.Days
 import physical.Turbulence
 import physical.flow.FlowController
 import physical.habitat.HabitatManager
 
+import scala.collection.mutable
 import scala.compat.Platform
 
 
@@ -21,6 +23,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
   val god = new TheMaker(params.fish, false)
   val mortality = new Mortality(params.fish.pelagicLarvalDuration.mean)
   val random = new MersenneTwister(Platform.currentTime)
+  val fish = params.fish
   val flowController = new FlowController(params.flow)
   val spawn = new Spawn(params.spawn)
   val flowDataReader = new FlowReader(params.inputFiles, params.flow.depth)
@@ -46,7 +49,8 @@ class LarvaeDisperser(params: io.config.Configuration) {
       currentTime = currentTime.plusSeconds(timeStep)
       if (currentTime.getHourOfDay == 0) readNextFlowTimeStep()
 
-
+      calculateMortalityRate(iteration)
+      spawnLarvae()
       iteration += 1
       Logger.info("Time is now " + currentTime)
     }
@@ -55,15 +59,69 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
   def readNextFlowTimeStep() = if (flowDataReader.hasNext) flowController.refresh(flowDataReader.next())
 
+  private def calculateMortalityRate(iteration: Int) = mortality.calculateMortalityRate(iteration)
+
+  private def spawnLarvae() = {
+    val spawningSites = spawn.getSitesWhereFishAreSpawning(currentTime)
+    if (spawningSites.nonEmpty) spawnFish(spawningSites)
+  }
+
+  private def spawnFish(sites: mutable.Buffer[SpawningLocation]) = {
+    val freshLarvae = god.create(sites.toList)
+    freshLarvae.foreach(x => fishLarvae :+ x)
+    pelagicLarvaeCount += freshLarvae.size
+  }
+
   def readInitialFlowData() = {
     flowController.initialiseFlow(flowDataReader)
     Logger.info("There are this many polygons " + flowController.flowDataQueue.head.length)
     Logger.info("There are this many days loaded " + flowController.flowDataQueue.length)
   }
 
-  private def calculateMortalityRate(i: Int) = mortality.calculateMortalityRate(i)
+  private def cycleThroughLarvae() = {
+    val rungeKuttaIntegrator = new RungeKuttaIntegration(flowController, timeStep)
+    fishLarvae.foreach(x => moveLarvae(x, rungeKuttaIntegrator))
+  }
 
+  private def moveLarvae(larvae: Array[ReefFish], iterator: RungeKuttaIntegration) {
+    val swimmingLarvae = larvae.filter(x => x.canMove && x != null)
 
+    for (larva <- swimmingLarvae) {
+      //if()
+    }
+    //
+    //    foreach (var larva in larvaRelease)
+    //    {
+    //      if (larva != null && larva.CanMove())
+    //      {
+    //        if (fish.IsMortal && random.NextDoublePositive() < mortality.GetRate())
+    //          larva.Kill();
+    //
+    //        double speed = (fish.CanSwim) ? fish.SwimmingSpeed : 0.0; //TODO Need to normalise this?
+    //        GeoCoordinate position = iterator.RungeKutteIntegration4(larva.Position, currentTime, speed);
+    //        larva.Move(position);
+    //        larva.Age += timestep;
+    //
+    //        if (larva.CanSettle())
+    //        {
+    //          int indexOfReef;
+    //          if (habitatManager.IsCoordinateOverReef(larva.Position, out indexOfReef))
+    //          {
+    //            if (indexOfNearestReef != Constants.NoClosestReefFound)
+    //              larva.Recruit(habitatManager.GetReef(indexOfReef), currentTime);
+    //          }
+    //          else if (habitat.Buffer.IsBuffered && habitatManager.IsCoordinateOverBuffer(larva.Position))
+    //          {
+    //            var indexOfNearestReef = habitatManager.GetIndexOfNearestReef(larva.Position);
+    //            if (indexOfNearestReef != Constants.NoClosestReefFound)
+    //              larva.Recruit(habitatManager.GetReef(indexOfNearestReef), currentTime);
+    //          }
+    //          else if (larva.ReachedMaximum()) larva.Kill();
+    //        }
+    //        if (larva.State == LarvaState.Dead || larva.State == LarvaState.Recruited) pelagicLarveCount--;
+    //      }
+    //    }
+  }
 
 
 }

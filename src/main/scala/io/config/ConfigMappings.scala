@@ -2,10 +2,11 @@ package io.config
 
 import java.io.File
 
-import biology.SpawningLocation
+import biology._
 import com.github.nscala_time.time.Imports._
 import io.InputFiles
-import locals.TimeStepType
+import locals._
+import maths.NormalDistribution
 import org.joda.time.DateTime
 import physical.flow.{Depth, Flow}
 import physical.habitat.Buffer
@@ -42,4 +43,18 @@ object ConfigMappings {
 
   implicit def spawningLocationConfigMap(s: SpawningLocationConfig): SpawningLocation =
     new SpawningLocation(s.name, s.numberOfLarvae, new GeoCoordinate(s.site.latitude, s.site.longitude), s.releasePeriod, s.interval)
+
+  implicit def pelagicLarvalDurationMap(pld: PelagicLarvalDurationConfig): PelagicLarvalDuration =
+    new PelagicLarvalDuration(new NormalDistribution(pld.mean, pld.stdev), DistributionType.Normal)
+
+  implicit def ontogenyConfigMap(o: OntogenyConfig): Ontogeny = new Ontogeny(o.preFlexion, o.flexion, o.postFlexion)
+
+  implicit def verticalMigrationConfigMap(vm: VerticalMigrationConfig): VerticalMigration =
+    new VerticalMigration(vm.verticalMigrationProbability.map(x => verticalMigrationProbabilityConfigMap(x)).toList)
+
+  implicit def verticalMigrationProbabilityConfigMap(prob: VerticalMigrationProbabilityConfig) =
+    new VerticalMigrationProbability(prob.depth, prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)
+
+  implicit def fishConfigMap(f: FishConfig): Fish = new Fish(f.pelagicLarvalDuration, f.ontogeny, "name", true, SwimmingAbility.withName(f.swimmingAbility), f.meanSwimmingSpeed,
+    VerticalMigrationPattern.withName(f.verticalMigrationPattern), f.verticalMigrationProbabilities, f.isMortal, f.mortalityRate)
 }
