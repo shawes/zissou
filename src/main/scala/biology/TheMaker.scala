@@ -1,6 +1,7 @@
 package biology
 
 import io.config.FishConfig
+import locals.PelagicLarvaeState
 import maths.NormalDistribution
 import org.clapper.avsl.Logger
 
@@ -13,6 +14,7 @@ class TheMaker(parameters: FishConfig, save: Boolean) {
   val logger = Logger(classOf[TheMaker])
   var larvaeCount: Int = 0
 
+
   def create(sites: List[SpawningLocation]): List[List[MarineLarvae]] = {
     val larvae: ListBuffer[List[MarineLarvae]] = ListBuffer.empty
 
@@ -22,7 +24,8 @@ class TheMaker(parameters: FishConfig, save: Boolean) {
       for (i <- 0 until site.numberOfLarvae) {
         larvaeCount += 1
         val pld: Double = distribution.getValue
-        larvaeAtSite += spawningFish.createReefFish(larvaeCount, convertDaysToSeconds(pld), 0)
+        larvaeAtSite += spawningFish.createReefFish(larvaeCount, convertDaysToSeconds(pld), 0,
+          new Birthplace(site.title, site.site), PelagicLarvaeState.Pelagic)
         //Logger.info(larvaeAtSite(i).toString)
       }
       larvae += larvaeAtSite.toList

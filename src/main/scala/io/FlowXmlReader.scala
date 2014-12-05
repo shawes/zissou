@@ -20,6 +20,7 @@ import scala.xml.pull._
 class FlowXmlReader(val oceanData: Flow) {
 
   val logger = Logger(classOf[FlowXmlReader])
+
   /** Reads in the XML from a file
     *
     * @param filePath the location of the XML file
@@ -106,8 +107,8 @@ class FlowXmlReader(val oceanData: Flow) {
     polygon.vertices += new GeoCoordinate(locus.latitude + halfLength, locus.longitude - halfLength)
   }
 
-  def printElements(xml: XMLEventReader) {
-    while (xml.hasNext) logger.debug(xml.next().toString)
+  private def printElements(xml: XMLEventReader) {
+    while (xml.hasNext) logger.trace(xml.next().toString)
   }
 
 }

@@ -50,9 +50,6 @@ class LarvaeDisperser(params: io.config.Configuration) {
     readInitialFlowData()
 
     while (currentTime <= finishTime && (spawn.isItSpawningSeason(currentTime) || pelagicLarvaeCount > 0)) {
-      currentTime = currentTime.plusSeconds(timeStep)
-
-
       calculateMortalityRate(iteration)
       spawnLarvae()
       cycleThroughLarvae()
@@ -119,24 +116,24 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
 
   //            if (larva.CanSettle())
-    //            {
-    //              int indexOfReef;
-    //              if (habitatManager.IsCoordinateOverReef(larva.Position, out indexOfReef))
-    //              {
-    //                if (indexOfNearestReef != Constants.NoClosestReefFound)
-    //                  larva.Recruit(habitatManager.GetReef(indexOfReef), currentTime);
-    //              }
-    //              else if (habitat.Buffer.IsBuffered && habitatManager.IsCoordinateOverBuffer(larva.Position))
-    //              {
-    //                var indexOfNearestReef = habitatManager.GetIndexOfNearestReef(larva.Position);
-    //                if (indexOfNearestReef != Constants.NoClosestReefFound)
-    //                  larva.Recruit(habitatManager.GetReef(indexOfNearestReef), currentTime);
-    //              }
-    //              else if (larva.ReachedMaximum()) larva.Kill();
-    //            }
-    //            if (larva.State == LarvaState.Dead || larva.State == LarvaState.Recruited) pelagicLarveCount--;
-    //          }
-    //        }
+  //            {
+  //              int indexOfReef;
+  //              if (habitatManager.IsCoordinateOverReef(larva.Position, out indexOfReef))
+  //              {
+  //                if (indexOfNearestReef != Constants.NoClosestReefFound)
+  //                  larva.Recruit(habitatManager.GetReef(indexOfReef), currentTime);
+  //              }
+  //              else if (habitat.Buffer.IsBuffered && habitatManager.IsCoordinateOverBuffer(larva.Position))
+  //              {
+  //                var indexOfNearestReef = habitatManager.GetIndexOfNearestReef(larva.Position);
+  //                if (indexOfNearestReef != Constants.NoClosestReefFound)
+  //                  larva.Recruit(habitatManager.GetReef(indexOfNearestReef), currentTime);
+  //              }
+  //              else if (larva.ReachedMaximum()) larva.Kill();
+  //            }
+  //            if (larva.State == LarvaState.Dead || larva.State == LarvaState.Recruited) pelagicLarveCount--;
+  //          }
+  //        }
 
 
 }
