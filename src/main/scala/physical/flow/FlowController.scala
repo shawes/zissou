@@ -46,6 +46,8 @@ class FlowController(var flow: Flow) {
 
     try {
       index = getIndexOfPolygon(coordinate)
+
+      //logger.debug("flow lr")
       //val polygon = flowPolygons(index)
     } catch {
       case e: IllegalArgumentException =>
@@ -58,7 +60,7 @@ class FlowController(var flow: Flow) {
   }
 
   def getIndexOfPolygon(coordinate: GeoCoordinate): Int = {
-    require(flow.latitudeRange.contains(coordinate.latitude) && flow.latitudeRange.contains(coordinate.longitude))
+    require(flow.latitudeRange.contains(coordinate.latitude) && flow.longitudeRange.contains(coordinate.longitude))
 
     val lat1 = correctNegativeCoordinate(coordinate.latitude)
     val lon1 = correctNegativeCoordinate(coordinate.longitude)

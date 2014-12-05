@@ -42,7 +42,9 @@ object ConfigMappings {
     s.spawningLocation.map(x => spawningLocationConfigMap(x))
 
   implicit def spawningLocationConfigMap(s: SpawningLocationConfig): SpawningLocation =
-    new SpawningLocation(s.name, s.numberOfLarvae, new GeoCoordinate(s.site.latitude, s.site.longitude), s.releasePeriod, s.interval)
+    new SpawningLocation(s.name, s.numberOfLarvae, s.site, s.releasePeriod, s.interval)
+
+  implicit def siteConfig(s: SiteConfig): GeoCoordinate = new GeoCoordinate(s.latitude, s.longitude, s.depth)
 
   implicit def pelagicLarvalDurationMap(pld: PelagicLarvalDurationConfig): PelagicLarvalDuration =
     new PelagicLarvalDuration(new NormalDistribution(pld.mean, pld.stdev), DistributionType.Normal)
