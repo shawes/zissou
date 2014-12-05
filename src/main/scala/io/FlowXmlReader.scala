@@ -3,6 +3,7 @@ package io
 import java.io.File
 
 import maths.ContinuousRange
+import org.clapper.avsl.Logger
 import physical.flow.{Flow, FlowPolygon}
 import physical.{Cell, GeoCoordinate, Velocity}
 
@@ -18,13 +19,14 @@ import scala.xml.pull._
   */
 class FlowXmlReader(val oceanData: Flow) {
 
+  val logger = Logger(classOf[FlowXmlReader])
   /** Reads in the XML from a file
     *
     * @param filePath the location of the XML file
     * @return a vector of flow polygons comprising the data from the XML file
     */
   def read(filePath: String): Vector[FlowPolygon] = {
-    Logger.info("File path is " + filePath)
+    logger.debug("File path is " + filePath)
     val src = Source.fromFile(new File(filePath))
     val reader = new XMLEventReader(src)
     //printElements(reader)
@@ -80,7 +82,7 @@ class FlowXmlReader(val oceanData: Flow) {
       }
     }
     xml.stop()
-    Logger.info("Returning " + polygons.size + " polygons")
+    logger.debug("Returning " + polygons.size + " polygons")
     polygons.toVector
   }
 
@@ -105,7 +107,7 @@ class FlowXmlReader(val oceanData: Flow) {
   }
 
   def printElements(xml: XMLEventReader) {
-    while (xml.hasNext) Logger.info(xml.next().toString)
+    while (xml.hasNext) logger.debug(xml.next().toString)
   }
 
 }

@@ -1,8 +1,8 @@
 package biology
 
-import io.Logger
 import io.config.FishConfig
 import maths.NormalDistribution
+import org.clapper.avsl.Logger
 
 import scala.collection.mutable.ListBuffer
 
@@ -10,13 +10,14 @@ class TheMaker(parameters: FishConfig, save: Boolean) {
   val distribution = new NormalDistribution(parameters.pelagicLarvalDuration.mean,
     parameters.pelagicLarvalDuration.stdev)
   val spawningFish: ReefFishFactory = new ReefFishFactory
+  val logger = Logger(classOf[TheMaker])
   var larvaeCount: Int = 0
 
   def create(sites: List[SpawningLocation]): List[List[MarineLarvae]] = {
     val larvae: ListBuffer[List[MarineLarvae]] = ListBuffer.empty
 
     for (site <- sites) {
-      Logger.info("Site found is " + site.toString)
+      logger.debug("Site found is " + site.toString)
       val larvaeAtSite = new ListBuffer[MarineLarvae]
       for (i <- 0 until site.numberOfLarvae) {
         larvaeCount += 1
@@ -25,7 +26,7 @@ class TheMaker(parameters: FishConfig, save: Boolean) {
         //Logger.info(larvaeAtSite(i).toString)
       }
       larvae += larvaeAtSite.toList
-      Logger.info("Larvae size is now: " + larvaeCount)
+      logger.debug("Larvae size is now: " + larvaeCount)
     }
     larvae.toList
   }

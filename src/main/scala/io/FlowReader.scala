@@ -1,12 +1,13 @@
 package io
 
+import org.clapper.avsl.Logger
 import physical.flow.{Depth, Flow, FlowPolygon}
 
 class FlowReader(val inputs: InputFiles, val depth: Depth) {
   val files: Array[String] = inputs.flowFiles.toArray
+  val logger = Logger(classOf[FlowReader])
   var currentFile: Int = 0
   var flow = new Flow(depth)
-
 
   def next(): Array[FlowPolygon] = {
     val polygons = loadNextFile()
@@ -17,14 +18,11 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
     polygons.toArray
   }
 
-  def hasNext = currentFile < files.length
-
-
   private def loadNextFile(): Vector[FlowPolygon] = {
     val reader = new FlowXmlReader(flow)
     val file = skipHiddenAndSystemFiles(files(currentFile))
 
-    Logger.info("Reading in " + file + " from " + files.toString)
+    logger.debug("Reading in " + file + " from " + files.toString)
     val polygons = reader.read(inputs.flowFilePath + "/" + file)
     flow = reader.oceanData
     if (flow.depth.average) averageDepthDimension(polygons) else polygons
@@ -38,7 +36,6 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
     }
     tempFile
   }
-
 
   private def averageDepthDimension(polygons: Vector[FlowPolygon]): Vector[FlowPolygon] = {
     val cellCount: Int = flow.grid.width * flow.grid.height
@@ -76,6 +73,8 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
     }
     averagedPolygons
   }
+
+  def hasNext = currentFile < files.length
 
 
 }

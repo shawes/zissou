@@ -4,10 +4,11 @@ import java.io.File
 
 import biology._
 import com.github.nscala_time.time.Imports._
+import io.FlowReader
 import io.config.ConfigMappings._
-import io.{FlowReader, Logger}
 import maths.integration.RungeKuttaIntegration
 import org.apache.commons.math.random.MersenneTwister
+import org.clapper.avsl.Logger
 import org.joda.time.Days
 import physical.Turbulence
 import physical.flow.FlowController
@@ -34,6 +35,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
   val timeStep = flowController.flow.timeStep.totalSeconds
   val turbulence: Turbulence = new Turbulence(Math.pow((2 * params.turbulence.horizontalDiffusionCoefficient) / timeStep, 0.5),
     Math.pow((2 * params.turbulence.verticalDiffusionCoefficient) / timeStep, 0.5))
+  val logger = Logger(classOf[LarvaeDisperser])
   var habitatFile = new File(params.inputFiles.habitatFilePath)
   var habitatMgr: HabitatManager = new HabitatManager(habitatFile, params.habitat.buffer, Array("Reef", "Other"))
   var fishLarvae: ListBuffer[List[ReefFish]] = ListBuffer.empty
@@ -41,10 +43,9 @@ class LarvaeDisperser(params: io.config.Configuration) {
   var pelagicLarvaeCount = 0
   var startRun: DateTime = null
 
-
   def run(): Unit = {
     startRun = DateTime.now
-    Logger.info("Simulation run started at " + startTime)
+    logger.debug("Simulation run started at " + startTime)
     var iteration: Int = 1
     readInitialFlowData()
 
@@ -58,7 +59,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
       incrementTime()
       if (currentTime.getHourOfDay == 0) readNextFlowTimeStep()
       iteration += 1
-      Logger.info("Time is now " + currentTime)
+      logger.debug("Time is now " + currentTime)
     }
   }
 
@@ -72,7 +73,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
   private def spawnLarvae() = {
     val spawningSites = spawn.getSitesWhereFishAreSpawning(currentTime)
     if (spawningSites.nonEmpty) {
-      Logger.info("Found non-empty spawning site")
+      logger.debug("Found non-empty spawning site")
       spawnFish(spawningSites)
     }
   }
@@ -83,13 +84,13 @@ class LarvaeDisperser(params: io.config.Configuration) {
     for (spawned <- freshLarvae) {
       fishLarvae += spawned.asInstanceOf[List[ReefFish]]
     }
-    Logger.info("Now spawned " + fishLarvae.size + " fish larvae")
+    logger.debug("Now spawned " + fishLarvae.size + " fish larvae")
   }
 
   def readInitialFlowData() = {
     flowController.initialiseFlow(flowDataReader)
-    Logger.info("There are this many polygons " + flowController.flowDataQueue.head.length)
-    Logger.info("There are this many days loaded " + flowController.flowDataQueue.length)
+    logger.debug("There are this many polygons " + flowController.flowDataQueue.head.length)
+    logger.debug("There are this many days loaded " + flowController.flowDataQueue.length)
   }
 
   private def cycleThroughLarvae() = {
@@ -107,7 +108,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
       val speed: Double = if (fish.canSwim) fish.swimmingSpeed else 0
       val position = iterator.integrate(larva.currentPosition, currentTime, speed)
-      if (larva.id % 1000 == 0) Logger.info("The new position is " + position)
+      if (larva.id % 1000 == 0) logger.debug("The new position is " + position)
       larva.move(position)
       larva.age += timeStep
 
