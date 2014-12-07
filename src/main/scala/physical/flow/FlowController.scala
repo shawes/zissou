@@ -3,6 +3,7 @@ package physical.flow
 import com.github.nscala_time.time.Imports._
 import io.FlowReader
 import locals.Constants
+import maths.interpolation.Interpolator
 import org.apache.commons.math.random.MersenneTwister
 import org.clapper.avsl.Logger
 import physical.{GeoCoordinate, Velocity}
@@ -15,6 +16,7 @@ class FlowController(var flow: Flow) {
   val SizeOfQueue = 2
   val flowDataQueue: mutable.Queue[Array[FlowPolygon]] = mutable.Queue.empty
   val logger = Logger(classOf[FlowController])
+  val interpolator = new Interpolator(flow)
 
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Velocity = {
@@ -46,16 +48,20 @@ class FlowController(var flow: Flow) {
 
     try {
       index = getIndexOfPolygon(coordinate)
-
+      logger.debug("Found the index " + index)
       //logger.debug("flow lr")
       //val polygon = flowPolygons(index)
     } catch {
       case e: IllegalArgumentException =>
+        logger.debug("Have to bump the coordinate")
         val bumpedCoordinate = bumpCoordinate(coordinate)
+        logger.debug("the bump is " + bumpedCoordinate)
         index = getIndexOfPolygon(bumpedCoordinate)
+        logger.debug("Do we get here?")
     }
-    flowPolygons(index).velocity
-
+    logger.debug("The velocity is " + flowPolygons(index).velocity)
+    //val velocity = flowPolygons(index).velocity
+    interpolator.interpolate(coordinate, flowPolygons, index)
 
   }
 
@@ -85,7 +91,7 @@ class FlowController(var flow: Flow) {
   def bumpCoordinate(coordinate: GeoCoordinate): GeoCoordinate = {
     val random = new MersenneTwister(Platform.currentTime.toInt)
     new GeoCoordinate(coordinate.latitude + (random.nextDouble() * Constants.MaxLatitudeShift),
-      coordinate.longitude + (random.nextDouble() * Constants.MaxLongitudeShift))
+      coordinate.longitude + (random.nextDouble() * Constants.MaxLongitudeShift), coordinate.depth)
   }
 
   def refresh(polygons: Array[FlowPolygon]) {

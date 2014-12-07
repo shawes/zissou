@@ -54,9 +54,13 @@ class LarvaeDisperser(params: io.config.Configuration) {
       spawnLarvae()
       cycleThroughLarvae()
       incrementTime()
-      if (currentTime.getHourOfDay == 0) readNextFlowTimeStep()
-      iteration += 1
-      logger.debug("Time is now " + currentTime)
+      if (currentTime.getHourOfDay == 0) {
+        readNextFlowTimeStep()
+      }
+
+
+      logger.debug("Step has been completed")
+      iteration = iteration + 1
     }
   }
 

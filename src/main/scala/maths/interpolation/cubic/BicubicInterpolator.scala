@@ -4,7 +4,7 @@ import physical.Velocity
 
 class BicubicInterpolator extends CubicInterpolator {
 
-  val partialResult: Array[Velocity] = new Array[Velocity](4)
+  val partialResult: Array[Velocity] = Array.ofDim[Velocity](4)
 
   def interpolate(v: Array[Array[Velocity]], x: Double, y: Double): Velocity = {
     partialResult(0) = interpolate(v(0), y)
