@@ -1,6 +1,6 @@
 package io
 
-import org.clapper.avsl.Logger
+import grizzled.slf4j._
 import physical.flow.{Depth, Flow, FlowPolygon}
 
 class FlowReader(val inputs: InputFiles, val depth: Depth) {

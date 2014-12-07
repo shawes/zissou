@@ -4,11 +4,11 @@ import java.io.File
 
 import biology._
 import com.github.nscala_time.time.Imports._
+import grizzled.slf4j._
 import io.FlowReader
 import io.config.ConfigMappings._
 import maths.integration.RungeKuttaIntegration
 import org.apache.commons.math.random.MersenneTwister
-import org.clapper.avsl.Logger
 import org.joda.time.Days
 import physical.Turbulence
 import physical.flow.FlowController

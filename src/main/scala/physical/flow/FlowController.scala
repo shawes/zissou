@@ -1,11 +1,11 @@
 package physical.flow
 
 import com.github.nscala_time.time.Imports._
+import grizzled.slf4j._
 import io.FlowReader
 import locals.Constants
 import maths.interpolation.Interpolator
 import org.apache.commons.math.random.MersenneTwister
-import org.clapper.avsl.Logger
 import physical.{GeoCoordinate, Velocity}
 
 import scala.collection.mutable
@@ -53,11 +53,15 @@ class FlowController(var flow: Flow) {
       //val polygon = flowPolygons(index)
     } catch {
       case e: IllegalArgumentException =>
-        logger.debug("Have to bump the coordinate")
+        logger.warn("Have to bump the coordinate")
         val bumpedCoordinate = bumpCoordinate(coordinate)
         logger.debug("the bump is " + bumpedCoordinate)
-        index = getIndexOfPolygon(bumpedCoordinate)
-        logger.debug("Do we get here?")
+        try {
+          index = getIndexOfPolygon(bumpedCoordinate)
+        } catch {
+          case e: IllegalArgumentException =>
+            logger.error("The coordinate " + bumpedCoordinate + " is not in the flow field")
+        }
     }
     logger.debug("The velocity is " + flowPolygons(index).velocity)
     //val velocity = flowPolygons(index).velocity

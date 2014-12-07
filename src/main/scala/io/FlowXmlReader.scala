@@ -2,8 +2,8 @@ package io
 
 import java.io.File
 
+import grizzled.slf4j._
 import maths.ContinuousRange
-import org.clapper.avsl.Logger
 import physical.flow.{Flow, FlowPolygon}
 import physical.{Cell, GeoCoordinate, Velocity}
 

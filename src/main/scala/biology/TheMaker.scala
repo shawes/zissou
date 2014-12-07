@@ -1,9 +1,9 @@
 package biology
 
+import grizzled.slf4j._
 import io.config.FishConfig
 import locals.PelagicLarvaeState
 import maths.NormalDistribution
-import org.clapper.avsl.Logger
 
 import scala.collection.mutable.ListBuffer
 
