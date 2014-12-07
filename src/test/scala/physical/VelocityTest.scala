@@ -81,7 +81,7 @@ class VelocityTest extends FlatSpec {
 
   it should "print out the correct style" in {
     val v1 = new Velocity(1, 2, 3)
-    assertResult("u=1.0, v=2.0, w=3.0") {
+    assertResult("u = 1.00, v = 2.00, w = 3.00") {
       v1.toString
     }
   }

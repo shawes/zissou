@@ -59,13 +59,19 @@ class LarvaeDisperser(params: io.config.Configuration) {
       }
 
 
-      logger.debug("Step has been completed")
+      logger.info("Step " + iteration + " has been completed")
       iteration = iteration + 1
     }
   }
 
 
-  def readNextFlowTimeStep() = if (flowDataReader.hasNext) flowController.refresh(flowDataReader.next())
+  def readNextFlowTimeStep() = {
+    logger.debug("Reading next flow step")
+    if (flowDataReader.hasNext) {
+      logger.debug("Refreshing next flow step")
+      flowController.refresh(flowDataReader.next())
+    }
+  }
 
   //def readInitialFlowData() = flowController.initialiseFlow(flowDataReader)
 
@@ -109,7 +115,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
       val speed: Double = if (fish.canSwim) fish.swimmingSpeed else 0
       val position = iterator.integrate(larva.currentPosition, currentTime, speed)
-      if (larva.id % 1000 == 0) logger.debug("The new position is " + position)
+      logger.debug("The new position is " + position)
       larva.move(position)
       larva.age += timeStep
 

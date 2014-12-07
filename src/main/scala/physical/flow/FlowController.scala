@@ -20,7 +20,7 @@ class FlowController(var flow: Flow) {
 
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Velocity = {
-    require(future > now, "flow field information for this period is not loaded into memory")
+    require(future >= now, "flow field information for this period is not loaded into memory")
 
     val currentVelocity = getVelocityOfCoordinate(coordinate, isFuture = false)
     val futureVelocity = getVelocityOfCoordinate(coordinate, isFuture = true)
@@ -43,8 +43,8 @@ class FlowController(var flow: Flow) {
     var index: Int = 0
 
     val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
-    logger.debug("Flow polygons is size " + flowPolygons.length)
-    logger.debug("Coordinate is " + coordinate)
+    //logger.debug("Flow polygons is size " + flowPolygons.length)
+    //logger.debug("Coordinate is " + coordinate)
 
     try {
       index = getIndexOfPolygon(coordinate)
@@ -53,14 +53,15 @@ class FlowController(var flow: Flow) {
       //val polygon = flowPolygons(index)
     } catch {
       case e: IllegalArgumentException =>
-        logger.warn("Have to bump the coordinate")
+        logger.warn("Have to bump the coordinate " + coordinate)
         val bumpedCoordinate = bumpCoordinate(coordinate)
-        logger.debug("the bump is " + bumpedCoordinate)
+
         try {
           index = getIndexOfPolygon(bumpedCoordinate)
         } catch {
           case e: IllegalArgumentException =>
             logger.error("The coordinate " + bumpedCoordinate + " is not in the flow field")
+            return new Velocity()
         }
     }
     logger.debug("The velocity is " + flowPolygons(index).velocity)
@@ -99,8 +100,14 @@ class FlowController(var flow: Flow) {
   }
 
   def refresh(polygons: Array[FlowPolygon]) {
-    if (flowDataQueue.size > 0) flowDataQueue.dequeue()
+    logger.debug("Refreshing the queue")
+    if (flowDataQueue.size > 0) {
+      logger.debug("Queue size is " + flowDataQueue.size + "before dequeuing")
+      flowDataQueue.dequeue()
+      logger.debug("Queue size is " + flowDataQueue.size + "and after dequeuing")
+    }
     flowDataQueue.enqueue(polygons)
+    logger.debug("Queue size is " + flowDataQueue.size + "and after enqueuing")
   }
 
   def initialiseFlow(reader: FlowReader) {
@@ -109,6 +116,7 @@ class FlowController(var flow: Flow) {
       if (reader.hasNext) flowDataQueue.enqueue(reader.next())
     }
     flow = reader.flow
+    interpolator.flow = flow
   }
 
 

@@ -9,6 +9,7 @@ import scala.collection.mutable._
 class SpawnTest extends FlatSpec {
 
   val spawningLocations = new ArrayBuffer[SpawningLocation]
+  val date = DateTime.now.minusHours(DateTime.now.getHourOfDay)
 
   spawningLocations += new SpawningLocation("lizard island", 1000, new GeoCoordinate(1, 2), new Interval(DateTime.now.minusDays(5), DateTime.now.plusDays(1)), 5)
   spawningLocations += new SpawningLocation("bare island", 576, new GeoCoordinate(4, 7), new Interval(DateTime.now.minusDays(2), DateTime.now.plusDays(5)), 1)
@@ -25,25 +26,25 @@ class SpawnTest extends FlatSpec {
 
   it should "workout if its spawning season" in {
     val spawn = new Spawn(spawningLocations)
-    val canSpawn = spawn.isItSpawningSeason(DateTime.now)
+    val canSpawn = spawn.isItSpawningSeason(date)
     assert(canSpawn)
   }
 
   it should "return the site one where its spawning" in {
     val spawn = new Spawn(spawningLocations)
-    val sites = spawn.getSitesWhereFishAreSpawning(DateTime.now.minusDays(3))
+    val sites = spawn.getSitesWhereFishAreSpawning(date.minusDays(3))
     assert(sites.size == 1)
   }
 
   it should "return the site two where its spawning" in {
     val spawn = new Spawn(spawningLocations)
-    val sites = spawn.getSitesWhereFishAreSpawning(DateTime.now.plusDays(4))
+    val sites = spawn.getSitesWhereFishAreSpawning(date.plusDays(4))
     assert(sites.size == 1)
   }
 
   it should "return both sites where its spawning" in {
     val spawn = new Spawn(spawningLocations)
-    val sites = spawn.getSitesWhereFishAreSpawning(DateTime.now)
+    val sites = spawn.getSitesWhereFishAreSpawning(date)
     assert(sites.size == 2)
   }
 

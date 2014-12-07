@@ -38,7 +38,7 @@ libraryDependencies ++= Seq(
 
 //logging
 libraryDependencies ++= Seq(
-  "ch.qos.logback" % "logback-classic" % "1.1.2",
+  //"ch.qos.logback" % "logback-classic" % "1.1.2",
   "org.clapper" %% "grizzled-scala" % "1.2",
   "org.clapper" %% "grizzled-slf4j" % "1.0.2",
   "org.clapper" %% "avsl" % "1.0.2"

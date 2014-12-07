@@ -24,5 +24,5 @@ class Velocity(var u: Double, var v: Double, var w: Double) {
     u.isNaN || v.isNaN
   }
 
-  override def toString = "u=" + u + ", v=" + v + ", w=" + w
+  override def toString = "u = %.2f, v = %.2f, w = %.2f".format(u, v, w)
 }

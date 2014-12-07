@@ -4,6 +4,7 @@ package biology
 import com.github.nscala_time.time.Imports._
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 //import scala.collection.mutable.ArrayBuffer
 
@@ -12,7 +13,7 @@ class Spawn(val spawningLocations: mutable.Buffer[SpawningLocation]) {
 
   def getSitesWhereFishAreSpawning(date: DateTime): mutable.Buffer[SpawningLocation] = {
     // only spawns at midnight
-    //if(date.hourOfDay()!=0) return List[SpawningLocation]
+    if (date.getHourOfDay != 0) return new ArrayBuffer[SpawningLocation]
 
     spawningLocations.filter(x => x.canSpawn(date))
 
