@@ -6,7 +6,7 @@ import physical.GeoCoordinate
 import physical.habitat.{GeometryAdaptor, HabitatPolygon}
 
 class ReefFish(id: Int, pelagicLarvalDuration: Int, maximumLifeSpan: Int, birthplace: Birthplace, state: PelagicLarvaeState)
-  extends MarineLarvae(id, pelagicLarvalDuration, maximumLifeSpan, birthplace, state) {
+  extends Larva(id, pelagicLarvalDuration, maximumLifeSpan, birthplace, state) {
   //val history = Vector.empty[TimeCapsule]
   //var state = PelagicLarvaeState.Pelagic
   var age = 0

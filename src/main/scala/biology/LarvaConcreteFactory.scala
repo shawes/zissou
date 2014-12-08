@@ -2,9 +2,9 @@ package biology
 
 import locals.PelagicLarvaeState.PelagicLarvaeState
 
-class LarvaeConcreteFactory extends LarvaeFactory {
+class LarvaConcreteFactory extends LarvaFactory {
   def createReefFish(id: Int, pelagicLarvalDuration: Int, maximumLifeSpan: Int,
-                     birthplace: Birthplace, state: PelagicLarvaeState): MarineLarvae
+                     birthplace: Birthplace, state: PelagicLarvaeState): Larva
   = new ReefFish(id, pelagicLarvalDuration, maximumLifeSpan, birthplace, state)
 
 

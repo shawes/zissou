@@ -10,17 +10,17 @@ import scala.collection.mutable.ListBuffer
 class TheMaker(parameters: FishConfig, save: Boolean) {
   val distribution = new NormalDistribution(parameters.pelagicLarvalDuration.mean,
     parameters.pelagicLarvalDuration.stdev)
-  val spawningFish: LarvaeConcreteFactory = new LarvaeConcreteFactory
+  val spawningFish: LarvaConcreteFactory = new LarvaConcreteFactory
   val logger = Logger(classOf[TheMaker])
   var larvaeCount: Int = 0
 
 
-  def create(sites: List[SpawningLocation]): List[List[MarineLarvae]] = {
-    val larvae: ListBuffer[List[MarineLarvae]] = ListBuffer.empty
+  def create(sites: List[SpawningLocation]): List[List[Larva]] = {
+    val larvae: ListBuffer[List[Larva]] = ListBuffer.empty
 
     for (site <- sites) {
       logger.debug("Site found is " + site.toString)
-      val larvaeAtSite = new ListBuffer[MarineLarvae]
+      val larvaeAtSite = new ListBuffer[Larva]
       for (i <- 0 until site.numberOfLarvae) {
         larvaeCount += 1
         val pld: Double = distribution.getValue
