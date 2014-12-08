@@ -10,7 +10,7 @@ import scala.collection.mutable.ListBuffer
 class TheMaker(parameters: FishConfig, save: Boolean) {
   val distribution = new NormalDistribution(parameters.pelagicLarvalDuration.mean,
     parameters.pelagicLarvalDuration.stdev)
-  val spawningFish: ReefFishFactory = new ReefFishFactory
+  val spawningFish: LarvaeConcreteFactory = new LarvaeConcreteFactory
   val logger = Logger(classOf[TheMaker])
   var larvaeCount: Int = 0
 
