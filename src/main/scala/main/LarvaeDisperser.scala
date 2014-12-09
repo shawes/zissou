@@ -7,6 +7,7 @@ import com.github.nscala_time.time.Imports._
 import grizzled.slf4j._
 import io.FlowReader
 import io.config.ConfigMappings._
+import locals.{Constants, PelagicLarvaeState}
 import maths.integration.RungeKuttaIntegration
 import org.apache.commons.math.random.MersenneTwister
 import org.joda.time.Days
@@ -111,39 +112,53 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
     for (larva <- swimmingLarvae) {
 
-      if (fish.isMortal && random.nextDouble() < mortality.getRate) larva.kill()
+      if (fish.isMortal && random.nextDouble() < mortality.getRate) {
+        logger.debug("Killing larvae " + larva.id)
+        larva.kill()
+      }
 
       val speed: Double = if (fish.canSwim) fish.swimmingSpeed else 0
-      val position = iterator.integrate(larva.currentPosition, currentTime, speed)
-      logger.debug("The new position is " + position)
+      val position = iterator.integrate(larva.position, currentTime, speed)
+      logger.debug("The old position is " + larva.position)
       larva.move(position)
+      logger.debug("The new position is " + position)
       larva.age += timeStep
 
+      if (larva.attainedPld) {
+        logger.debug("Reach its pld")
+        val reefIndex = habitatMgr.isCoordinateOverReef(larva.position)
+        if (reefIndex != Constants.NoClosestReefFound) {
+          logger.debug("Found reef")
+          larva.settle(habitatMgr.getReef(reefIndex), currentTime)
+        } // else if() TODO: Implement the buffer
+        else if (larva.attainedMaximumLifeSpan) larva.kill()
+
+        if (larva.state == PelagicLarvaeState.Dead || larva.state == PelagicLarvaeState.Settled) pelagicLarvaeCount -= 1
+
+      }
     }
+
+    //                int indexOfReef;
+    //                if (habitatManager.IsCoordinateOverReef(larva.Position, out indexOfReef))
+    //                {
+    //                  if (indexOfNearestReef != Constants.NoClosestReefFound)
+    //                    larva.Recruit(habitatManager.GetReef(indexOfReef), currentTime);
+    //                }
+    //                else if (habitat.Buffer.IsBuffered && habitatManager.IsCoordinateOverBuffer(larva.Position))
+    //                {
+    //                  var indexOfNearestReef = habitatManager.GetIndexOfNearestReef(larva.Position);
+    //                  if (indexOfNearestReef != Constants.NoClosestReefFound)
+    //                    larva.Recruit(habitatManager.GetReef(indexOfNearestReef), currentTime);
+    //                }
+    //                else if (larva.ReachedMaximum()) larva.Kill();
+    //              }
+    //              if (larva.State == LarvaState.Dead || larva.State == LarvaState.Recruited) pelagicLarveCount--;
+    //
+    //          }
+
+
   }
 
   private def incrementTime() = currentTime = currentTime.plusSeconds(timeStep)
-
-
-  //            if (larva.CanSettle())
-  //            {
-  //              int indexOfReef;
-  //              if (habitatManager.IsCoordinateOverReef(larva.Position, out indexOfReef))
-  //              {
-  //                if (indexOfNearestReef != Constants.NoClosestReefFound)
-  //                  larva.Recruit(habitatManager.GetReef(indexOfReef), currentTime);
-  //              }
-  //              else if (habitat.Buffer.IsBuffered && habitatManager.IsCoordinateOverBuffer(larva.Position))
-  //              {
-  //                var indexOfNearestReef = habitatManager.GetIndexOfNearestReef(larva.Position);
-  //                if (indexOfNearestReef != Constants.NoClosestReefFound)
-  //                  larva.Recruit(habitatManager.GetReef(indexOfNearestReef), currentTime);
-  //              }
-  //              else if (larva.ReachedMaximum()) larva.Kill();
-  //            }
-  //            if (larva.State == LarvaState.Dead || larva.State == LarvaState.Recruited) pelagicLarveCount--;
-  //          }
-  //        }
-
 
 }

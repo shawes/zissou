@@ -74,8 +74,7 @@ class FlowXmlReader(val oceanData: Flow) {
           polygon.velocity = readVelocityElement(attributes)
         case EvElemStart(_, "locus", attributes, _) =>
           val locus = readLocusElement(attributes)
-          polygon.centroid.latitude = locus.latitude
-          polygon.centroid.longitude = locus.longitude
+          polygon.centroid = new GeoCoordinate(locus.latitude, locus.longitude)
           constructArakawaAGrid(polygon, locus, oceanData.grid.cell.width * 0.5)
         case EvElemEnd(_, "flow") =>
           polygons += polygon

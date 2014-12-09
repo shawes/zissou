@@ -34,25 +34,25 @@ class Interpolator(var flow: Flow) {
 
   private def bicubicInterpolation(polygons: Array[FlowPolygon], index: Int, longitude: Double, latitude: Double): Tuple2[Boolean, Velocity] = {
     val bicubicInterpolator = new BicubicInterpolator
-    val neighbourhood = new ArrayBuffer[Array[Velocity]]()
+    val neighbourhood = ArrayBuffer.empty[ArrayBuffer[Velocity]]
     val neighbourhoodWidth = flow.grid.width
 
     for (j <- -2 to 1) {
-      val row = new ArrayBuffer[Velocity]()
+      val row = ArrayBuffer.empty[Velocity]
       for (i <- -1 to 2) {
         val neighbouringVelocity = polygons((i + index) + j * neighbourhoodWidth).velocity
         if (neighbouringVelocity.isUndefined) return new Tuple2(false, neighbouringVelocity)
         row += neighbouringVelocity
       }
-      neighbourhood += row.toArray
+      neighbourhood += row
     }
-    val interpolatedVelocity = bicubicInterpolator.interpolate(neighbourhood.toArray, longitude, latitude)
+    val interpolatedVelocity = bicubicInterpolator.interpolate(neighbourhood, longitude, latitude)
     new Tuple2(true, interpolatedVelocity)
   }
 
   private def bilinearInterpolation(polygons: Array[FlowPolygon], index: Int, longitude: Double, latitude: Double): Tuple2[Boolean, Velocity] = {
     val bilinearInterpolator = new BilinearInterpolator
-    val neighbourhood = new ArrayBuffer[Array[Velocity]]()
+    val neighbourhood = new ArrayBuffer[ArrayBuffer[Velocity]]()
     val neighbourhoodWidth = flow.grid.width
 
     for (j <- 0 to 1) {
@@ -62,9 +62,9 @@ class Interpolator(var flow: Flow) {
         if (neighbouringVelocity.isUndefined) return new Tuple2(false, neighbouringVelocity)
         row += neighbouringVelocity
       }
-      neighbourhood += row.toArray
+      neighbourhood += row
     }
-    val interpolatedVelocity = bilinearInterpolator.interpolate(neighbourhood.toArray, longitude, latitude)
+    val interpolatedVelocity = bilinearInterpolator.interpolate(neighbourhood, longitude, latitude)
     new Tuple2(true, interpolatedVelocity)
   }
 }

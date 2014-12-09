@@ -24,8 +24,8 @@ abstract class Larva(val id: Int,
 
   var settlementDate: DateTime = null
   //var state: PelagicLarvaeState
-  var currentPosition: GeoCoordinate = birthplace.location
-  var currentPolygon: HabitatPolygon
+  var position: GeoCoordinate = birthplace.location
+  var polygon: HabitatPolygon
   var hasSettled: Boolean = false
 
   def attainedPld = age >= pelagicLarvalDuration
@@ -36,15 +36,15 @@ abstract class Larva(val id: Int,
 
   def move(newPosition: GeoCoordinate)
 
-  def settle(polygon: HabitatPolygon, date: DateTime) {
-    currentPolygon = polygon
+  def settle(settlementReef: HabitatPolygon, date: DateTime) {
+    polygon = settlementReef
     settlementDate = date
     state = PelagicLarvaeState.Settled
   }
 
   def kill() = state = PelagicLarvaeState.Dead
 
-  def saveHistory() = history += new TimeCapsule(age, state, currentPolygon, currentPosition)
+  def saveHistory() = history += new TimeCapsule(age, state, polygon, position)
 
 
 }

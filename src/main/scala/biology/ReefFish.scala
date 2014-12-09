@@ -10,14 +10,14 @@ class ReefFish(id: Int, pelagicLarvalDuration: Int, maximumLifeSpan: Int, birthp
   //val history = Vector.empty[TimeCapsule]
   //var state = PelagicLarvaeState.Pelagic
   var age = 0
-  var currentPolygon: HabitatPolygon = new GeometryAdaptor(null, 1, HabitatType.Reef)
+  var polygon: HabitatPolygon = new GeometryAdaptor(null, 1, HabitatType.Reef)
 
   def this() = this(0, 0, 0, null, null)
 
   def move(newPosition: GeoCoordinate) = {
     require(!newPosition.isUndefined)
     saveHistory()
-    currentPosition = newPosition
+    position = newPosition
   }
 
   //lazy val maximumLifeSpan: Int = 0

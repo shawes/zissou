@@ -9,7 +9,7 @@ object Constants {
   val MaxLatitudeShift = 0.015
   val MaxLongitudeShift = 0.015
   val LarvaeCapacityAtSite = 10000
-  val NoClosestReefFound = -999
+  val NoClosestReefFound = -1
 
   object ShapeAttribute {
     val Geometry = (0, "the_geom")

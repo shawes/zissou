@@ -2,15 +2,17 @@ package maths.interpolation.cubic
 
 import physical.Velocity
 
+import scala.collection.mutable.ArrayBuffer
+
 class BicubicInterpolator extends CubicInterpolator {
 
-  val partialResult: Array[Velocity] = Array.ofDim[Velocity](4)
+  val partialResult: ArrayBuffer[Velocity] = ArrayBuffer.empty[Velocity]
 
-  def interpolate(v: Array[Array[Velocity]], x: Double, y: Double): Velocity = {
-    partialResult(0) = interpolate(v(0), y)
-    partialResult(1) = interpolate(v(1), y)
-    partialResult(2) = interpolate(v(2), y)
-    partialResult(3) = interpolate(v(3), y)
+  def interpolate(v: ArrayBuffer[ArrayBuffer[Velocity]], x: Double, y: Double): Velocity = {
+    partialResult += interpolate(v(0), y)
+    partialResult += interpolate(v(1), y)
+    partialResult += interpolate(v(2), y)
+    partialResult += interpolate(v(3), y)
     interpolate(partialResult, x)
   }
 }

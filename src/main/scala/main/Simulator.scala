@@ -2,12 +2,14 @@ package main
 
 import java.io.File
 
+import grizzled.slf4j.Logger
 import io.ConfigurationFileWriter
 
 object Simulator extends App {
 
   try {
 
+    val logger = Logger(classOf[App])
     //    var chooser = new FileChooser(new File("/Users/Steven/Documents/University/Phd/Modelling/Testing/Scala Conversion"))
     //    chooser.multiSelectionEnabled_=(b = false)
     //    chooser.showOpenDialog(null)
@@ -18,8 +20,10 @@ object Simulator extends App {
     val larvalDisperser = new LarvaeDisperser(config)
     larvalDisperser.run()
 
+
   } catch {
     case ex: IllegalArgumentException => new Error("Bugger")
+    case ex: Exception => System.exit(0)
   }
 
 

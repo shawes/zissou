@@ -1,9 +1,9 @@
 package physical.habitat
 
-import locals.HabitatType
-import HabitatType.HabitatType
-import physical.GeoCoordinate
 import com.vividsolutions.jts.geom.Geometry
+import locals.HabitatType.HabitatType
+import physical.GeoCoordinate
+import physical.adaptors.GeometryToCoordinateAdaptor
 
 trait HabitatPolygon {
   val id: Int
@@ -40,15 +40,15 @@ trait HabitatPolygonToJtsGeometryAdaptor {
 class GeometryAdaptor(val g: Geometry, val id: Int, val habitat: HabitatType) extends HabitatPolygon {
 
 
-  def centroid: GeoCoordinate = new GeoCoordinate(g.getCentroid)
+  def centroid: GeoCoordinate = GeometryToCoordinateAdaptor.toGeoCoordinate(g.getCentroid)
 
   def coordinates: Array[GeoCoordinate] = g.getCoordinates.map(g => new GeoCoordinate(g.y, g.x))
 
-  def contains(coordinate: GeoCoordinate): Boolean = g.contains(coordinate.toGeometry)
+  def contains(coordinate: GeoCoordinate): Boolean = g.contains(GeometryToCoordinateAdaptor.toPoint(coordinate))
 
-  def distance(coordinate: GeoCoordinate): Double = g.distance(coordinate.toGeometry)
+  def distance(coordinate: GeoCoordinate): Double = g.distance(GeometryToCoordinateAdaptor.toPoint(coordinate))
 
-  def isWithinDistance(coordinate: GeoCoordinate, distance: Double): Boolean = g.isWithinDistance(coordinate.toGeometry, distance)
+  def isWithinDistance(coordinate: GeoCoordinate, distance: Double): Boolean = g.isWithinDistance(GeometryToCoordinateAdaptor.toPoint(coordinate), distance)
 }
 
 

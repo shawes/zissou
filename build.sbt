@@ -8,6 +8,8 @@ crossScalaVersions := Seq("2.11.1", "2.10.3")
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:implicitConversions")
 
+Seq(bintrayResolverSettings: _*)
+
 
 
 // test

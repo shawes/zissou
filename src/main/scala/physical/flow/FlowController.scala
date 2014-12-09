@@ -119,5 +119,9 @@ class FlowController(var flow: Flow) {
     interpolator.flow = flow
   }
 
+  //  override def finalize(): Unit = {
+  //     flowDataQueue.dequeueAll(x => true)
+  //  }
+
 
 }
