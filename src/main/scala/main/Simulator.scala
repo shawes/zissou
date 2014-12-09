@@ -23,7 +23,7 @@ object Simulator extends App {
 
   } catch {
     case ex: IllegalArgumentException => new Error("Bugger")
-    case ex: Exception => System.exit(0)
+    //case ex: Exception => System.exit(0)
   }
 
 

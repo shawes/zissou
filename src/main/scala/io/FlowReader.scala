@@ -3,6 +3,8 @@ package io
 import grizzled.slf4j._
 import physical.flow.{Depth, Flow, FlowPolygon}
 
+import scala.collection.mutable.ArrayBuffer
+
 class FlowReader(val inputs: InputFiles, val depth: Depth) {
   val files: Array[String] = inputs.flowFiles.toArray
   val logger = Logger(classOf[FlowReader])
@@ -18,7 +20,7 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
     polygons.toArray
   }
 
-  private def loadNextFile(): Vector[FlowPolygon] = {
+  private def loadNextFile(): Array[FlowPolygon] = {
     val reader = new FlowXmlReader(flow)
     val file = skipHiddenAndSystemFiles(files(currentFile))
 
@@ -37,9 +39,9 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
     tempFile
   }
 
-  private def averageDepthDimension(polygons: Vector[FlowPolygon]): Vector[FlowPolygon] = {
+  private def averageDepthDimension(polygons: Array[FlowPolygon]): Array[FlowPolygon] = {
     val cellCount: Int = flow.grid.width * flow.grid.height
-    val averagedPolygons: Vector[FlowPolygon] = Vector.empty[FlowPolygon]
+    val averagedPolygons = ArrayBuffer.empty[FlowPolygon]
     for (i <- 0 until cellCount) {
       var sumU: Double = 0.0
       var sumV: Double = 0.0
@@ -69,9 +71,9 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
         averagedPolygon.temperature = sumTemp / count
 
       }
-      averagedPolygons :+ averagedPolygon
+      averagedPolygons += averagedPolygon
     }
-    averagedPolygons
+    averagedPolygons.toArray
   }
 
   def hasNext = currentFile < files.length

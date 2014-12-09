@@ -3,7 +3,7 @@ package physical.habitat
 import com.vividsolutions.jts.geom.Geometry
 import locals.HabitatType.HabitatType
 import physical.GeoCoordinate
-import physical.adaptors.GeometryToCoordinateAdaptor
+import physical.adaptors.GeometryToGeoCoordinateAdaptor
 
 trait HabitatPolygon {
   val id: Int
@@ -40,15 +40,15 @@ trait HabitatPolygonToJtsGeometryAdaptor {
 class GeometryAdaptor(val g: Geometry, val id: Int, val habitat: HabitatType) extends HabitatPolygon {
 
 
-  def centroid: GeoCoordinate = GeometryToCoordinateAdaptor.toGeoCoordinate(g.getCentroid)
+  def centroid: GeoCoordinate = GeometryToGeoCoordinateAdaptor.toGeoCoordinate(g.getCentroid)
 
   def coordinates: Array[GeoCoordinate] = g.getCoordinates.map(g => new GeoCoordinate(g.y, g.x))
 
-  def contains(coordinate: GeoCoordinate): Boolean = g.contains(GeometryToCoordinateAdaptor.toPoint(coordinate))
+  def contains(coordinate: GeoCoordinate): Boolean = g.contains(GeometryToGeoCoordinateAdaptor.toPoint(coordinate))
 
-  def distance(coordinate: GeoCoordinate): Double = g.distance(GeometryToCoordinateAdaptor.toPoint(coordinate))
+  def distance(coordinate: GeoCoordinate): Double = g.distance(GeometryToGeoCoordinateAdaptor.toPoint(coordinate))
 
-  def isWithinDistance(coordinate: GeoCoordinate, distance: Double): Boolean = g.isWithinDistance(GeometryToCoordinateAdaptor.toPoint(coordinate), distance)
+  def isWithinDistance(coordinate: GeoCoordinate, distance: Double): Boolean = g.isWithinDistance(GeometryToGeoCoordinateAdaptor.toPoint(coordinate), distance)
 }
 
 

@@ -12,7 +12,7 @@ import org.geotools.factory.{CommonFactoryFinder, GeoTools}
 import org.opengis.feature.simple.SimpleFeature
 import org.opengis.filter.Filter
 import physical.GeoCoordinate
-import physical.adaptors.GeometryToCoordinateAdaptor
+import physical.adaptors.GeometryToGeoCoordinateAdaptor
 
 import scala.collection.mutable
 
@@ -21,9 +21,9 @@ class HabitatManager(file: File, buffer: Buffer, habitatTypes: Array[String]) {
 
   val habitats: SimpleFeatureCollection = loadHabitats()
   val filteredHabitats: SimpleFeatureCollection = filterHabitats
+  //private val habitatsHashTable = new collection.mutable.HashMap[Int, HabitatPolygon]
   val logger = Logger(classOf[HabitatManager])
   private val habitatsHashTable = defineHashTable()
-  //private val habitatsHashTable = new collection.mutable.HashMap[Int, HabitatPolygon]
   var habitatList: util.ArrayList[HabitatPolygon] = new util.ArrayList()
 
   def loadHabitats(): SimpleFeatureCollection = {
@@ -69,7 +69,7 @@ class HabitatManager(file: File, buffer: Buffer, habitatTypes: Array[String]) {
   //TODO: Uses brute-force algorithm, need to change to divide and conquer
   def getClosestHabitat(coordinate: GeoCoordinate): SimpleFeature = {
 
-    val location: Point = GeometryToCoordinateAdaptor.toPoint(coordinate)
+    val location: Point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
     var shortestDistance: Double = Double.MaxValue
     var closestReef: SimpleFeature = null
     val shapes = filteredHabitats.features()
@@ -90,7 +90,7 @@ class HabitatManager(file: File, buffer: Buffer, habitatTypes: Array[String]) {
   def isCoordinateOverReef(coordinate: GeoCoordinate): Int = {
     logger.debug("Entering isCoordinateOverReef")
     val shapes = filteredHabitats.features()
-    val location: Point = GeometryToCoordinateAdaptor.toPoint(coordinate)
+    val location: Point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
     while (shapes.hasNext) {
       val shape = shapes.next
       val geometry = SimpleFeatureAdaptor.getGeometry(shape)

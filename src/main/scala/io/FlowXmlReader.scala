@@ -26,7 +26,7 @@ class FlowXmlReader(val oceanData: Flow) {
     * @param filePath the location of the XML file
     * @return a vector of flow polygons comprising the data from the XML file
     */
-  def read(filePath: String): Vector[FlowPolygon] = {
+  def read(filePath: String): Array[FlowPolygon] = {
     logger.debug("File path is " + filePath)
     val src = Source.fromFile(new File(filePath))
     val reader = new XMLEventReader(src)
@@ -34,7 +34,7 @@ class FlowXmlReader(val oceanData: Flow) {
     readXmlElements(reader)
   }
 
-  private def readXmlElements(xml: XMLEventReader): Vector[FlowPolygon] = {
+  private def readXmlElements(xml: XMLEventReader): Array[FlowPolygon] = {
     var polygons: ArrayBuffer[FlowPolygon] = ArrayBuffer.empty
     var polygon: FlowPolygon = new FlowPolygon()
 
@@ -83,7 +83,7 @@ class FlowXmlReader(val oceanData: Flow) {
     }
     xml.stop()
     logger.debug("Returning " + polygons.size + " polygons")
-    polygons.toVector
+    polygons.toArray
   }
 
   private def readVelocityElement(velocities: MetaData): Velocity = {

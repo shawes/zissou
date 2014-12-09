@@ -14,7 +14,7 @@ import scala.compat.Platform
 class FlowController(var flow: Flow) {
 
   val SizeOfQueue = 2
-  val flowDataQueue: mutable.Queue[Array[FlowPolygon]] = mutable.Queue.empty
+  val flowDataQueue = mutable.Queue.empty[Array[FlowPolygon]]
   val logger = Logger(classOf[FlowController])
   val interpolator = new Interpolator(flow)
 
@@ -106,14 +106,18 @@ class FlowController(var flow: Flow) {
       flowDataQueue.dequeue()
       logger.debug("Queue size is " + flowDataQueue.size + "and after dequeuing")
     }
-    flowDataQueue.enqueue(polygons)
+    flowDataQueue += polygons
     logger.debug("Queue size is " + flowDataQueue.size + "and after enqueuing")
   }
 
   def initialiseFlow(reader: FlowReader) {
     for (i <- 0 until SizeOfQueue) {
       logger.debug("Reading the first flow data")
-      if (reader.hasNext) flowDataQueue.enqueue(reader.next())
+      System.out.println("started reading flow queue")
+      val start = DateTime.now
+      if (reader.hasNext) flowDataQueue += reader.next()
+      val seconds = DateTime.now.getSecondOfDay - start.getSecondOfDay
+      System.out.println("finished reading in " + seconds + " seconds")
     }
     flow = reader.flow
     interpolator.flow = flow
