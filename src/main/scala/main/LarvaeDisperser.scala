@@ -78,7 +78,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
   private def writeLarvaeStateChangesToExcelFile() = {
     var larvaeFileWriter = new LarvaeFileWriter()
-    //larvaeFileWriter.writeExcelFile(larvae, output.SaveOutputFilePath);
+    //larvaeFileWriter.writeExcelFile(fishLarvae.flatten, output.saveOutputFilePath)
   }
 
   private def writeDispersalKernel() = {

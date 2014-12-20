@@ -64,8 +64,7 @@ class FlowXmlReader(val oceanData: Flow) {
           polygon = new FlowPolygon()
           polygon.id = attributes("id").text.toInt
         case EvElemStart(_, "depth", attributes, _) =>
-          val depth = attributes.value.head.toString().toDouble
-          polygon.centroid = new GeoCoordinate(0, 0, depth)
+          polygon.centroid = new GeoCoordinate(0, 0, attributes.value.head.toString().toDouble)
         case EvElemStart(_, "salt", attributes, _) =>
           polygon.salinity = attributes.value.head.toString().toDouble
         case EvElemStart(_, "temp", attributes, _) =>
@@ -74,7 +73,7 @@ class FlowXmlReader(val oceanData: Flow) {
           polygon.velocity = readVelocityElement(attributes)
         case EvElemStart(_, "locus", attributes, _) =>
           val locus = readLocusElement(attributes)
-          polygon.centroid = new GeoCoordinate(locus.latitude, locus.longitude)
+          polygon.centroid = new GeoCoordinate(locus.latitude, locus.longitude, polygon.centroid.depth)
           constructArakawaAGrid(polygon, locus, oceanData.grid.cell.width * 0.5)
         case EvElemEnd(_, "flow") =>
           polygons += polygon

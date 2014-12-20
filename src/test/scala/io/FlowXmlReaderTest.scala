@@ -1,11 +1,12 @@
 package io
 
-import org.scalatest.{PrivateMethodTester, FlatSpec}
 import org.scalatest.mock.MockitoSugar
-import physical.flow.{FlowPolygon, Flow}
-import scala.xml.pull.XMLEventReader
+import org.scalatest.{FlatSpec, PrivateMethodTester}
+import physical.flow.{Flow, FlowPolygon}
+import physical.{Cell, GeoCoordinate}
+
 import scala.io.Source
-import physical.{GeoCoordinate, Cell}
+import scala.xml.pull.XMLEventReader
 
 class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
@@ -13,7 +14,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.length == 1)
     assert(elements.head.id == 1)
@@ -23,7 +24,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(twoFlowNodesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.length == 2, "There should be two elements here")
   }
@@ -32,7 +33,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
     assert(flow.depth.range.start == 0)
     assert(flow.depth.range.end == 100)
@@ -42,7 +43,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
     assert(flow.latitudeRange.start == -40.0)
     assert(flow.latitudeRange.end == -10.0)
@@ -52,7 +53,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
     assert(flow.longitudeRange.start == 142.0)
     assert(flow.longitudeRange.end == 162.0)
@@ -62,7 +63,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
     assert(flow.grid.cell.width == 0.1)
     assert(flow.grid.cell.height == 0.1)
@@ -73,7 +74,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(flow.grid.width == 201)
     assert(flow.grid.height == 301)
@@ -85,7 +86,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.centroid.depth == 5.01)
   }
@@ -94,7 +95,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.salinity == 35.24)
   }
@@ -103,7 +104,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.temperature == 14.85)
   }
@@ -112,7 +113,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.velocity.u == -0.18)
     assert(elements.head.velocity.v == 0.05)
@@ -123,7 +124,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     var flow = new Flow()
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.centroid.latitude == -40.000534)
     assert(elements.head.centroid.longitude == 142.00035)
@@ -134,7 +135,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
     flow.grid.cell = new Cell(0.1, 0.1, 10.0)
     val reader = new FlowXmlReader(flow)
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.vertices.length == 4)
   }
@@ -142,7 +143,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   it should "construct okawana grid using half cell width" in {
     var flow = mock[Flow]
     val reader = new FlowXmlReader(flow)
-    val constructArakawaAGrid = PrivateMethod[Vector[FlowPolygon]]('constructArakawaAGrid)
+    val constructArakawaAGrid = PrivateMethod[Array[FlowPolygon]]('constructArakawaAGrid)
     var polygon = new FlowPolygon()
     reader invokePrivate constructArakawaAGrid(polygon, new GeoCoordinate(1.0, 2.0, 3.0), 0.5)
     assert(polygon.vertices.length == 4)
