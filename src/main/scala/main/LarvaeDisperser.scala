@@ -70,24 +70,26 @@ class LarvaeDisperser(params: io.config.Configuration) {
   }
 
   private def writeOutput() = {
-    writeLarvaeMovementsToShapeFile()
-    writeDispersalKernel()
-    if (output.includeLarvaeHistory) writeLarvaeStateChangesToExcelFile()
+    val larvaeList = fishLarvae.flatten.toList
+
+    writeLarvaeMovementsToShapeFile(larvaeList)
+    writeDispersalKernel(larvaeList)
+    if (output.includeLarvaeHistory) writeLarvaeStateChangesToExcelFile(larvaeList)
   }
 
 
-  private def writeLarvaeStateChangesToExcelFile() = {
+  private def writeLarvaeStateChangesToExcelFile(larvae: List[Larva]) = {
     var larvaeFileWriter = new LarvaeFileWriter()
     //larvaeFileWriter.writeExcelFile(fishLarvae.flatten, output.saveOutputFilePath)
   }
 
-  private def writeDispersalKernel() = {
-    val dispersalKernelWriter = new DispersalKernelFileWriter(output.saveOutputFilePath, fishLarvae.flatten.toList)
+  private def writeDispersalKernel(larvae: List[Larva]) = {
+    val dispersalKernelWriter = new DispersalKernelFileWriter(output.saveOutputFilePath, larvae)
     dispersalKernelWriter.writeCsv()
   }
 
-  private def writeLarvaeMovementsToShapeFile() = {
-    var shapeFileWriter = new ShapeFileWriter(fishLarvae.flatten.toArray, ShapeFileType.Line)
+  private def writeLarvaeMovementsToShapeFile(larvae: List[Larva]) = {
+    var shapeFileWriter = new ShapeFileWriter(larvae, ShapeFileType.Line)
     //shapeFileWriter.writeShapes(larvae, output.SaveOutputFilePath, output.ShapeType);
   }
 
