@@ -5,9 +5,9 @@ import java.io.File
 import biology._
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j._
-import io.FlowReader
 import io.config.ConfigMappings._
-import locals.{Constants, PelagicLarvaeState}
+import io.{DispersalKernelFileWriter, FlowReader, LarvaeFileWriter, ShapeFileWriter}
+import locals.{Constants, PelagicLarvaeState, ShapeFileType}
 import maths.integration.RungeKuttaIntegration
 import org.apache.commons.math.random.MersenneTwister
 import org.joda.time.Days
@@ -43,6 +43,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
   var currentTime = startTime
   var pelagicLarvaeCount = 0
   var startRun: DateTime = null
+  var output = params.output
 
   def run(): Unit = {
     startRun = DateTime.now
@@ -63,6 +64,31 @@ class LarvaeDisperser(params: io.config.Configuration) {
       logger.info("Step " + iteration + " has been completed")
       iteration = iteration + 1
     }
+
+    writeOutput()
+    logger.debug("Simulation run completed at " + new Duration(DateTime.now, startTime).getStandardMinutes)
+  }
+
+  private def writeOutput() = {
+    writeLarvaeMovementsToShapeFile()
+    writeDispersalKernel()
+    if (output.includeLarvaeHistory) writeLarvaeStateChangesToExcelFile()
+  }
+
+
+  private def writeLarvaeStateChangesToExcelFile() = {
+    var larvaeFileWriter = new LarvaeFileWriter()
+    //larvaeFileWriter.writeExcelFile(larvae, output.SaveOutputFilePath);
+  }
+
+  private def writeDispersalKernel() = {
+    var dispersalKernelWriter = new DispersalKernelFileWriter()
+    //dispersalKernelWriter.writeExcelFile(output.SaveOutputFilePath, larvae);
+  }
+
+  private def writeLarvaeMovementsToShapeFile() = {
+    var shapeFileWriter = new ShapeFileWriter(fishLarvae.flatten.toArray, ShapeFileType.Line)
+    //shapeFileWriter.writeShapes(larvae, output.SaveOutputFilePath, output.ShapeType);
   }
 
 
@@ -160,5 +186,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
   }
 
   private def incrementTime() = currentTime = currentTime.plusSeconds(timeStep)
+
+  private def calculateLarvae: Int = fishLarvae.flatten.size
 
 }
