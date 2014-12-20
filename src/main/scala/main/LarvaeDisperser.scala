@@ -82,8 +82,8 @@ class LarvaeDisperser(params: io.config.Configuration) {
   }
 
   private def writeDispersalKernel() = {
-    var dispersalKernelWriter = new DispersalKernelFileWriter()
-    //dispersalKernelWriter.writeExcelFile(output.SaveOutputFilePath, larvae);
+    val dispersalKernelWriter = new DispersalKernelFileWriter(output.saveOutputFilePath, fishLarvae.flatten.toList)
+    dispersalKernelWriter.writeCsv()
   }
 
   private def writeLarvaeMovementsToShapeFile() = {
