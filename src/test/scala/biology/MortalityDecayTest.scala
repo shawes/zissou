@@ -2,8 +2,8 @@ package biology
 
 import org.scalatest.FlatSpec
 
-class MortalityTest extends FlatSpec {
-  val mortality = new Mortality(2.2)
+class MortalityDecayTest extends FlatSpec {
+  val mortality = new MortalityDecay(2.2)
 
   "A mortality object" should "not be null upon construction" in {
     assert(mortality != null)

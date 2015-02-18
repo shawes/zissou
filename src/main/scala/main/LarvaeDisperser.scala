@@ -24,7 +24,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
   require(params != null)
 
   val god = new TheMaker(params.fish, false)
-  val mortality = new Mortality(params.fish.pelagicLarvalDuration.mean)
+  val mortality = new MortalityDecay(params.fish.pelagicLarvalDuration.mean)
   val random = new MersenneTwister(Platform.currentTime)
   val fish: Fish = params.fish
   val flowController = new FlowController(params.flow)
@@ -79,7 +79,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
 
   private def writeLarvaeStateChangesToExcelFile(larvae: List[Larva]) = {
-    var larvaeFileWriter = new LarvaeFileWriter()
+    val larvaeFileWriter = new LarvaeFileWriter()
     //larvaeFileWriter.writeExcelFile(fishLarvae.flatten, output.saveOutputFilePath)
   }
 
@@ -89,7 +89,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
   }
 
   private def writeLarvaeMovementsToShapeFile(larvae: List[Larva]) = {
-    var shapeFileWriter = new ShapeFileWriter(larvae, ShapeFileType.Line)
+    val shapeFileWriter = new ShapeFileWriter(larvae, ShapeFileType.Line)
     //shapeFileWriter.writeShapes(larvae, output.SaveOutputFilePath, output.ShapeType);
   }
 
