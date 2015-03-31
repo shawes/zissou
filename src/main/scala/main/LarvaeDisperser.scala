@@ -85,7 +85,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
   private def writeDispersalKernel(larvae: List[Larva]) = {
     val dispersalKernelWriter = new DispersalKernelFileWriter(output.saveOutputFilePath, larvae)
-    dispersalKernelWriter.writeCsv()
+    dispersalKernelWriter.writeDispersalKernelToCsv()
   }
 
   private def writeLarvaeMovementsToShapeFile(larvae: List[Larva]) = {
