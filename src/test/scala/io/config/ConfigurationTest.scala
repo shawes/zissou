@@ -1,11 +1,11 @@
-package io.files
+package io.config
 
+import java.io.StringReader
+import java.util.{ArrayList => JArrayList}
 import javax.xml.bind.JAXBContext
+
 import org.scalatest.FlatSpec
 import org.scalatest.mock.MockitoSugar
-import java.io.StringReader
-import io.config._
-import java.util.{ArrayList => JArrayList}
 
 class ConfigurationTest extends FlatSpec with MockitoSugar {
 

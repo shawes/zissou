@@ -47,6 +47,6 @@ class DispersalKernelFileWriter(filename: String, larvae: List[Larva]) {
    *
    * @return A csv list of column headers
    */
-  private def columnHeaders: String = "id,born,age,birth_place,recruited,reef_id,reef_type,"
+  private def columnHeaders: String = "id,born,age,birth_place,recruited,reef_id,reef_type"
 
 }
