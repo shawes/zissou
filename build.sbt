@@ -33,7 +33,7 @@ libraryDependencies ++= Seq(
 //other
 libraryDependencies ++= Seq(
   "com.github.nscala-time" % "nscala-time_2.11" % "1.2.0",
-  "org.scala-lang.modules" % "scala-parser-combinators_2.11" % "1.0.1",
+  "org.scala-lang.modules" % "scala-parser-combinators_2.11" % "1.0.2",
   "org.scala-lang.modules" % "scala-swing_2.11" % "1.0.1",
   "org.apache.commons" % "commons-math" % "2.2"
 )
