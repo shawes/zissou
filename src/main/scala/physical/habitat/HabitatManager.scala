@@ -5,6 +5,7 @@ import java.util
 
 import com.vividsolutions.jts.geom.Point
 import grizzled.slf4j.Logger
+import io.HabitatFileReader
 import locals.Constants
 import org.geotools.data.FileDataStoreFinder
 import org.geotools.data.simple.SimpleFeatureCollection
@@ -19,21 +20,15 @@ import scala.collection.mutable
 
 class HabitatManager(file: File, buffer: Buffer, habitatTypes: Array[String]) {
 
-  val habitats: SimpleFeatureCollection = loadHabitats()
+  val habitatReader = new HabitatFileReader()
+  val habitats: SimpleFeatureCollection = habitatReader.read(file)
   val filteredHabitats: SimpleFeatureCollection = filterHabitats
   //private val habitatsHashTable = new collection.mutable.HashMap[Int, HabitatPolygon]
   val logger = Logger(classOf[HabitatManager])
   private val habitatsHashTable = defineHashTable()
   var habitatList: util.ArrayList[HabitatPolygon] = new util.ArrayList()
 
-  def loadHabitats(): SimpleFeatureCollection = {
-    val store = FileDataStoreFinder.getDataStore(file)
-    try {
-      store.getFeatureSource.getFeatures
-    } finally {
-      store.dispose()
-    }
-  }
+
 
   /*
   def loadHabitats(file: File, habitatTypes: Array[String]) : Unit = {
