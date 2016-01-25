@@ -7,14 +7,14 @@ import biology.Larva
 class DispersalKernelFileWriter(filename: String, larvae: List[Larva]) {
 
   /**
-   * Writes the dispersal kernel to a CSV file. 
+   * Writes the dispersal kernel to a CSV file.
    */
   def writeDispersalKernelToCsv(): Unit = {
     val csvFile = new File(filename)
     val bw = new BufferedWriter(new FileWriter(csvFile))
     bw.write(columnHeaders)
     bw.newLine()
-    larvae.find(l => l != null && l.hasSettled).foreach(l => bw.write(getCsvLarvaRow(l)))
+    larvae.find(l => (l != null) && l.hasSettled).foreach(l => bw.write(getCsvLarvaRow(l)))
     bw.close()
   }
 

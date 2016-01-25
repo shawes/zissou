@@ -3,11 +3,11 @@ package io.config
 import main.SimulationVariables
 
 class ConfigurationAdapter {
-  def ToVariables(config: Configuration) = {
+  def toVariables(config: Configuration) : SimulationVariables = {
     new SimulationVariables()
   }
 
-  def ToConfiguration(variables: SimulationVariables) = {
-
+  def toConfiguration(variables: SimulationVariables) : Configuration = {
+    new Configuration()
   }
 }

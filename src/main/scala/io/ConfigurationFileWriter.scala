@@ -10,7 +10,6 @@ class ConfigurationFileWriter {
     try {
       val context = JAXBContext.newInstance(classOf[Configuration])
       context.createMarshaller.marshal(config, file)
-
     } catch {
       case ex: JAXBException => println("Marshalling configuration failed" + ex.printStackTrace())
     }
@@ -20,7 +19,6 @@ class ConfigurationFileWriter {
     try {
       val context = JAXBContext.newInstance(classOf[Configuration])
       context.createUnmarshaller().unmarshal(file).asInstanceOf[Configuration]
-
     } catch {
       case ex: UnmarshalException => println("Un-marshalling configuration failed" + ex.printStackTrace())
         new Configuration()

@@ -1,6 +1,6 @@
 package locals
 
-class Constants {}
+import org.joda.time.DateTime
 
 object Constants {
 
@@ -10,6 +10,7 @@ object Constants {
   val MaxLongitudeShift = 0.015
   val LarvaeCapacityAtSite = 10000
   val NoClosestReefFound = -1
+  val MinimumDate = new DateTime(1976,1,1,0,0)
 
   object ShapeAttribute {
     val Geometry = (0, "the_geom")

@@ -6,9 +6,9 @@ import com.vividsolutions.jts.geom.Geometry
 import locals.HabitatType.HabitatType
 
 object SimpleFeatureAdaptor {
-  def getGeometry(sf: SimpleFeature) = sf.getAttribute(Constants.ShapeAttribute.Geometry._1).asInstanceOf[Geometry]
+  def getGeometry(sf: SimpleFeature) : Geometry = sf.getAttribute(Constants.ShapeAttribute.Geometry._1).asInstanceOf[Geometry]
 
-  def getId(sf: SimpleFeature) = sf.getAttribute(Constants.ShapeAttribute.Patch._2).asInstanceOf[Int]
+  def getId(sf: SimpleFeature): Int = sf.getAttribute(Constants.ShapeAttribute.Patch._2).asInstanceOf[Int]
 
   def getHabitatType(sf: SimpleFeature): HabitatType = try {
     HabitatType.withName(sf.getAttribute(Constants.ShapeAttribute.Habitat._2).toString)

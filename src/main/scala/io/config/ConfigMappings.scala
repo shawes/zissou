@@ -54,7 +54,7 @@ object ConfigMappings {
   implicit def verticalMigrationConfigMap(vm: VerticalMigrationConfig): VerticalMigration =
     new VerticalMigration(vm.verticalMigrationProbability.map(x => verticalMigrationProbabilityConfigMap(x)).toList)
 
-  implicit def verticalMigrationProbabilityConfigMap(prob: VerticalMigrationProbabilityConfig) =
+  implicit def verticalMigrationProbabilityConfigMap(prob: VerticalMigrationProbabilityConfig) : VerticalMigrationProbability =
     new VerticalMigrationProbability(prob.depth, prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)
 
   implicit def fishConfigMap(f: FishConfig): Fish = new Fish(f.pelagicLarvalDuration, f.ontogeny, "name", true, SwimmingAbility.withName(f.swimmingAbility), f.meanSwimmingSpeed,

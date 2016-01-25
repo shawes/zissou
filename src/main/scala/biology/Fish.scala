@@ -15,8 +15,8 @@ class Fish(val pld: PelagicLarvalDuration,
            val isMortal: Boolean,
            val mortalityRate: Double) {
 
-  def this() = this(null, null, null, false, null, 0, null, null, false, 0)
+  def this() = this(null, null, "", false, null, 0, null, null, false, 0)
 
-  def canSwim = swimmingAbility != SwimmingAbility.Passive
+  def canSwim : Boolean = swimmingAbility != SwimmingAbility.Passive
 }
 

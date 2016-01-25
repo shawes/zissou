@@ -76,7 +76,7 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
     averagedPolygons.toArray
   }
 
-  def hasNext = currentFile < files.length
+  def hasNext : Boolean = currentFile < files.length
 
 
 }

@@ -28,36 +28,6 @@ class HabitatManager(file: File, buffer: Buffer, habitatTypes: Array[String]) {
   private val habitatsHashTable = defineHashTable()
   var habitatList: util.ArrayList[HabitatPolygon] = new util.ArrayList()
 
-
-
-  /*
-  def loadHabitats(file: File, habitatTypes: Array[String]) : Unit = {
-    val store = FileDataStoreFinder.getDataStore(file)
-
-
-    val featureSource = store.getFeatureSource
-
-    //val collection = featureSource.getFeatures() //simple feature collection
-    //println("There are "+collection.size()+" polygons in total")
-    //filterHabitats(collection, Array("Reef", "Other"))
-    filterHabitats(habitatTypes)
-    //println("There are "+habitatFiltered.size()+" reef and other polygons")
-    //filteredHabitats
-    val shapes = filteredHabitats.features() //simple feature iterator
-    val shape = shapes.next()
-    val geometry = shape.getAttribute(Constants.ShapeAttribute.Geometry._1).asInstanceOf[Geometry]
-
-    val attributes = shape.getAttributes
-    val multi: MultiPolygon = null
-
-
-
-
-    println("Scored some features")
-
-  }
-  */
-
   /*
   This method find the closest reef to the point returns null otherwise
    */
@@ -99,7 +69,7 @@ class HabitatManager(file: File, buffer: Buffer, habitatTypes: Array[String]) {
     //val filter  = filterFactory.property
     val filterFactory = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints)
     val filterList: util.List[Filter] = new util.ArrayList[Filter]()
-    habitatTypes.foreach(x => filterList.add(filterFactory.equals(filterFactory.property(Constants.ShapeAttribute.Habitat._2), filterFactory.literal(x))))
+    habitatTypes foreach (x => filterList.add(filterFactory.equals(filterFactory.property(Constants.ShapeAttribute.Habitat._2), filterFactory.literal(x))))
 
 
     //reefFilter.add(ff.equals(ff.property("HABITAT"),ff.literal(HabitatType.Reef)))

@@ -8,7 +8,7 @@ package biology
  * To change this template use File | Settings | File Templates.
  */
 class EulerMovement extends MovementStrategy {
-  override def Move() = {
+  override def move() : Unit = {
 
   }
 }

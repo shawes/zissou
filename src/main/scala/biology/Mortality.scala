@@ -15,5 +15,5 @@ class MortalityDecay(pld: Double) extends Mortality {
     rate = scala.math.exp(-1 * lambda * step)
   }
 
-  def getRate = rate
+  def getRate : Double = rate
 }

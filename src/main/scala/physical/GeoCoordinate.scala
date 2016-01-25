@@ -9,7 +9,7 @@ class GeoCoordinate(val latitude: Double, val longitude: Double, val depth: Doub
 
   def isUndefined: Boolean = longitude == Double.NaN || latitude == Double.NaN
 
-  override def toString = "lat=" + latitude + ", lon=" + longitude + ", depth=" + depth
+  override def toString : String = "lat=" + latitude + ", lon=" + longitude + ", depth=" + depth
 
   //TODO Need to code the epsilon for doubles
   def compare(that: GeoCoordinate): Int = {

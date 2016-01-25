@@ -21,6 +21,7 @@ import scala.collection.mutable.ListBuffer
 
 class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType) {
 
+  val ShapeFileName = "LarvaePaths.shp"
 
   def write(file: File): Unit = {
     require(larvae != null && shape != null)
@@ -125,6 +126,6 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType) {
     schema.buildFeatureType()
   }
 
-  private def ShapeFileName = "LarvaePaths.shp"
+
 
 }

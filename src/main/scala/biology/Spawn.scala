@@ -12,10 +12,15 @@ class Spawn(val spawningLocations: mutable.Buffer[SpawningLocation]) {
   def this() = this(mutable.Buffer.empty[SpawningLocation])
 
   def getSitesWhereFishAreSpawning(date: DateTime): mutable.Buffer[SpawningLocation] = {
-    // only spawns at midnight
-    if (date.getHourOfDay != 0) return new ArrayBuffer[SpawningLocation]
 
-    spawningLocations.filter(x => x.canSpawn(date))
+    var spawningSites = new ArrayBuffer[SpawningLocation].toBuffer
+
+    // only spawns at midnight
+    if (date.getHourOfDay == 0) {
+      spawningSites = spawningLocations.filter(x => x.canSpawn(date))
+    }
+
+    spawningSites
 
   }
 

@@ -2,7 +2,7 @@ package biology
 
 
 import com.github.nscala_time.time.Imports._
-import locals.PelagicLarvaeState
+import locals.{Constants, PelagicLarvaeState}
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
@@ -19,32 +19,30 @@ abstract class Larva(val id: Int,
 
   def history: ListBuffer[TimeCapsule] = ListBuffer.empty
 
-  //val id: Int
   def age: Int
 
-  var settlementDate: DateTime = null
-  //var state: PelagicLarvaeState
+  var settlementDate : DateTime = Constants.MinimumDate
   var position: GeoCoordinate = birthplace.location
   var polygon: HabitatPolygon
   var hasSettled: Boolean = false
 
-  def attainedPld = age >= pelagicLarvalDuration
+  def attainedPld : Boolean = age >= pelagicLarvalDuration
 
-  def attainedMaximumLifeSpan = age >= maximumLifeSpan
+  def attainedMaximumLifeSpan : Boolean = age >= maximumLifeSpan
 
-  def canMove = state == PelagicLarvaeState.Pelagic
+  def canMove : Boolean = state == PelagicLarvaeState.Pelagic
 
-  def move(newPosition: GeoCoordinate)
+  def move(newPosition: GeoCoordinate) : Unit
 
-  def settle(settlementReef: HabitatPolygon, date: DateTime) {
+  def settle(settlementReef: HabitatPolygon, date: DateTime) : Unit = {
     polygon = settlementReef
     settlementDate = date
     state = PelagicLarvaeState.Settled
   }
 
-  def kill() = state = PelagicLarvaeState.Dead
+  def kill() : Unit = state = PelagicLarvaeState.Dead
 
-  def saveHistory() = history += new TimeCapsule(age, state, polygon, position)
+  def saveHistory() : Unit = history += new TimeCapsule(age, state, polygon, position)
 
 
 }
