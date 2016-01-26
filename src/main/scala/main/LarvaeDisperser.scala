@@ -9,7 +9,7 @@ import io.config.ConfigMappings._
 import io.{DispersalKernelFileWriter, FlowReader, LarvaeFileWriter, ShapeFileWriter}
 import locals.{Constants, PelagicLarvaeState, ShapeFileType}
 import maths.integration.RungeKuttaIntegration
-import org.apache.commons.math.random.MersenneTwister
+import org.apache.commons.math3.random.MersenneTwister
 import org.joda.time.Days
 import physical.Turbulence
 import physical.flow.FlowController

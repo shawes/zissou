@@ -5,7 +5,7 @@ import grizzled.slf4j._
 import io.FlowReader
 import locals.Constants
 import maths.interpolation.Interpolator
-import org.apache.commons.math.random.MersenneTwister
+import org.apache.commons.math3.random.MersenneTwister
 import physical.{GeoCoordinate, Velocity}
 
 import scala.collection.mutable
@@ -101,7 +101,7 @@ class FlowController(var flow: Flow) {
 
   def refresh(polygons: Array[FlowPolygon]) {
     logger.debug("Refreshing the queue")
-    if (flowDataQueue.size > 0) {
+    if (flowDataQueue.nonEmpty) {
       logger.debug("Queue size is " + flowDataQueue.size + "before dequeuing")
       flowDataQueue.dequeue()
       logger.debug("Queue size is " + flowDataQueue.size + "and after dequeuing")

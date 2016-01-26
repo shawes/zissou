@@ -2,7 +2,7 @@ name := "zissou"
 
 version := "1.0"
 
-scalaVersion := "2.11.4"
+scalaVersion := "2.11.7"
 
 crossScalaVersions := Seq("2.11.1", "2.10.3")
 
@@ -14,15 +14,16 @@ Seq(bintrayResolverSettings: _*)
 
 // test
 libraryDependencies ++= Seq(
-  "org.scalatest" % "scalatest_2.11" % "2.1.7" % "test",
-  "junit" % "junit" % "4.10" % "test",
-  "org.mockito" % "mockito-core" % "1.9.5"
+  "org.scalactic" %% "scalactic" % "2.2.6",
+  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+  "junit" % "junit" % "4.12" % "test",
+  "org.mockito" % "mockito-core" % "2.0.40-beta"
 )
 
 
 
 // geoTools
-val geotoolsVersion = "12-RC1"
+val geotoolsVersion = "13.2"
 
 libraryDependencies ++= Seq(
   "org.geotools" % "gt-shapefile" % geotoolsVersion,
@@ -30,18 +31,33 @@ libraryDependencies ++= Seq(
   "org.geotools" % "gt-swing" % geotoolsVersion
 )
 
+// add scala-xml dependency when needed (for Scala 2.11 and newer) in a robust way
+// this mechanism supports cross-version publishing
+// taken from: http://github.com/scala/scala-module-dependency-sample
+libraryDependencies := {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    // if scala 2.11+ is used, add dependency on scala-xml module
+    case Some((2, scalaMajor)) if scalaMajor >= 11 =>
+      libraryDependencies.value ++ Seq(
+        "org.scala-lang.modules" %% "scala-xml" % "1.0.3",
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.3",
+        "org.scala-lang.modules" %% "scala-swing" % "1.0.1")
+    case _ =>
+      // or just libraryDependencies.value if you don't depend on scala-swing
+      libraryDependencies.value :+ "org.scala-lang" % "scala-swing" % scalaVersion.value
+  }
+}
+
 //other
 libraryDependencies ++= Seq(
-  "com.github.nscala-time" % "nscala-time_2.11" % "1.2.0",
-  "org.scala-lang.modules" % "scala-parser-combinators_2.11" % "1.0.2",
-  "org.scala-lang.modules" % "scala-swing_2.11" % "1.0.1",
-  "org.apache.commons" % "commons-math" % "2.2"
+  "com.github.nscala-time" %% "nscala-time" % "2.6.0",
+  "org.apache.commons" % "commons-math3" % "3.6"
 )
 
 //logging
 libraryDependencies ++= Seq(
   //"ch.qos.logback" % "logback-classic" % "1.1.2",
-  "org.clapper" %% "grizzled-scala" % "1.2",
+  "org.clapper" %% "grizzled-scala" % "1.4.0",
   "org.clapper" %% "grizzled-slf4j" % "1.0.2",
   "org.clapper" %% "avsl" % "1.0.2"
 )
@@ -61,5 +77,6 @@ libraryDependencies := {
 
 resolvers ++= Seq(
   "OpenGeo Maven Repository" at "http://repo.opengeo.org",
-  "Open Source Geospatial Foundation Repository" at "http://download.osgeo.org/webdav/geotools/"
+  "Open Source Geospatial Foundation Repository" at "http://download.osgeo.org/webdav/geotools/",
+  "Artima Maven Repository" at "http://repo.artima.com/releases"
 )

@@ -1,14 +1,14 @@
 package physical
 
-import org.apache.commons.math.random.MersenneTwister
-import scala.compat.Platform
 import com.github.nscala_time.time.Imports._
+import org.apache.commons.math3.random.MersenneTwister
+
+import scala.compat.Platform
 
 class Turbulence(val horizontalDiffusionCoefficient: Double, val verticalDiffusionCoefficient: Double) {
-  def this() = this(0, 0)
-
-
   val random = new MersenneTwister(Platform.currentTime)
+
+  def this() = this(0, 0)
 
   def apply(v: Velocity, t: Duration) : Unit = {
     val horizontalTurbulence = horizontalDiffusionCoefficient * random.nextDouble()
