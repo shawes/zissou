@@ -94,7 +94,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
   }
 
 
-  def readNextFlowTimeStep() = {
+  def readNextFlowTimeStep(): Unit = {
     logger.debug("Reading next flow step")
     if (flowDataReader.hasNext) {
       logger.debug("Refreshing next flow step")
@@ -140,30 +140,10 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
     for (larva <- swimmingLarvae) {
 
-      if (fish.isMortal && random.nextDouble() < mortality.getRate) {
-        logger.debug("Killing larvae " + larva.id)
-        larva.kill()
-      }
-
-      val speed: Double = if (fish.canSwim) fish.swimmingSpeed else 0
-      val position = iterator.integrate(larva.position, currentTime, speed)
-      logger.debug("The old position is " + larva.position)
-      larva.move(position)
-      logger.debug("The new position is " + position)
+      mortalityCheck(larva)
+      updatePosition(iterator, larva)
       larva.age += timeStep
-
-      if (larva.attainedPld) {
-        logger.debug("Reach its pld")
-        val reefIndex = habitatMgr.isCoordinateOverReef(larva.position)
-        if (reefIndex != Constants.NoClosestReefFound) {
-          logger.debug("Found reef")
-          larva.settle(habitatMgr.getReef(reefIndex), currentTime)
-        } // else if() TODO: Implement the buffer
-        else if (larva.attainedMaximumLifeSpan) larva.kill()
-
-        if (larva.state == PelagicLarvaeState.Dead || larva.state == PelagicLarvaeState.Settled) pelagicLarvaeCount -= 1
-
-      }
+      settle(larva)
     }
 
     //                int indexOfReef;
@@ -185,6 +165,36 @@ class LarvaeDisperser(params: io.config.Configuration) {
     //          }
 
 
+  }
+
+  private def settle(larva: ReefFish): Unit = {
+    if (larva.attainedPld) {
+      logger.debug("Reach its pld")
+      val reefIndex = habitatMgr.isCoordinateOverReef(larva.position)
+      if (reefIndex != Constants.NoClosestReefFound) {
+        logger.debug("Found reef")
+        larva.settle(habitatMgr.getReef(reefIndex), currentTime)
+      } // else if() TODO: Implement the buffer
+      else if (larva.attainedMaximumLifeSpan) larva.kill()
+
+      if (larva.state == PelagicLarvaeState.Dead || larva.state == PelagicLarvaeState.Settled) pelagicLarvaeCount -= 1
+
+    }
+  }
+
+  private def updatePosition(iterator: RungeKuttaIntegration, larva: ReefFish): Unit = {
+    val speed: Double = if (fish.canSwim) fish.swimmingSpeed else 0
+    val position = iterator.integrate(larva.position, currentTime, speed)
+    logger.debug("The old position is " + larva.position)
+    larva.move(position)
+    logger.debug("The new position is " + position)
+  }
+
+  private def mortalityCheck(larva: ReefFish): Unit = {
+    if (fish.isMortal && random.nextDouble() < mortality.getRate) {
+      logger.debug("Killing larvae " + larva.id)
+      larva.kill()
+    }
   }
 
   private def incrementTime() = currentTime = currentTime.plusSeconds(timeStep)
