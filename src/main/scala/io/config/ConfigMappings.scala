@@ -4,7 +4,7 @@ import java.io.File
 
 import biology._
 import com.github.nscala_time.time.Imports._
-import io.InputFiles
+import io.{InputFiles, OutputFiles}
 import locals._
 import maths.NormalDistribution
 import org.joda.time.DateTime
@@ -34,6 +34,9 @@ object ConfigMappings {
 
   implicit def depthConfigMap(d: DepthConfig): Depth =
     new Depth(d.average, d.averageOverAllDepths, d.maximumDepthForAverage, null)
+
+  implicit def outputFilesConfigMap(o: OutputFilesConfig): OutputFiles =
+    new OutputFiles(o.includeLarvaeHistory, ShapeFileType.withName(o.shape), o.saveOutputFilePath)
 
   implicit def releasePeriodConfigMap(r: ReleasePeriodConfig): Interval =
     new Interval(new DateTime(r.start), new DateTime(r.end))

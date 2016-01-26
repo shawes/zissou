@@ -4,7 +4,7 @@ import java.io.{File, Serializable}
 import java.util
 
 import biology.{Larva, TimeCapsule}
-import com.vividsolutions.jts.geom.{LineString, Coordinate, Point}
+import com.vividsolutions.jts.geom.{Coordinate, LineString, Point}
 import locals.ShapeFileType._
 import locals.{PelagicLarvaeState, ShapeFileType}
 import org.geotools.data.DefaultTransaction
@@ -19,11 +19,11 @@ import physical.adaptors.GeometryToGeoCoordinateAdaptor
 
 import scala.collection.mutable.ListBuffer
 
-class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType) {
+class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) extends FileWriterTrait {
 
   val ShapeFileName = "LarvaePaths.shp"
 
-  def write(file: File): Unit = {
+  def write(): Unit = {
     require(larvae != null && shape != null)
 
     if (shape == ShapeFileType.Line) {

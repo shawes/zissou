@@ -17,18 +17,18 @@ import scala.xml.pull._
   * @constructor create a new flow file xml reader
   * @param oceanData defines the oceanography
   */
-class FlowXmlReader(val oceanData: Flow) {
+class FlowXmlReader(val oceanData: Flow) extends FileReaderTrait {
 
   val logger = Logger(classOf[FlowXmlReader])
 
   /** Reads in the XML from a file
     *
-    * @param filePath the location of the XML file
+    * @param file the location of the XML file
     * @return a vector of flow polygons comprising the data from the XML file
     */
-  def read(filePath: String): Array[FlowPolygon] = {
-    logger.debug("File path is " + filePath)
-    val src = Source.fromFile(new File(filePath))
+  def read(file: File): Array[FlowPolygon] = {
+    logger.debug("File path is " + file.getPath)
+    val src = Source.fromFile(file)
     val reader = new XMLEventReader(src)
     //printElements(reader)
     readXmlElements(reader)

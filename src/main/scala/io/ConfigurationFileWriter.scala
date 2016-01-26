@@ -1,12 +1,13 @@
 package io
 
-import javax.xml.bind.{UnmarshalException, JAXBException, JAXBContext}
 import java.io.File
+import javax.xml.bind.{JAXBContext, JAXBException}
+
 import io.config.Configuration
 
-class ConfigurationFileWriter {
+class ConfigurationFileWriter(config: Configuration, file: File) {
 
-  def write(config: Configuration, file: File) {
+  def write() {
     try {
       val context = JAXBContext.newInstance(classOf[Configuration])
       context.createMarshaller.marshal(config, file)
@@ -14,17 +15,4 @@ class ConfigurationFileWriter {
       case ex: JAXBException => println("Marshalling configuration failed" + ex.printStackTrace())
     }
   }
-
-  def read(file: File): Configuration = {
-    try {
-      val context = JAXBContext.newInstance(classOf[Configuration])
-      context.createUnmarshaller().unmarshal(file).asInstanceOf[Configuration]
-    } catch {
-      case ex: UnmarshalException => println("Un-marshalling configuration failed" + ex.printStackTrace())
-        new Configuration()
-      case ex: JAXBException => println("Un-marshalling configuration failed" + ex.printStackTrace())
-        new Configuration()
-    }
-  }
-
 }

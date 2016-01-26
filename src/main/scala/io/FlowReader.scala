@@ -1,5 +1,7 @@
 package io
 
+import java.io.File
+
 import grizzled.slf4j._
 import physical.flow.{Depth, Flow, FlowPolygon}
 
@@ -25,7 +27,7 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
     val file = skipHiddenAndSystemFiles(files(currentFile))
 
     logger.debug("Reading in " + file + " from " + files.toString)
-    val polygons = reader.read(inputs.flowFilePath + "/" + file)
+    val polygons = reader.read(new File(inputs.flowFilePath + "/" + file))
     flow = reader.oceanData
     if (flow.depth.average) averageDepthDimension(polygons) else polygons
   }

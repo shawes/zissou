@@ -5,9 +5,9 @@ import java.io.File
 import biology._
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j._
+import io._
 import io.config.ConfigMappings._
-import io.{DispersalKernelFileWriter, FlowReader, LarvaeFileWriter, ShapeFileWriter}
-import locals.{Constants, PelagicLarvaeState, ShapeFileType}
+import locals.{Constants, PelagicLarvaeState}
 import maths.integration.RungeKuttaIntegration
 import org.apache.commons.math3.random.MersenneTwister
 import org.joda.time.Days
@@ -65,33 +65,12 @@ class LarvaeDisperser(params: io.config.Configuration) {
       iteration = iteration + 1
     }
 
-    writeOutput()
+    val resultsWriter = new ResultsWriter(fishLarvae.flatten.toList, output)
+    resultsWriter.write()
     logger.debug("Simulation run completed at " + new Duration(DateTime.now, startTime).getStandardMinutes)
   }
 
-  private def writeOutput() = {
-    val larvaeList = fishLarvae.flatten.toList
 
-    writeLarvaeMovementsToShapeFile(larvaeList)
-    writeDispersalKernel(larvaeList)
-    if (output.includeLarvaeHistory) writeLarvaeStateChangesToExcelFile(larvaeList)
-  }
-
-
-  private def writeLarvaeStateChangesToExcelFile(larvae: List[Larva]) = {
-    val larvaeFileWriter = new LarvaeFileWriter()
-    //larvaeFileWriter.writeExcelFile(fishLarvae.flatten, output.saveOutputFilePath)
-  }
-
-  private def writeDispersalKernel(larvae: List[Larva]) = {
-    val dispersalKernelWriter = new DispersalKernelFileWriter(output.saveOutputFilePath, larvae)
-    dispersalKernelWriter.writeDispersalKernelToCsv()
-  }
-
-  private def writeLarvaeMovementsToShapeFile(larvae: List[Larva]) = {
-    val shapeFileWriter = new ShapeFileWriter(larvae, ShapeFileType.Line)
-    //shapeFileWriter.writeShapes(larvae, output.SaveOutputFilePath, output.ShapeType);
-  }
 
 
   def readNextFlowTimeStep(): Unit = {
@@ -135,15 +114,16 @@ class LarvaeDisperser(params: io.config.Configuration) {
   }
 
   private def moveLarvae(larvae: List[ReefFish], iterator: RungeKuttaIntegration) {
-    val swimmingLarvae = larvae.filter(x => x.canMove && x != null)
 
+    val swimmingLarvae: List[ReefFish] = larvae.filter(x => x.canMove)
 
     for (larva <- swimmingLarvae) {
-
       mortalityCheck(larva)
       updatePosition(iterator, larva)
-      larva.age += timeStep
+      ageLarvae(larva)
+      killCheck(larva)
       settle(larva)
+      updateActiveLarvaeCount(larva)
     }
 
     //                int indexOfReef;
@@ -167,6 +147,18 @@ class LarvaeDisperser(params: io.config.Configuration) {
 
   }
 
+  private def updateActiveLarvaeCount(larva: ReefFish): Unit = {
+    if (larva.state == PelagicLarvaeState.Dead || larva.state == PelagicLarvaeState.Settled) pelagicLarvaeCount -= 1
+  }
+
+  private def ageLarvae(larva: ReefFish): Unit = {
+    larva.age += timeStep
+  }
+
+  private def killCheck(larva: ReefFish): Unit = {
+    if (larva.attainedMaximumLifeSpan) larva.kill()
+  }
+
   private def settle(larva: ReefFish): Unit = {
     if (larva.attainedPld) {
       logger.debug("Reach its pld")
@@ -174,11 +166,13 @@ class LarvaeDisperser(params: io.config.Configuration) {
       if (reefIndex != Constants.NoClosestReefFound) {
         logger.debug("Found reef")
         larva.settle(habitatMgr.getReef(reefIndex), currentTime)
-      } // else if() TODO: Implement the buffer
-      else if (larva.attainedMaximumLifeSpan) larva.kill()
-
-      if (larva.state == PelagicLarvaeState.Dead || larva.state == PelagicLarvaeState.Settled) pelagicLarvaeCount -= 1
-
+      } else if (habitatMgr.isBuffered && habitatMgr.isCoordinateOverBuffer(larva.position)) {
+        val reefIndex = habitatMgr.getIndexOfNearestReef(larva.position)
+        if (reefIndex != Constants.NoClosestReefFound) {
+          logger.debug("Found buffer")
+          larva.settle(habitatMgr.getReef(reefIndex), currentTime)
+        }
+      }
     }
   }
 
