@@ -7,6 +7,7 @@ import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logger
 import io.config.ConfigMappings._
 import io.config.Configuration
+import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.{Constants, PelagicLarvaeState}
 import maths.RandomNumberGenerator
 import physical.habitat.HabitatManager
@@ -28,7 +29,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
   var fishLarvae: ListBuffer[List[ReefFish]] = ListBuffer.empty
   var pelagicLarvaeCount = 0
-  var startRun: DateTime = null
+  //var startRun: DateTime = null
 
   def apply(iteration: Int, disperser: ParticleDisperser): Unit = {
     calculateMortalityRate(iteration)
@@ -50,12 +51,13 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
       ageLarvae(larva)
       killCheck(larva)
       settle(larva)
-      updateActiveLarvaeCount(larva)
+      updateActiveLarvaeCount(larva.state)
     }
   }
 
-  private def updateActiveLarvaeCount(larva: ReefFish): Unit = {
-    if (larva.state == PelagicLarvaeState.Dead || larva.state == PelagicLarvaeState.Settled) pelagicLarvaeCount -= 1
+  private def updateActiveLarvaeCount(state: PelagicLarvaeState): Unit = {
+    if (state == PelagicLarvaeState.Dead || state == PelagicLarvaeState.Settled)
+      pelagicLarvaeCount -= 1
   }
 
   private def ageLarvae(larva: ReefFish): Unit = {
@@ -68,6 +70,9 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
 
   private def settle(larva: ReefFish): Unit = {
     if (larva.attainedPld) {
+      larva.kill()
+    }
+    else {
       logger.debug("Reach its pld")
       val reefIndex = habitatManager.isCoordinateOverReef(larva.position)
       if (reefIndex != Constants.NoClosestReefFound) {
@@ -102,6 +107,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
 
   private def spawnFish(sites: mutable.Buffer[SpawningLocation]) = {
     val freshLarvae = god.create(sites.toList)
+    pelagicLarvaeCount += freshLarvae.size
     freshLarvae.foreach(x => fishLarvae :: x)
     for (spawned <- freshLarvae) {
       fishLarvae += spawned.asInstanceOf[List[ReefFish]]
