@@ -8,8 +8,8 @@ import grizzled.slf4j._
 import io._
 import io.config.ConfigMappings._
 import locals.{Constants, PelagicLarvaeState}
+import maths.RandomNumberGenerator
 import maths.integration.RungeKuttaIntegration
-import org.apache.commons.math3.random.MersenneTwister
 import org.joda.time.Days
 import physical.Turbulence
 import physical.flow.FlowController
@@ -17,17 +17,16 @@ import physical.habitat.HabitatManager
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import scala.compat.Platform
 
 
 class LarvaeDisperser(params: io.config.Configuration) {
   require(params != null)
 
+  val randomNumbers = new RandomNumberGenerator(666)
   val god = new TheMaker(params.fish, false)
   val mortality = new MortalityDecay(params.fish.pelagicLarvalDuration.mean)
-  val random = new MersenneTwister(Platform.currentTime)
   val fish: Fish = params.fish
-  val flowController = new FlowController(params.flow)
+  val flowController = new FlowController(params.flow, randomNumbers)
   val spawn = new Spawn(params.spawn)
   val flowDataReader = new FlowReader(params.inputFiles, params.flow.depth)
   val startTime: DateTime = new DateTime(flowController.flow.period.start)
@@ -35,7 +34,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
   val totalDays: Int = Days.daysBetween(startTime, finishTime).getDays
   val timeStep = flowController.flow.timeStep.totalSeconds
   val turbulence: Turbulence = new Turbulence(Math.pow((2 * params.turbulence.horizontalDiffusionCoefficient) / timeStep, 0.5),
-    Math.pow((2 * params.turbulence.verticalDiffusionCoefficient) / timeStep, 0.5))
+    Math.pow((2 * params.turbulence.verticalDiffusionCoefficient) / timeStep, 0.5), randomNumbers)
   val logger = Logger(classOf[LarvaeDisperser])
   var habitatFile = new File(params.inputFiles.habitatFilePath)
   var habitatMgr: HabitatManager = new HabitatManager(habitatFile, params.habitat.buffer, Array("Reef", "Other"))
@@ -44,6 +43,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
   var pelagicLarvaeCount = 0
   var startRun: DateTime = null
   var output = params.output
+
 
   def run(): Unit = {
     startRun = DateTime.now
@@ -185,7 +185,7 @@ class LarvaeDisperser(params: io.config.Configuration) {
   }
 
   private def mortalityCheck(larva: ReefFish): Unit = {
-    if (fish.isMortal && random.nextDouble() < mortality.getRate) {
+    if (fish.isMortal && randomNumbers.get < mortality.getRate) {
       logger.debug("Killing larvae " + larva.id)
       larva.kill()
     }
