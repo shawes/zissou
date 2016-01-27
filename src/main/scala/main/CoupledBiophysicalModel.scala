@@ -25,7 +25,7 @@ class CoupledBiophysicalModel(val config: Configuration) {
     Math.pow((2 * turbulence.verticalDiffusionCoefficient) / flow.timeStep.totalSeconds, 0.5), randomNumbers)
   val ocean = new PhysicalModel(config, randomNumbers)
   val biology = new BiologicalModel(config, clock, randomNumbers)
-  val larvaeDisperser = new ParticleDisperser(new RungeKuttaIntegration(ocean.flowController, flow.timeStep.totalSeconds))
+  val larvaeDisperser = new ParticleDisperser(new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds))
 
   def run(): Unit = {
     val simulationStartTime = DateTime.now

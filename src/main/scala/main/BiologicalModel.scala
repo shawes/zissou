@@ -20,7 +20,6 @@ import scala.collection.mutable.ListBuffer
   */
 class BiologicalModel(val config: Configuration, clock: SimulationClock, randomNumbers: RandomNumberGenerator) {
 
-
   val god = new TheMaker(config.fish.pelagicLarvalDuration, false)
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val fish: Fish = config.fish
