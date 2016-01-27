@@ -5,7 +5,7 @@ import javax.xml.bind.{JAXBContext, JAXBException}
 
 import io.config.Configuration
 
-class ConfigurationFileWriter(config: Configuration, file: File) {
+class ConfigurationFileWriter(config: Configuration, file: File) extends FileWriterTrait {
 
   def write() {
     try {

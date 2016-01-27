@@ -20,13 +20,13 @@ class ResultsWriter(larvae: List[ReefFish], output: OutputFiles) extends FileWri
 
 
   private def writeLarvaeStateChangesToCsvFile() = {
-    val larvaeFileWriter = new LarvaeFileWriter()
+    val larvaeFileWriter = new LarvaeFileWriter(larvae, file)
     larvaeFileWriter.write()
     //larvaeFileWriter.writeExcelFile(fishLarvae.flatten, output.saveOutputFilePath)
   }
 
   private def writeDispersalKernel() = {
-    val dispersalKernelWriter = new DispersalKernelFileWriter(file, larvae)
+    val dispersalKernelWriter = new DispersalKernelFileWriter(larvae, file)
     dispersalKernelWriter.write()
   }
 

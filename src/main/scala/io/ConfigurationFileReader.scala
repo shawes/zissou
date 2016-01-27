@@ -8,7 +8,7 @@ import io.config.Configuration
 /**
   * Created by steve on 26/01/2016.
   */
-class ConfigurationFileReader {
+class ConfigurationFileReader extends FileReaderTrait {
 
   def read(file: File): Configuration = {
     try {
