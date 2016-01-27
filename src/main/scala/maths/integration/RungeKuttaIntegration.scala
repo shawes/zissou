@@ -4,16 +4,18 @@ import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logger
 import maths.Geometry
 import physical.flow.FlowController
-import physical.{GeoCoordinate, Velocity}
+import physical.{GeoCoordinate, Turbulence, Velocity}
 
-class RungeKuttaIntegration(FlowController: FlowController, timeStep: Int) {
+class RungeKuttaIntegration(FlowController: FlowController, turbulence: Turbulence, timeStep: Int) {
 
   val geometry = new Geometry
   val logger = Logger(classOf[RungeKuttaIntegration])
 
   def integrate(coordinate: GeoCoordinate, time: DateTime, speed: Double): GeoCoordinate = {
     logger.debug("Starting an RK4 integration")
-    val velocity = FlowController.getVelocityOfCoordinate(coordinate, isFuture = false)
+    val coordinateVelocity = FlowController.getVelocityOfCoordinate(coordinate, isFuture = false)
+
+    val velocity = turbulence.apply(coordinateVelocity)
 
     logger.debug("Got the velocity " + velocity + " at the location " + coordinate)
     logger.debug("Performing step 1")

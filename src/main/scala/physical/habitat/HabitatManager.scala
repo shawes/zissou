@@ -7,7 +7,6 @@ import com.vividsolutions.jts.geom.Point
 import grizzled.slf4j.Logger
 import io.HabitatFileReader
 import locals.Constants
-import org.geotools.data.FileDataStoreFinder
 import org.geotools.data.simple.SimpleFeatureCollection
 import org.geotools.factory.{CommonFactoryFinder, GeoTools}
 import org.opengis.feature.simple.SimpleFeature
@@ -18,7 +17,7 @@ import physical.adaptors.GeometryToGeoCoordinateAdaptor
 import scala.collection.mutable
 
 
-class HabitatManager(file: File, buffer: Buffer, habitatTypes: Array[String]) {
+class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]) {
 
   val habitatReader = new HabitatFileReader()
   val habitats: SimpleFeatureCollection = habitatReader.read(file)
@@ -27,6 +26,8 @@ class HabitatManager(file: File, buffer: Buffer, habitatTypes: Array[String]) {
   val logger = Logger(classOf[HabitatManager])
   private val habitatsHashTable = defineHashTable()
   var habitatList: util.ArrayList[HabitatPolygon] = new util.ArrayList()
+
+  def isBuffered: Boolean = buffer.isBuffered
 
   /*
   This method find the closest reef to the point returns null otherwise
@@ -63,6 +64,53 @@ class HabitatManager(file: File, buffer: Buffer, habitatTypes: Array[String]) {
     }
     Constants.NoClosestReefFound
   }
+
+  def isCoordinateOverBuffer(coordinate: GeoCoordinate): Boolean = {
+    val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
+    buffer.bufferShapes.exists(x => x.intersects(point))
+  }
+
+  def getIndexOfNearestReef(coordinate: GeoCoordinate): Int = {
+
+    var shortestDistance: Double = Double.MaxValue
+    var closestReefId: Int = Constants.NoClosestReefFound
+    val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
+
+    val shapes = filteredHabitats.features()
+    while (shapes.hasNext) {
+      val shape = shapes.next
+      val geometry = SimpleFeatureAdaptor.getGeometry(shape)
+      val centroid = geometry.getCentroid
+      val distance = geometry.distance(point)
+      if (distance < buffer.size && distance < shortestDistance) {
+        shortestDistance = distance
+        closestReefId = SimpleFeatureAdaptor.getId(shape)
+      }
+    }
+    closestReefId
+  }
+
+  /*
+          public int GetIndexOfNearestReef(GeoCoordinate c)
+        {
+            var geometry = new Geometry();
+            double shortestDistance = Double.MaxValue;
+            int closestReefId = Constants.NoClosestReefFound;
+            foreach (ShapeRange reef in reefs)
+            {
+                var centroid = new GeoCoordinate(reef.Extent.Center.Y, reef.Extent.Center.Y);
+                double distance = geometry.GetDistanceBetweenTwoPoints(c, centroid);
+                if (distance < buffer.BufferSize && distance < shortestDistance)
+                {
+                    shortestDistance = distance;
+                    closestReefId = reef.RecordNumber;
+                }
+            }
+            return closestReefId;
+
+        }
+   */
+
 
   private def filterHabitats: SimpleFeatureCollection = {
     //val filterFactory = CQL.toFilter("HABITAT = 'REEF'")

@@ -1,17 +1,15 @@
 package physical
 
-import org.apache.commons.math3.random.MersenneTwister
+import maths.RandomNumberGenerator
 
-import scala.compat.Platform
 
-class Turbulence(val horizontalDiffusionCoefficient: Double, val verticalDiffusionCoefficient: Double) {
-  var random = new MersenneTwister(Platform.currentTime)
+class Turbulence(val horizontalDiffusionCoefficient: Double, val verticalDiffusionCoefficient: Double, val randomNumbers: RandomNumberGenerator) {
 
-  def this() = this(0, 0)
+  def this() = this(0, 0, new RandomNumberGenerator(0))
 
   def apply(v: Velocity): Velocity = {
-    val horizontalTurbulence = horizontalDiffusionCoefficient * random.nextDouble()
-    val verticalTurbulence = verticalDiffusionCoefficient * random.nextDouble()
+    val horizontalTurbulence = horizontalDiffusionCoefficient * randomNumbers.get
+    val verticalTurbulence = verticalDiffusionCoefficient * randomNumbers.get
     new Velocity(v.u + horizontalTurbulence, v.v + horizontalTurbulence, v.w + verticalTurbulence)
   }
 

@@ -4,14 +4,14 @@ import com.github.nscala_time.time.Imports._
 import grizzled.slf4j._
 import io.FlowReader
 import locals.Constants
+import maths.RandomNumberGenerator
 import maths.interpolation.Interpolator
-import org.apache.commons.math3.random.MersenneTwister
 import physical.{GeoCoordinate, Velocity}
 
 import scala.collection.mutable
-import scala.compat.Platform
 
-class FlowController(var flow: Flow) {
+
+class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) {
 
   val SizeOfQueue = 2
   val flowDataQueue = mutable.Queue.empty[Array[FlowPolygon]]
@@ -94,9 +94,9 @@ class FlowController(var flow: Flow) {
   }
 
   def bumpCoordinate(coordinate: GeoCoordinate): GeoCoordinate = {
-    val random = new MersenneTwister(Platform.currentTime.toInt)
-    new GeoCoordinate(coordinate.latitude + (random.nextDouble() * Constants.MaxLatitudeShift),
-      coordinate.longitude + (random.nextDouble() * Constants.MaxLongitudeShift), coordinate.depth)
+    //val random = new MersenneTwister(Platform.currentTime.toInt)
+    new GeoCoordinate(coordinate.latitude + (randomNumbers.get * Constants.MaxLatitudeShift),
+      coordinate.longitude + (randomNumbers.get * Constants.MaxLongitudeShift), coordinate.depth)
   }
 
   def refresh(polygons: Array[FlowPolygon]) {

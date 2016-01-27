@@ -1,17 +1,16 @@
 package io
 
-import java.io.{BufferedWriter, File, FileWriter}
+import java.io.{BufferedWriter, File}
 
 import biology.Larva
 
-class DispersalKernelFileWriter(filename: String, larvae: List[Larva]) {
+class DispersalKernelFileWriter(larvae: List[Larva], csvFile: File) extends FileWriterTrait {
 
   /**
    * Writes the dispersal kernel to a CSV file.
    */
-  def writeDispersalKernelToCsv(): Unit = {
-    val csvFile = new File(filename)
-    val bw = new BufferedWriter(new FileWriter(csvFile))
+  def write(): Unit = {
+    val bw = new BufferedWriter(new java.io.FileWriter(csvFile))
     bw.write(columnHeaders)
     bw.newLine()
     larvae.find(l => (l != null) && l.hasSettled).foreach(l => bw.write(getCsvLarvaRow(l)))
@@ -20,7 +19,8 @@ class DispersalKernelFileWriter(filename: String, larvae: List[Larva]) {
 
   /**
    * Writes a row for the larva to the CSV file
-   * @param larva The larva to write
+    *
+    * @param larva The larva to write
    *
    *              Prints a row for each larva containing the:
    *              - Id

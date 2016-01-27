@@ -8,7 +8,7 @@ import org.geotools.data.simple.SimpleFeatureCollection
 /**
   * Created by steve on 25/01/2016.
   */
-class HabitatFileReader() {
+class HabitatFileReader() extends FileReaderTrait {
 
   def read(file : File): SimpleFeatureCollection = {
     val store = FileDataStoreFinder.getDataStore(file)

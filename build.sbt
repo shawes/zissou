@@ -77,6 +77,5 @@ libraryDependencies := {
 
 resolvers ++= Seq(
   "OpenGeo Maven Repository" at "http://repo.opengeo.org",
-  "Open Source Geospatial Foundation Repository" at "http://download.osgeo.org/webdav/geotools/",
-  "Artima Maven Repository" at "http://repo.artima.com/releases"
+  "Open Source Geospatial Foundation Repository" at "http://download.osgeo.org/webdav/geotools/"
 )

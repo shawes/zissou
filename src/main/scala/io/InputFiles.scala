@@ -18,4 +18,5 @@ class InputFiles(val flowFilePath: String, val habitatFilePath: String, val flow
     new DateTime(splitOnHyphen(2).toInt, splitOnHyphen(1).toInt, splitOnHyphen(0).toInt, 0, 0, 0, 0)
 
   }
+
 }
