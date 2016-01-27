@@ -1,15 +1,14 @@
 package biology
 
 import grizzled.slf4j._
-import io.config.FishConfig
+import io.config.PelagicLarvalDurationConfig
 import locals.PelagicLarvaeState
 import org.apache.commons.math3.distribution.NormalDistribution
 
 import scala.collection.mutable.ListBuffer
 
-class TheMaker(parameters: FishConfig, save: Boolean) {
-  val distribution = new NormalDistribution(parameters.pelagicLarvalDuration.mean,
-    parameters.pelagicLarvalDuration.stdev)
+class TheMaker(pld: PelagicLarvalDurationConfig, save: Boolean) {
+  val distribution = new NormalDistribution(pld.mean, pld.stdev)
   val spawningFish: LarvaConcreteFactory = new LarvaConcreteFactory
   val logger = Logger(classOf[TheMaker])
   var larvaeCount: Int = 0
