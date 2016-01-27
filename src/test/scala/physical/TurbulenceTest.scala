@@ -14,14 +14,15 @@ class TurbulenceTest extends FlatSpec with MockitoSugar with PrivateMethodTester
 
   it should "initialise to zero with no parameters" in {
     val turbulence = new Turbulence()
-    assert(turbulence.horizontalDiffusionCoefficient == 0)
-    assert(turbulence.verticalDiffusionCoefficient == 0)
+    turbulence.horizontalDiffusionCoefficient should equal(0)
+    turbulence.verticalDiffusionCoefficient should equal(0)
+
   }
 
   it should "initialise to passed parameters" in {
     val turbulence = new Turbulence(2, 3)
-    assert(turbulence.horizontalDiffusionCoefficient == 2)
-    assert(turbulence.verticalDiffusionCoefficient == 3)
+    turbulence.horizontalDiffusionCoefficient should equal(2)
+    turbulence.verticalDiffusionCoefficient should equal(3)
   }
 
   it should "apply equal vertical & horizontal coefficients" in {
