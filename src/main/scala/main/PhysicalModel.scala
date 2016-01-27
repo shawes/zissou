@@ -1,18 +1,20 @@
 package main
 
 import grizzled.slf4j.Logger
-import io.{FlowReader, InputFiles}
+import io.FlowReader
+import io.config.ConfigMappings._
+import io.config.Configuration
 import maths.RandomNumberGenerator
-import physical.flow.{Flow, FlowController}
+import physical.flow.FlowController
 
 /**
   * Created by steve on 27/01/2016.
   */
-class PhysicalModel(val flow: Flow, val flowFiles: InputFiles, randomNumbers: RandomNumberGenerator) {
+class PhysicalModel(val config: Configuration, randomNumbers: RandomNumberGenerator) {
 
   val logger = Logger(classOf[PhysicalModel])
-  val flowDataReader = new FlowReader(flowFiles, flow.depth)
-  val flowController = new FlowController(flow, randomNumbers)
+  val flowDataReader = new FlowReader(config.inputFiles, config.flow.depth)
+  val flowController = new FlowController(config.flow, randomNumbers)
 
 
   def initialise(): Unit = {

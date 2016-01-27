@@ -5,9 +5,8 @@ import java.io.File
 import biology._
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logger
-import io.InputFiles
 import io.config.ConfigMappings._
-import io.config.{FishConfig, HabitatConfig, SpawnConfig}
+import io.config.Configuration
 import locals.{Constants, PelagicLarvaeState}
 import maths.RandomNumberGenerator
 import physical.habitat.HabitatManager
@@ -19,15 +18,15 @@ import scala.collection.mutable.ListBuffer
   *
   * Created by Steven Hawes on 27/01/2016.
   */
-class BiologicalModel(fishConfig: FishConfig, spawnConfig: SpawnConfig, inputFiles: InputFiles,
-                      habitat: HabitatConfig, clock: SimulationClock, randomNumbers: RandomNumberGenerator) {
+class BiologicalModel(val config: Configuration, clock: SimulationClock, randomNumbers: RandomNumberGenerator) {
 
-  val god = new TheMaker(fishConfig.pelagicLarvalDuration, false)
-  val mortality = new MortalityDecay(fishConfig.pelagicLarvalDuration.mean)
-  val fish: Fish = fishConfig
-  val spawn = new Spawn(spawnConfig)
+
+  val god = new TheMaker(config.fish.pelagicLarvalDuration, false)
+  val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
+  val fish: Fish = config.fish
+  val spawn = new Spawn(config.spawn)
   val logger = Logger(classOf[BiologicalModel])
-  var habitatManager: HabitatManager = new HabitatManager(new File(inputFiles.habitatFilePath), habitat.buffer, Array("Reef", "Other"))
+  var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
   var fishLarvae: ListBuffer[List[ReefFish]] = ListBuffer.empty
   var pelagicLarvaeCount = 0
   var startRun: DateTime = null
@@ -94,7 +93,7 @@ class BiologicalModel(fishConfig: FishConfig, spawnConfig: SpawnConfig, inputFil
 
   def calculateMortalityRate(iteration: Int) = mortality.calculateMortalityRate(iteration)
 
-  def spawnLarvae() = {
+  def spawnLarvae(): Unit = {
     val spawningSites = spawn.getSitesWhereFishAreSpawning(clock.now)
     if (spawningSites.nonEmpty) {
       logger.debug("Found non-empty spawning site")
