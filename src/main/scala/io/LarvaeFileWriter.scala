@@ -4,7 +4,7 @@ import java.io.{BufferedWriter, File}
 
 import biology.Larva
 
-class LarvaeFileWriter(larvae: List[Larva], file : File) extends FileWriterTrait {
+class LarvaeFileWriter(larvae: List[Larva], file: File) extends FileWriterTrait {
 
   val columnHeaders = "id,born,age,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
 
@@ -16,7 +16,7 @@ class LarvaeFileWriter(larvae: List[Larva], file : File) extends FileWriterTrait
     bw.close()
   }
 
-  private def writeCsvRow(larva : Larva) : String = {
+  private def writeCsvRow(larva: Larva): String = {
     var distance = 0
     val sb = new StringBuilder()
     larva.history.foreach(hist => {

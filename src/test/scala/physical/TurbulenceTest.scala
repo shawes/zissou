@@ -1,6 +1,6 @@
 package physical
 
-import org.apache.commons.math3.random.MersenneTwister
+import maths.RandomNumberGenerator
 import org.mockito.Mockito._
 import org.scalatest.Matchers._
 import org.scalatest.mock.MockitoSugar
@@ -20,16 +20,15 @@ class TurbulenceTest extends FlatSpec with MockitoSugar with PrivateMethodTester
   }
 
   it should "initialise to passed parameters" in {
-    val turbulence = new Turbulence(2, 3)
+    val turbulence = new Turbulence(2, 3, new RandomNumberGenerator(0))
     turbulence.horizontalDiffusionCoefficient should equal(2)
     turbulence.verticalDiffusionCoefficient should equal(3)
   }
 
   it should "apply equal vertical & horizontal coefficients" in {
-    val turbulence = new Turbulence(2, 2)
-    val mockRandom = mock[MersenneTwister]
-    when(mockRandom.nextDouble()).thenReturn(1)
-    turbulence.random = mockRandom
+    val mockRandom = mock[RandomNumberGenerator]
+    when(mockRandom.get).thenReturn(1)
+    val turbulence = new Turbulence(2, 2, mockRandom)
     val velocity = new Velocity(1, 2, 3)
     val result = turbulence.apply(velocity)
 
@@ -39,10 +38,9 @@ class TurbulenceTest extends FlatSpec with MockitoSugar with PrivateMethodTester
   }
 
   it should "apply different vertical & horizontal coefficients" in {
-    val turbulence = new Turbulence(2, 3)
-    val mockRandom = mock[MersenneTwister]
-    when(mockRandom.nextDouble()).thenReturn(2)
-    turbulence.random = mockRandom
+    val mockRandom = mock[RandomNumberGenerator]
+    when(mockRandom.get).thenReturn(2)
+    val turbulence = new Turbulence(2, 3, mockRandom)
     val velocity = new Velocity(1, 2, 3)
     val result = turbulence.apply(velocity)
 
