@@ -18,6 +18,7 @@ object Simulator extends App {
     //    val config = configFileWriter.read(chooser.selectedFile)
 
     val config = configFileReader.read(new File("/Users/Steven/Documents/University/Phd/Modelling/Testing/Scala Conversion/test_config.xml"))
+    logger.debug("Config is read successfully")
     val model = new CoupledBiophysicalModel(config)
     model.run()
 

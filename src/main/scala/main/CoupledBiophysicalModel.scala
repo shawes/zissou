@@ -21,11 +21,12 @@ class CoupledBiophysicalModel(val config: Configuration) {
   val flow: Flow = config.flow
   val clock = new SimulationClock(flow.period, flow.timeStep)
   val randomNumbers = new RandomNumberGenerator(666)
-  val turbulence: Turbulence = new Turbulence(Math.pow((2 * turbulence.horizontalDiffusionCoefficient) / flow.timeStep.totalSeconds, 0.5),
-    Math.pow((2 * turbulence.verticalDiffusionCoefficient) / flow.timeStep.totalSeconds, 0.5), randomNumbers)
+  val turbulence: Turbulence = new Turbulence(Math.pow((2 * config.turbulence.horizontalDiffusionCoefficient) / flow.timeStep.totalSeconds, 0.5),
+    Math.pow((2 * config.turbulence.verticalDiffusionCoefficient) / flow.timeStep.totalSeconds, 0.5), randomNumbers)
   val ocean = new PhysicalModel(config, randomNumbers)
   val biology = new BiologicalModel(config, clock, randomNumbers)
-  val larvaeDisperser = new ParticleDisperser(new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds))
+  val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)
+  val larvaeDisperser = new ParticleDisperser(integrator)
 
   def run(): Unit = {
     val simulationStartTime = DateTime.now

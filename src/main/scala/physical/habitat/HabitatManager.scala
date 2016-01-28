@@ -15,6 +15,7 @@ import physical.GeoCoordinate
 import physical.adaptors.GeometryToGeoCoordinateAdaptor
 
 import scala.collection.mutable
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 
 class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]) {
@@ -24,8 +25,8 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   val filteredHabitats: SimpleFeatureCollection = filterHabitats
   //private val habitatsHashTable = new collection.mutable.HashMap[Int, HabitatPolygon]
   val logger = Logger(classOf[HabitatManager])
+  val habitatList = ArrayBuffer.empty[HabitatPolygon]
   private val habitatsHashTable = defineHashTable()
-  var habitatList: util.ArrayList[HabitatPolygon] = new util.ArrayList()
 
   def isBuffered: Boolean = buffer.isBuffered
 
@@ -143,7 +144,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
         val habitatType = SimpleFeatureAdaptor.getHabitatType(shape)
         val habitatPolygon = new GeometryAdaptor(geometry, id, habitatType) with HabitatPolygonToJtsGeometryAdaptor with HabitatPolygon
         hash.put(id, habitatPolygon)
-        habitatList.add(habitatPolygon.asInstanceOf[HabitatPolygon])
+        habitatList += habitatPolygon.asInstanceOf[HabitatPolygon]
       }
     } finally {
       shapes.close()

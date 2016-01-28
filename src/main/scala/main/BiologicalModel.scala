@@ -34,20 +34,16 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   def apply(iteration: Int, disperser: ParticleDisperser): Unit = {
     calculateMortalityRate(iteration)
     spawnLarvae()
-    fishLarvae.foreach(fish => moveLarvae(fish, disperser))
+    fishLarvae.foreach(fish => processLarva(fish, disperser))
   }
 
-  private def moveLarvae(larvae: List[ReefFish], disperser: ParticleDisperser): Unit = {
+  private def processLarva(larvae: List[ReefFish], disperser: ParticleDisperser): Unit = {
 
     val swimmingLarvae: List[ReefFish] = larvae.filter(x => x.canMove)
 
     for (larva <- swimmingLarvae) {
       mortalityCheck(larva)
-      if (fish.canSwim) {
-        disperser.updatePosition(larva, clock, fish.swimmingSpeed)
-      } else {
-        disperser.updatePosition(larva, clock)
-      }
+      move(disperser, larva)
       ageLarvae(larva)
       killCheck(larva)
       settle(larva)
@@ -55,9 +51,18 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
     }
   }
 
+  private def move(disperser: ParticleDisperser, larva: ReefFish): Unit = {
+    if (fish.canSwim) {
+      disperser.updatePosition(larva, clock, fish.swimmingSpeed)
+    } else {
+      disperser.updatePosition(larva, clock)
+    }
+  }
+
   private def updateActiveLarvaeCount(state: PelagicLarvaeState): Unit = {
-    if (state == PelagicLarvaeState.Dead || state == PelagicLarvaeState.Settled)
+    if (state == PelagicLarvaeState.Dead || state == PelagicLarvaeState.Settled) {
       pelagicLarvaeCount -= 1
+    }
   }
 
   private def ageLarvae(larva: ReefFish): Unit = {
@@ -71,8 +76,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   private def settle(larva: ReefFish): Unit = {
     if (larva.attainedPld) {
       larva.kill()
-    }
-    else {
+    } else {
       logger.debug("Reach its pld")
       val reefIndex = habitatManager.isCoordinateOverReef(larva.position)
       if (reefIndex != Constants.NoClosestReefFound) {
@@ -88,16 +92,16 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
     }
   }
 
-  def mortalityCheck(larva: ReefFish): Unit = {
+  private def mortalityCheck(larva: ReefFish): Unit = {
     if (fish.isMortal && randomNumbers.get < mortality.getRate) {
       logger.debug("Killing larvae " + larva.id)
       larva.kill()
     }
   }
 
-  def calculateMortalityRate(iteration: Int) = mortality.calculateMortalityRate(iteration)
+  private def calculateMortalityRate(iteration: Int) = mortality.calculateMortalityRate(iteration)
 
-  def spawnLarvae(): Unit = {
+  private def spawnLarvae(): Unit = {
     val spawningSites = spawn.getSitesWhereFishAreSpawning(clock.now)
     if (spawningSites.nonEmpty) {
       logger.debug("Found non-empty spawning site")
