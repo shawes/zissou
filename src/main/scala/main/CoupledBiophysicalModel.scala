@@ -1,7 +1,7 @@
 package main
 
 import com.github.nscala_time.time.Imports._
-import grizzled.slf4j.Logger
+import grizzled.slf4j.Logging
 import io.ResultsWriter
 import io.config.ConfigMappings._
 import io.config.Configuration
@@ -11,16 +11,20 @@ import org.joda.time.Duration
 import physical.Turbulence
 import physical.flow.Flow
 
+import scala.compat.Platform
+
 /**
   *
   * Created by Steven Hawes on 27/01/2016.
   */
-class CoupledBiophysicalModel(val config: Configuration) {
+class CoupledBiophysicalModel(val config: Configuration) extends Logging {
 
-  val logger = Logger(classOf[CoupledBiophysicalModel])
+  //val logger = Logger(classOf[CoupledBiophysicalModel])
   val flow: Flow = config.flow
   val clock = new SimulationClock(flow.period, flow.timeStep)
-  val randomNumbers = new RandomNumberGenerator(666)
+  val randomSeed: Long = Platform.currentTime
+  info("The random number seed is :" + randomSeed)
+  val randomNumbers = new RandomNumberGenerator(randomSeed)
   val turbulence: Turbulence = new Turbulence(Math.pow((2 * config.turbulence.horizontalDiffusionCoefficient) / flow.timeStep.totalSeconds, 0.5),
     Math.pow((2 * config.turbulence.verticalDiffusionCoefficient) / flow.timeStep.totalSeconds, 0.5), randomNumbers)
   val ocean = new PhysicalModel(config, randomNumbers)

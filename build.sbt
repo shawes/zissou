@@ -8,9 +8,6 @@ crossScalaVersions := Seq("2.11.1", "2.10.3")
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:implicitConversions")
 
-Seq(bintrayResolverSettings: _*)
-
-
 
 // test
 libraryDependencies ++= Seq(
@@ -55,11 +52,11 @@ libraryDependencies ++= Seq(
 )
 
 //logging
+
 libraryDependencies ++= Seq(
-  //"ch.qos.logback" % "logback-classic" % "1.1.2",
-  "org.clapper" %% "grizzled-scala" % "1.4.0",
   "org.clapper" %% "grizzled-slf4j" % "1.0.2",
-  "org.clapper" %% "avsl" % "1.0.2"
+  "org.slf4j" % "slf4j-api" % "1.7.14",
+  "org.slf4j" % "slf4j-simple" % "1.7.14"
 )
 
 

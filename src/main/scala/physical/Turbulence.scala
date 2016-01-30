@@ -2,7 +2,6 @@ package physical
 
 import maths.RandomNumberGenerator
 
-
 class Turbulence(val horizontalDiffusionCoefficient: Double, val verticalDiffusionCoefficient: Double, val randomNumbers: RandomNumberGenerator) {
 
   def this() = this(0, 0, new RandomNumberGenerator(0))

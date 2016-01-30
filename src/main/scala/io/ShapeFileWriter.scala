@@ -5,9 +5,11 @@ import java.util
 
 import biology.{Larva, TimeCapsule}
 import com.vividsolutions.jts.geom.{Coordinate, LineString, Point}
+import locals.ShapeFileType
 import locals.ShapeFileType._
-import locals.{PelagicLarvaeState, ShapeFileType}
-import org.geotools.data.DefaultTransaction
+import org.geotools.data.{DataStore, DefaultTransaction}
+
+//import org.geotools.data.{DataStore, DefaultTransaction}
 import org.geotools.data.collection.ListFeatureCollection
 import org.geotools.data.shapefile.{ShapefileDataStore, ShapefileDataStoreFactory}
 import org.geotools.data.simple.SimpleFeatureStore
@@ -56,7 +58,7 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
     }
   }
 
-  private def writeFeaturesToShapeFile(features: util.ArrayList[SimpleFeature], dataStore: ShapefileDataStore): Unit = {
+  private def writeFeaturesToShapeFile(features: util.ArrayList[SimpleFeature], dataStore: DataStore): Unit = {
     val transaction = new DefaultTransaction("create")
     val typeName: String = dataStore.getTypeNames()(0)
     val featureSource = dataStore.getFeatureSource(typeName)
@@ -78,9 +80,11 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
     val features = new java.util.ArrayList[SimpleFeature]
     val featureBuilder = new SimpleFeatureBuilder(createLineSchema())
     larvae.foreach(l => l.history.foreach(hist => addPointFeature(featureBuilder, l.id, hist)))
-    val dataStoreFactory = new ShapefileDataStoreFactory()
+    val dataStoreFactory: ShapefileDataStoreFactory = new ShapefileDataStoreFactory()
+
     val params = createParams(file)
-    val newDataStore = dataStoreFactory.createNewDataStore(params).asInstanceOf[ShapefileDataStore]
+    val newDataStore = dataStoreFactory.createNewDataStore(params)
+    // val newShapeFileDataStore : ShapefileDataStore = newDataStore
     newDataStore.createSchema(createPointSchema())
     writeFeaturesToShapeFile(features, newDataStore)
   }
@@ -95,7 +99,7 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
   private def addPointFeature(featureBuilder: SimpleFeatureBuilder, id: Int, time: TimeCapsule): SimpleFeature = {
     featureBuilder.add(id)
     featureBuilder.add(GeometryToGeoCoordinateAdaptor.toPoint(time.position))
-    featureBuilder.add(time.state == PelagicLarvaeState.Settled)
+    //featureBuilder.add(time.state == PelagicLarvaeState.Settled)
     featureBuilder.buildFeature(null)
   }
 
@@ -109,19 +113,19 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
 
   private def createPointSchema(): SimpleFeatureType = {
     val schema = new SimpleFeatureTypeBuilder()
-    schema.setName("Location")
+    schema.setName("LarvaePaths")
     schema.setCRS(DefaultGeographicCRS.WGS84)
-    schema.add("id", Int.getClass)
+    schema.add("id", classOf[Integer])
     schema.add("location", classOf[Point])
-    schema.add("settled", Boolean.getClass)
+    //schema.add("settled", classOf[java.lang.Boolean])
     schema.buildFeatureType()
   }
 
   private def createLineSchema(): SimpleFeatureType = {
     val schema = new SimpleFeatureTypeBuilder()
-    schema.setName("Path")
+    schema.setName("LarvaePaths")
     schema.setCRS(DefaultGeographicCRS.WGS84)
-    schema.add("id", Int.getClass)
+    schema.add("id", classOf[Integer])
     schema.add("path", classOf[LineString])
     schema.buildFeatureType()
   }

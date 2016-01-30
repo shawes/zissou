@@ -1,7 +1,7 @@
 package physical.flow
 
 import com.github.nscala_time.time.Imports._
-import grizzled.slf4j._
+import grizzled.slf4j.Logging
 import io.FlowReader
 import locals.Constants
 import maths.RandomNumberGenerator
@@ -11,11 +11,10 @@ import physical.{GeoCoordinate, Velocity}
 import scala.collection.mutable
 
 
-class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) {
+class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) extends Logging {
 
   val SizeOfQueue = 2
   val flowDataQueue = mutable.Queue.empty[Array[FlowPolygon]]
-  val logger = Logger(classOf[FlowController])
   val interpolator = new Interpolator(flow)
 
 
@@ -48,23 +47,23 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) {
 
     try {
       index = getIndexOfPolygon(coordinate)
-      logger.debug("Found the index " + index)
+      debug("Found the index " + index)
       //logger.debug("flow lr")
       //val polygon = flowPolygons(index)
     } catch {
       case e: IllegalArgumentException =>
-        logger.warn("Have to bump the coordinate " + coordinate)
+        warn("Have to bump the coordinate " + coordinate)
         val bumpedCoordinate = bumpCoordinate(coordinate)
 
         try {
           index = getIndexOfPolygon(bumpedCoordinate)
         } catch {
           case e: IllegalArgumentException =>
-            logger.error("The coordinate " + bumpedCoordinate + " is not in the flow field")
+            error("The coordinate " + bumpedCoordinate + " is not in the flow field")
             return new Velocity()
         }
     }
-    logger.debug("The velocity is " + flowPolygons(index).velocity)
+    debug("The velocity is " + flowPolygons(index).velocity)
     //val velocity = flowPolygons(index).velocity
     interpolator.interpolate(coordinate, flowPolygons, index)
 
@@ -100,24 +99,24 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) {
   }
 
   def refresh(polygons: Array[FlowPolygon]) {
-    logger.debug("Refreshing the queue")
+    debug("Refreshing the queue")
     if (flowDataQueue.nonEmpty) {
-      logger.debug("Queue size is " + flowDataQueue.size + "before dequeuing")
+      debug("Queue size is " + flowDataQueue.size + "before dequeuing")
       flowDataQueue.dequeue()
-      logger.debug("Queue size is " + flowDataQueue.size + "and after dequeuing")
+      debug("Queue size is " + flowDataQueue.size + "and after dequeuing")
     }
     flowDataQueue += polygons
-    logger.debug("Queue size is " + flowDataQueue.size + "and after enqueuing")
+    debug("Queue size is " + flowDataQueue.size + "and after enqueuing")
   }
 
   def initialiseFlow(reader: FlowReader) {
     for (i <- 0 until SizeOfQueue) {
-      logger.debug("Reading the first flow data")
-      System.out.println("started reading flow queue")
+      debug("Reading the first flow data")
+      debug("started reading flow queue")
       val start = DateTime.now
       if (reader.hasNext) flowDataQueue += reader.next()
       val seconds = DateTime.now.getSecondOfDay - start.getSecondOfDay
-      System.out.println("finished reading in " + seconds + " seconds")
+      debug("finished reading in " + seconds + " seconds")
     }
     flow = reader.flow
     interpolator.flow = flow

@@ -1,6 +1,6 @@
 package maths.interpolation
 
-import grizzled.slf4j.Logger
+import grizzled.slf4j.Logging
 import maths.interpolation.cubic.BicubicInterpolator
 import maths.interpolation.linear.BilinearInterpolator
 import physical.flow.{Flow, FlowPolygon}
@@ -8,24 +8,22 @@ import physical.{GeoCoordinate, Velocity}
 
 import scala.collection.mutable.ArrayBuffer
 
-class Interpolator(var flow: Flow) {
-
-  val logger = Logger(classOf[Interpolator])
+class Interpolator(var flow: Flow) extends Logging {
 
   def interpolate(coordinate: GeoCoordinate, polygons: Array[FlowPolygon], index: Int): Velocity = {
-    logger.debug("Interpolating the coordinate " + coordinate)
+    debug("Interpolating the coordinate " + coordinate)
     val polygon = polygons(index)
-    logger.debug("Retrieved the polygon " + polygon.id)
+    debug("Retrieved the polygon " + polygon.id)
     val latitudeDisplacement = (coordinate.latitude - polygon.vertices(0).latitude) * (1.0 / flow.grid.cell.height) + 1.0
     val longitudeDisplacement = (coordinate.longitude - polygon.vertices(0).longitude) * (1.0 / flow.grid.cell.width) + 1.0
-    logger.debug("Latitude displacement = " + latitudeDisplacement + ", longitude displacement = " + longitudeDisplacement)
+    debug("Latitude displacement = " + latitudeDisplacement + ", longitude displacement = " + longitudeDisplacement)
 
     var result = bicubicInterpolation(polygons, index, longitudeDisplacement, latitudeDisplacement)
-    logger.debug("Bi-cubic interpolation = " + result._2)
+    debug("Bi-cubic interpolation = " + result._2)
 
     if (!result._1) {
       result = bilinearInterpolation(polygons, index, longitudeDisplacement, latitudeDisplacement)
-      logger.debug("Bi-linear interpolation = " + result._2)
+      debug("Bi-linear interpolation = " + result._2)
     }
     result._2
 

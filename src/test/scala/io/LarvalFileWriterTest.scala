@@ -11,7 +11,6 @@ import org.scalatest.{FlatSpec, PrivateMethodTester}
   */
 class LarvalFileWriterTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
-
   "The larval file writer" should "initialise with nulls" in {
     val larvalFileWriter = new LarvaeFileWriter(null, null)
     larvalFileWriter should not be null
@@ -30,14 +29,5 @@ class LarvalFileWriterTest extends FlatSpec with MockitoSugar with PrivateMethod
     val result = larvalFileWriter.columnHeaders
     result should equal(headers)
   }
-
-  it should "have the following column headers" in {
-    val headers = "id,born,age,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
-    val mockFile = mock[File]
-    val larvalFileWriter = new LarvaeFileWriter(Nil, mockFile)
-    val result = larvalFileWriter.columnHeaders
-    result should equal(headers)
-  }
-
 
 }

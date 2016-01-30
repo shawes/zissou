@@ -4,32 +4,32 @@ import grizzled.slf4j._
 import io.config.PelagicLarvalDurationConfig
 import locals.PelagicLarvaeState
 import org.apache.commons.math3.distribution.NormalDistribution
+import org.joda.time.DateTime
 
 import scala.collection.mutable.ListBuffer
 
-class TheMaker(pld: PelagicLarvalDurationConfig, save: Boolean) {
+class TheMaker(pld: PelagicLarvalDurationConfig, save: Boolean) extends Logging {
   val distribution = new NormalDistribution(pld.mean, pld.stdev)
   val spawningFish: LarvaConcreteFactory = new LarvaConcreteFactory
-  val logger = Logger(classOf[TheMaker])
   var larvaeCount: Int = 0
 
 
-  def create(sites: List[SpawningLocation]): List[List[Larva]] = {
+  def create(sites: List[SpawningLocation], time: DateTime): List[List[Larva]] = {
     val larvae: ListBuffer[List[Larva]] = ListBuffer.empty
 
     for (site <- sites) {
-      logger.debug("Site found is " + site.toString)
+      debug("Site found is " + site.toString)
       val larvaeAtSite = new ListBuffer[Larva]
       for (i <- 0 until site.numberOfLarvae) {
         larvaeCount += 1
         val pld: Double = distribution.sample
-        logger.debug("The pld is " + pld)
+        debug("The pld is " + pld)
         larvaeAtSite += spawningFish.createReefFish(larvaeCount, convertDaysToSeconds(pld), 0,
-          new Birthplace(site.title, site.site), PelagicLarvaeState.Pelagic)
+          new Birthplace(site.title, site.site), PelagicLarvaeState.Pelagic, time)
         //Logger.info(larvaeAtSite(i).toString)
       }
       larvae += larvaeAtSite.toList
-      logger.debug("Larvae size is now: " + larvaeCount)
+      debug("Larvae size is now: " + larvaeCount)
     }
     larvae.toList
   }

@@ -4,7 +4,7 @@ import java.io.File
 
 import biology._
 import com.github.nscala_time.time.Imports._
-import grizzled.slf4j.Logger
+import grizzled.slf4j.Logging
 import io.config.ConfigMappings._
 import io.config.Configuration
 import locals.PelagicLarvaeState.PelagicLarvaeState
@@ -19,13 +19,13 @@ import scala.collection.mutable.ListBuffer
   *
   * Created by Steven Hawes on 27/01/2016.
   */
-class BiologicalModel(val config: Configuration, clock: SimulationClock, randomNumbers: RandomNumberGenerator) {
+class BiologicalModel(val config: Configuration, clock: SimulationClock, randomNumbers: RandomNumberGenerator) extends Logging {
 
   val god = new TheMaker(config.fish.pelagicLarvalDuration, false)
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val fish: Fish = config.fish
   val spawn = new Spawn(config.spawn)
-  val logger = Logger(classOf[BiologicalModel])
+  //val logger = Logger(classOf[BiologicalModel])
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
   var fishLarvae: ListBuffer[List[ReefFish]] = ListBuffer.empty
   var pelagicLarvaeCount = 0
@@ -77,15 +77,15 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
     if (larva.attainedPld) {
       larva.kill()
     } else {
-      logger.debug("Reach its pld")
+      debug("Reach its pld")
       val reefIndex = habitatManager.isCoordinateOverReef(larva.position)
       if (reefIndex != Constants.NoClosestReefFound) {
-        logger.debug("Found reef")
+        debug("Found reef")
         larva.settle(habitatManager.getReef(reefIndex), clock.now)
       } else if (habitatManager.isBuffered && habitatManager.isCoordinateOverBuffer(larva.position)) {
         val reefIndex = habitatManager.getIndexOfNearestReef(larva.position)
         if (reefIndex != Constants.NoClosestReefFound) {
-          logger.debug("Found buffer")
+          debug("Found buffer")
           larva.settle(habitatManager.getReef(reefIndex), clock.now)
         }
       }
@@ -110,13 +110,13 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   }
 
   private def spawnFish(sites: mutable.Buffer[SpawningLocation]) = {
-    val freshLarvae = god.create(sites.toList)
+    val freshLarvae = god.create(sites.toList, clock.now)
     pelagicLarvaeCount += freshLarvae.size
     freshLarvae.foreach(x => fishLarvae :: x)
     for (spawned <- freshLarvae) {
       fishLarvae += spawned.asInstanceOf[List[ReefFish]]
     }
-    logger.debug("Now spawned " + fishLarvae.size + " fish larvae")
+    logger.debug("Now spawned " + fishLarvae.flatten.size + " fish larvae")
   }
 
   def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvaeCount > 0

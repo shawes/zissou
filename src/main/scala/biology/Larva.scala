@@ -2,8 +2,9 @@ package biology
 
 
 import com.github.nscala_time.time.Imports._
-import locals.{Constants, PelagicLarvaeState}
+import grizzled.slf4j.Logging
 import locals.PelagicLarvaeState.PelagicLarvaeState
+import locals.{Constants, PelagicLarvaeState}
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
 
@@ -14,12 +15,14 @@ abstract class Larva(val id: Int,
                      val pelagicLarvalDuration: Int,
                      val maximumLifeSpan: Int,
                      val birthplace: Birthplace,
-                     var state: PelagicLarvaeState) {
-  val birthday = DateTime.now
+                     var state: PelagicLarvaeState,
+                     val birthday: DateTime) extends Logging {
 
-  def history: ListBuffer[TimeCapsule] = ListBuffer.empty
+  //val birthday : DateTime = DateTime.now()
 
-  def age: Int
+  val history: ListBuffer[TimeCapsule] = ListBuffer.empty[TimeCapsule]
+
+  var age: Int = 0
 
   var settlementDate : DateTime = Constants.MinimumDate
   var position: GeoCoordinate = birthplace.location
@@ -42,7 +45,19 @@ abstract class Larva(val id: Int,
 
   def kill() : Unit = state = PelagicLarvaeState.Dead
 
-  def saveHistory() : Unit = history += new TimeCapsule(age, state, polygon, position)
+  def saveState(): Unit = {
+    debug("Save state called")
+    val currentState = new TimeCapsule(age, state, polygon, position)
+    history append currentState
+    debug("History is has this saved " + history.size)
+  }
 
+  override def toString: String = "id:" + id + "," +
+    "birthday:" + birthday + "," +
+    "age:" + age / Constants.SecondsInDay + ","
 
+  "pld:" + pelagicLarvalDuration / Constants.SecondsInDay + "," +
+    "birthplace:" + birthplace.name + "," +
+    "state:" + state + "," +
+    "history:" + history.size
 }

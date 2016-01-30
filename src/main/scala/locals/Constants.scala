@@ -4,7 +4,7 @@ import org.joda.time.DateTime
 
 object Constants {
 
-  val SecondsInDay = 3600
+  val SecondsInDay = 86400
   val FlowPolygonVertices = 4
   val MaxLatitudeShift = 0.015
   val MaxLongitudeShift = 0.015
