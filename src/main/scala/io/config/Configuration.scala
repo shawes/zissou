@@ -39,7 +39,7 @@ case class SpawningLocationConfig(
                                    numberOfLarvae: Int,
                                    releasePeriod: ReleasePeriodConfig,
                                    interval: Int) {
-  private def this() = this("", 0, null, 0, null, 0)
+  private def this() = this("", 0, SiteConfig(0, 0, 0, 0), 0, null, 0)
 }
 
 @XmlRootElement(name = "spawn")

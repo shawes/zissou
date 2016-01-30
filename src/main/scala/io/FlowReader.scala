@@ -3,15 +3,14 @@ package io
 import java.io.File
 
 import grizzled.slf4j._
-import physical.flow.{Depth, Flow, FlowPolygon}
+import physical.flow.{Flow, FlowPolygon}
 
 import scala.collection.mutable.ArrayBuffer
 
-class FlowReader(val inputs: InputFiles, val depth: Depth) {
+class FlowReader(val inputs: InputFiles, val flow: Flow) extends Logging {
   val files: Array[String] = inputs.flowFiles.toArray
-  val logger = Logger(classOf[FlowReader])
   var currentFile: Int = 0
-  var flow = new Flow(depth)
+
 
   def next(): Array[FlowPolygon] = {
     val polygons = loadNextFile()
@@ -23,12 +22,12 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
   }
 
   private def loadNextFile(): Array[FlowPolygon] = {
-    val reader = new FlowXmlReader(flow)
+    val flowXmlReader = new FlowXmlReader()
     val file = skipHiddenAndSystemFiles(files(currentFile))
 
-    logger.debug("Reading in " + file + " from " + files.toString)
-    val polygons = reader.read(new File(inputs.flowFilePath + "/" + file))
-    flow = reader.oceanData
+    debug("Reading in " + file + " from " + files.toString)
+    val polygons = flowXmlReader.read(new File(inputs.flowFilePath + "/" + file))
+    flow.dimensions = flowXmlReader.flowDimensions
     if (flow.depth.average) averageDepthDimension(polygons) else polygons
   }
 
@@ -41,8 +40,10 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
     tempFile
   }
 
+  //private def updateFlowWithDimensions(properties)
+
   private def averageDepthDimension(polygons: Array[FlowPolygon]): Array[FlowPolygon] = {
-    val cellCount: Int = flow.grid.width * flow.grid.height
+    val cellCount: Int = flow.dimensions.cellSize.width * flow.dimensions.cellSize.height
     val averagedPolygons = ArrayBuffer.empty[FlowPolygon]
     for (i <- 0 until cellCount) {
       var sumU: Double = 0.0
@@ -52,7 +53,7 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
       var count: Int = 0
       var isLand = true
 
-      for (j <- 0 until flow.grid.depth) {
+      for (j <- 0 until flow.dimensions.cellSize.depth) {
         val polygon = polygons(i + (j * cellCount))
         if (!polygon.isLand) {
           isLand = false

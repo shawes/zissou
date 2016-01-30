@@ -15,7 +15,7 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
 
   val SizeOfQueue = 2
   val flowDataQueue = mutable.Queue.empty[Array[FlowPolygon]]
-  val interpolator = new Interpolator(flow)
+  val interpolator = new Interpolator(flow.dimensions)
 
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Velocity = {
@@ -40,6 +40,9 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, isFuture: Boolean): Velocity = {
 
     var index: Int = 0
+    var bumped: Boolean = false
+    var bumpedCoordinate: GeoCoordinate = new GeoCoordinate()
+    //var coord = coordinate
 
     val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
     //logger.debug("Flow polygons is size " + flowPolygons.length)
@@ -53,10 +56,11 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
     } catch {
       case e: IllegalArgumentException =>
         warn("Have to bump the coordinate " + coordinate)
-        val bumpedCoordinate = bumpCoordinate(coordinate)
+        bumpedCoordinate = bumpCoordinate(coordinate)
 
         try {
           index = getIndexOfPolygon(bumpedCoordinate)
+          bumped = true
         } catch {
           case e: IllegalArgumentException =>
             error("The coordinate " + bumpedCoordinate + " is not in the flow field")
@@ -64,24 +68,28 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
         }
     }
     debug("The velocity is " + flowPolygons(index).velocity)
-    //val velocity = flowPolygons(index).velocity
-    interpolator.interpolate(coordinate, flowPolygons, index)
+    if (bumped) {
+      interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
+    } else {
+      interpolator.interpolate(coordinate, flowPolygons, index)
+    }
 
   }
 
   def getIndexOfPolygon(coordinate: GeoCoordinate): Int = {
-    require(flow.latitudeRange.contains(coordinate.latitude) && flow.longitudeRange.contains(coordinate.longitude))
+    debug("The flow: " + flow.dimensions.latitudeBoundary)
+    require(flow.dimensions.latitudeBoundary.contains(coordinate.latitude) && flow.dimensions.longitudeBoundary.contains(coordinate.longitude))
 
     val lat1 = correctNegativeCoordinate(coordinate.latitude)
     val lon1 = correctNegativeCoordinate(coordinate.longitude)
-    val lat2 = correctNegativeCoordinate(flow.latitudeRange.start)
-    val lon2 = correctNegativeCoordinate(flow.longitudeRange.start)
+    val lat2 = correctNegativeCoordinate(flow.dimensions.latitudeBoundary.start)
+    val lon2 = correctNegativeCoordinate(flow.dimensions.longitudeBoundary.start)
 
-    val x = ((lat1 - lat2) / flow.grid.cell.width).toInt + 1
-    val y = ((lon1 - lon2) / flow.grid.cell.width).toInt + 1
-    val z = ensureDepthIsInRange((coordinate.depth / flow.grid.cell.depth).toInt)
+    val x = ((lat1 - lat2) / flow.dimensions.cellSize.cell.width).toInt + 1
+    val y = ((lon1 - lon2) / flow.dimensions.cellSize.cell.width).toInt + 1
+    val z = ensureDepthIsInRange((coordinate.depth / flow.dimensions.cellSize.cell.depth).toInt)
 
-    flow.grid.width * x + y + z * flow.grid.layerCellCount
+    flow.dimensions.cellSize.width * x + y + z * flow.dimensions.cellSize.layerCellCount
   }
 
   def correctNegativeCoordinate(value: Double): Double = {
@@ -89,11 +97,10 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
   }
 
   def ensureDepthIsInRange(value: Int): Int = {
-    if (value < 0) 0 else if (value > flow.grid.depth) flow.grid.depth else value
+    if (value < 0) 0 else if (value > flow.dimensions.cellSize.depth) flow.dimensions.cellSize.depth else value
   }
 
   def bumpCoordinate(coordinate: GeoCoordinate): GeoCoordinate = {
-    //val random = new MersenneTwister(Platform.currentTime.toInt)
     new GeoCoordinate(coordinate.latitude + (randomNumbers.get * Constants.MaxLatitudeShift),
       coordinate.longitude + (randomNumbers.get * Constants.MaxLongitudeShift), coordinate.depth)
   }
@@ -118,8 +125,8 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
       val seconds = DateTime.now.getSecondOfDay - start.getSecondOfDay
       debug("finished reading in " + seconds + " seconds")
     }
-    flow = reader.flow
-    interpolator.flow = flow
+    flow.dimensions = reader.flow.dimensions
+    interpolator.dim = reader.flow.dimensions
   }
 
   //  override def finalize(): Unit = {

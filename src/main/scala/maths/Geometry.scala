@@ -1,6 +1,6 @@
 package maths
 
-import physical.{Velocity, GeoCoordinate}
+import physical.{GeoCoordinate, Velocity}
 
 class Geometry {
 
@@ -14,7 +14,7 @@ class Geometry {
 
   private def polynomialTranslation(point: GeoCoordinate, velocity: Velocity,
                                     timeStep: Int, speed: Double): GeoCoordinate = {
-
+    require(!velocity.isUndefined || point.isUndefined)
     val xDistance = (velocity.u + speed) * timeStep
     val yDistance = (velocity.v + speed) * timeStep
 

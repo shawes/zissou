@@ -33,9 +33,13 @@ abstract class Larva(val id: Int,
 
   def attainedMaximumLifeSpan : Boolean = age >= maximumLifeSpan
 
+  def inCompetencyWindow: Boolean = age < pelagicLarvalDuration
+
   def canMove : Boolean = state == PelagicLarvaeState.Pelagic
 
   def move(newPosition: GeoCoordinate) : Unit
+
+  def growOlder(seconds: Int): Unit = age += seconds
 
   def settle(settlementReef: HabitatPolygon, date: DateTime) : Unit = {
     polygon = settlementReef

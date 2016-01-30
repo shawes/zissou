@@ -30,6 +30,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   var fishLarvae: ListBuffer[List[ReefFish]] = ListBuffer.empty
   var pelagicLarvaeCount = 0
   //var startRun: DateTime = null
+  var processed = 0
 
   def apply(iteration: Int, disperser: ParticleDisperser): Unit = {
     calculateMortalityRate(iteration)
@@ -40,15 +41,18 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   private def processLarva(larvae: List[ReefFish], disperser: ParticleDisperser): Unit = {
 
     val swimmingLarvae: List[ReefFish] = larvae.filter(x => x.canMove)
+    debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
 
     for (larva <- swimmingLarvae) {
-      mortalityCheck(larva)
+      //mortalityCheck(larva) TODO: Need to put the mortality back in
       move(disperser, larva)
       ageLarvae(larva)
-      killCheck(larva)
       settle(larva)
+      killCheck(larva)
       updateActiveLarvaeCount(larva.state)
     }
+    processed += 1
+    debug("Processed the larvae")
   }
 
   private def move(disperser: ParticleDisperser, larva: ReefFish): Unit = {
@@ -66,7 +70,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   }
 
   private def ageLarvae(larva: ReefFish): Unit = {
-    larva.age += clock.step.totalSeconds
+    larva growOlder clock.step.totalSeconds
   }
 
   private def killCheck(larva: ReefFish): Unit = {
@@ -74,28 +78,18 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   }
 
   private def settle(larva: ReefFish): Unit = {
-    if (larva.attainedPld) {
-      larva.kill()
-    } else {
-      debug("Reach its pld")
+    if (larva.inCompetencyWindow) {
       val reefIndex = habitatManager.isCoordinateOverReef(larva.position)
       if (reefIndex != Constants.NoClosestReefFound) {
-        debug("Found reef")
+        debug("Larva is over reef")
         larva.settle(habitatManager.getReef(reefIndex), clock.now)
       } else if (habitatManager.isBuffered && habitatManager.isCoordinateOverBuffer(larva.position)) {
         val reefIndex = habitatManager.getIndexOfNearestReef(larva.position)
         if (reefIndex != Constants.NoClosestReefFound) {
-          debug("Found buffer")
+          debug("Larva is within reef buffer")
           larva.settle(habitatManager.getReef(reefIndex), clock.now)
         }
       }
-    }
-  }
-
-  private def mortalityCheck(larva: ReefFish): Unit = {
-    if (fish.isMortal && randomNumbers.get < mortality.getRate) {
-      logger.debug("Killing larvae " + larva.id)
-      larva.kill()
     }
   }
 
@@ -110,7 +104,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   }
 
   private def spawnFish(sites: mutable.Buffer[SpawningLocation]) = {
-    val freshLarvae = god.create(sites.toList, clock.now)
+    val freshLarvae = god.createReefFish(sites.toList, clock.now)
     pelagicLarvaeCount += freshLarvae.size
     freshLarvae.foreach(x => fishLarvae :: x)
     for (spawned <- freshLarvae) {
@@ -120,4 +114,11 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   }
 
   def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvaeCount > 0
+
+  private def mortalityCheck(larva: ReefFish): Unit = {
+    if (fish.isMortal && randomNumbers.get < mortality.getRate) {
+      logger.debug("Killing larvae " + larva.id)
+      larva.kill()
+    }
+  }
 }

@@ -6,6 +6,7 @@ trait Mortality {
 
 }
 
+//TODO: Fix the mortality rate, it doesn't calculate correctly
 class MortalityDecay(pld: Double) extends Mortality {
 
   val lambda = scala.math.log(2) / (pld * 0.5)

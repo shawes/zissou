@@ -10,7 +10,7 @@ import maths.NormalDistribution
 import org.joda.time.DateTime
 import physical.flow.{Depth, Flow}
 import physical.habitat.Buffer
-import physical.{GeoCoordinate, Grid, TimeStep}
+import physical.{GeoCoordinate, TimeStep}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -21,7 +21,7 @@ import scala.language.implicitConversions
  */
 object ConfigMappings {
   implicit def flowConfigToFlow(f: FlowConfig): Flow =
-    new Flow(new Grid(), null, null, new Depth(f.depth), new Interval(new DateTime(f.period.start), new DateTime(f.period.end)), f.timeStep)
+    new Flow(new Depth(f.depth), new Interval(new DateTime(f.period.start), new DateTime(f.period.end)), f.timeStep)
 
   implicit def timeStepConfigToTimeStep(t: TimeStepConfig): TimeStep =
     new TimeStep(t.duration, TimeStepType.withName(t.unit))
@@ -47,7 +47,7 @@ object ConfigMappings {
   implicit def spawningLocationConfigMap(s: SpawningLocationConfig): SpawningLocation =
     new SpawningLocation(s.name, s.numberOfLarvae, s.site, s.releasePeriod, s.interval)
 
-  implicit def siteConfig(s: SiteConfig): GeoCoordinate = new GeoCoordinate(s.latitude, s.longitude, s.depth)
+  implicit def siteConfigMap(s: SiteConfig): GeoCoordinate = new GeoCoordinate(s.latitude, s.longitude, s.depth)
 
   implicit def pelagicLarvalDurationMap(pld: PelagicLarvalDurationConfig): PelagicLarvalDuration =
     new PelagicLarvalDuration(new NormalDistribution(pld.mean, pld.stdev), DistributionType.Normal)

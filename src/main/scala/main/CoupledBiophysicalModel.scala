@@ -25,8 +25,8 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
   val randomSeed: Long = Platform.currentTime
   info("The random number seed is :" + randomSeed)
   val randomNumbers = new RandomNumberGenerator(randomSeed)
-  val turbulence: Turbulence = new Turbulence(Math.pow((2 * config.turbulence.horizontalDiffusionCoefficient) / flow.timeStep.totalSeconds, 0.5),
-    Math.pow((2 * config.turbulence.verticalDiffusionCoefficient) / flow.timeStep.totalSeconds, 0.5), randomNumbers)
+  val turbulence: Turbulence = new Turbulence(config.turbulence.horizontalDiffusionCoefficient,
+    config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds, randomNumbers)
   val ocean = new PhysicalModel(config, randomNumbers)
   val biology = new BiologicalModel(config, clock, randomNumbers)
   val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)

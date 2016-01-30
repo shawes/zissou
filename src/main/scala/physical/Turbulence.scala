@@ -2,14 +2,17 @@ package physical
 
 import maths.RandomNumberGenerator
 
-class Turbulence(val horizontalDiffusionCoefficient: Double, val verticalDiffusionCoefficient: Double, val randomNumbers: RandomNumberGenerator) {
+class Turbulence(horizontalDiffusionCoefficient: Double, verticalDiffusionCoefficient: Double, timeStep: Int, randomNumbers: RandomNumberGenerator) {
 
-  def this() = this(0, 0, new RandomNumberGenerator(0))
+  val horizontalTurbulence = Math.pow((2 * horizontalDiffusionCoefficient) / timeStep, 0.5)
+  val verticalTurbulence = Math.pow((2 * verticalDiffusionCoefficient) / timeStep, 0.5)
+
+  def this() = this(0, 0, 0, new RandomNumberGenerator(0))
 
   def apply(v: Velocity): Velocity = {
-    val horizontalTurbulence = horizontalDiffusionCoefficient * randomNumbers.get
-    val verticalTurbulence = verticalDiffusionCoefficient * randomNumbers.get
-    new Velocity(v.u + horizontalTurbulence, v.v + horizontalTurbulence, v.w + verticalTurbulence)
+    val horizontal = horizontalTurbulence * randomNumbers.get
+    val vertical = verticalTurbulence * randomNumbers.get
+    new Velocity(v.u + horizontal, v.v + horizontal, v.w + vertical)
   }
 
 }
