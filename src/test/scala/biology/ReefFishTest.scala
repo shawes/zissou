@@ -11,17 +11,20 @@ class ReefFishTest extends FlatSpec {
   val pelagicState = PelagicLarvaeState.Pelagic
 
   "A fish" should "start at age zero" in {
-    val fish = new ReefFish(0, pld, 0, birthplace, pelagicState, DateTime.now)
+    val fish = new ReefFish(0, pld, 0, birthplace, pelagicState, DateTime.now,
+      new Ontogeny(0, 0, 0), new VerticalMigration(List.empty[VerticalMigrationProbability]))
     assert(fish.age == 0)
   }
 
   it should "have a pelagic larval duration" in {
-    val fish = new ReefFish(0, pld, 0, birthplace, pelagicState, DateTime.now)
+    val fish = new ReefFish(0, pld, 0, birthplace, pelagicState, DateTime.now,
+      new Ontogeny(0, 0, 0), new VerticalMigration(List.empty[VerticalMigrationProbability]))
     assert(fish.pelagicLarvalDuration == pld)
   }
 
   it should "know when it was born" in {
-    val fish = new ReefFish(0, pld, 0, birthplace, pelagicState, DateTime.now)
+    val fish = new ReefFish(0, pld, 0, birthplace, pelagicState, DateTime.now,
+      new Ontogeny(0, 0, 0), new VerticalMigration(List.empty[VerticalMigrationProbability]))
     val now = DateTime.now
     assert(fish.birthday.dayOfMonth() == now.dayOfMonth())
     assert(fish.birthday.dayOfWeek() == now.dayOfWeek())
@@ -29,12 +32,14 @@ class ReefFishTest extends FlatSpec {
   }
 
   it should "be pelagic when it is born" in {
-    val fish = new ReefFish(1, 2, 3, birthplace, pelagicState, DateTime.now)
+    val fish = new ReefFish(1, 2, 3, birthplace, pelagicState, DateTime.now,
+      new Ontogeny(0, 0, 0), new VerticalMigration(List.empty[VerticalMigrationProbability]))
     assert(fish.state == PelagicLarvaeState.Pelagic)
   }
 
   it should "have no history when its born" in {
-    val fish = new ReefFish(1, 2, 3, birthplace, pelagicState, DateTime.now)
+    val fish = new ReefFish(1, 2, 3, birthplace, pelagicState, DateTime.now,
+      new Ontogeny(0, 0, 0), new VerticalMigration(List.empty[VerticalMigrationProbability]))
     assert(fish.history.isEmpty)
   }
 

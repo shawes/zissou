@@ -95,7 +95,7 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
   }
 
   it should "parse the fish node" in {
-    val configXml = "<simulationVariables><fish><swimmingAbility>Passive</swimmingAbility><ontogeny><flexion>518400</flexion><preFlexion>172800</preFlexion><postFlexion>691200</postFlexion></ontogeny><meanSwimmingSpeed>0.102</meanSwimmingSpeed><standDeviationSwimmingSpeed>0.019</standDeviationSwimmingSpeed><verticalMigrationPattern>Ontogenetic</verticalMigrationPattern><verticalMigrationProbabilities><verticalMigrationProbability><depth>3</depth><hatching>0.8</hatching><preFlexion>0.05</preFlexion><flexion>0.05</flexion><postFlexion>0.05</postFlexion></verticalMigrationProbability><verticalMigrationProbability><depth>10</depth><hatching>0.2</hatching><preFlexion>0.55</preFlexion><flexion>0.35</flexion><postFlexion>0.55</postFlexion></verticalMigrationProbability></verticalMigrationProbabilities><pelagicLarvalDuration><mean>22</mean><stdev>1.1</stdev><distribution>Normal</distribution></pelagicLarvalDuration><isMortal>true</isMortal><mortalityRate>0.26</mortalityRate><nonSettlementPeriod>85</nonSettlementPeriod></fish></simulationVariables>"
+    val configXml = "<simulationVariables><fish><swimmingAbility>Passive</swimmingAbility><ontogeny><flexion>518400</flexion><preFlexion>172800</preFlexion><postFlexion>691200</postFlexion></ontogeny><meanSwimmingSpeed>0.102</meanSwimmingSpeed><standDeviationSwimmingSpeed>0.019</standDeviationSwimmingSpeed><verticalMigrationPattern>Ontogenetic</verticalMigrationPattern><verticalMigrationProbabilities><verticalMigrationProbability><depthStart>3</depthStart><depthFinish>10</depthFinish><hatching>0.8</hatching><preFlexion>0.05</preFlexion><flexion>0.05</flexion><postFlexion>0.05</postFlexion></verticalMigrationProbability><verticalMigrationProbability><depth>10</depth><hatching>0.2</hatching><preFlexion>0.55</preFlexion><flexion>0.35</flexion><postFlexion>0.55</postFlexion></verticalMigrationProbability></verticalMigrationProbabilities><pelagicLarvalDuration><mean>22</mean><stdev>1.1</stdev><distribution>Normal</distribution></pelagicLarvalDuration><isMortal>true</isMortal><mortalityRate>0.26</mortalityRate><nonSettlementPeriod>85</nonSettlementPeriod></fish></simulationVariables>"
     val config = context.createUnmarshaller().unmarshal(new StringReader(configXml)).asInstanceOf[Configuration]
     assert(config.fish.swimmingAbility == "Passive")
     assert(config.fish.ontogeny.flexion == 518400)
@@ -106,7 +106,8 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
     assert(config.fish.verticalMigrationPattern == "Ontogenetic")
     assert(config.fish.verticalMigrationProbabilities.verticalMigrationProbability.size() == 2)
     val verticalMigrationPattern = config.fish.verticalMigrationProbabilities.verticalMigrationProbability.get(0)
-    assert(verticalMigrationPattern.depth == 3)
+    assert(verticalMigrationPattern.depthStart == 3)
+    assert(verticalMigrationPattern.depthFinish == 10)
     assert(verticalMigrationPattern.flexion == 0.05)
     assert(verticalMigrationPattern.preFlexion == 0.05)
     assert(verticalMigrationPattern.postFlexion == 0.05)
