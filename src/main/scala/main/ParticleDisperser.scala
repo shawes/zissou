@@ -17,14 +17,13 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, randomNumbers: Random
     val migratedPositionVertically: GeoCoordinate = applyVerticalMigration(larva)
 
     var position = integrator.integrate(migratedPositionVertically, clock.now, swimmingSpeed)
-    if (position.isUndefined) {
-      position = integrator.integrate(larva.position, clock.now, swimmingSpeed)
-      if (position.isUndefined) {
-        position = larva.position // Don't move
-      }
+    var count = 0
+    while (position.isUndefined && count < 3) {
+      position = integrator.integrate(applyVerticalMigration(larva), clock.now, swimmingSpeed)
+      count += 1
     }
 
-    larva.move(position)
+    if (position.isValid) larva.move(position) else larva.move(larva.position)
     debug("The new position is " + position)
   }
 

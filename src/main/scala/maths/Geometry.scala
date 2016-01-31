@@ -25,13 +25,13 @@ class Geometry {
     val kmLongitude = (0.000068 * Math.pow(point.latitude, 3)) + (-0.020724 * Math.pow(point.latitude, 2)) +
       (0.08253 * point.latitude) + 110.806595
 
-    val depth = ceilingDepth(point.depth + (velocity.w * timeStep))
+    //val depth = ceilingDepth(point.depth + (velocity.w * timeStep))
 
     //depth = adjustDepth(depth)
 
 
     new GeoCoordinate(point.latitude + (xDistance / (kmLatitude * 1000)),
-      point.longitude + (yDistance / (kmLongitude * 1000)), depth)
+      point.longitude + (yDistance / (kmLongitude * 1000)), point.depth)
   }
 
   private def ceilingDepth(depth: Double): Double = {

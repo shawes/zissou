@@ -3,7 +3,7 @@ package biology
 import locals.OntogenyState
 import locals.OntogenyState.OntogenyState
 
-class Ontogeny(val preFlexion: Double, val flexion: Double, val postFlexion: Double) {
+class Ontogeny(val preFlexion: Int, val flexion: Int, val postFlexion: Int) {
 
   def getState(age: Double): OntogenyState = {
 
@@ -11,9 +11,9 @@ class Ontogeny(val preFlexion: Double, val flexion: Double, val postFlexion: Dou
 
     if (age < preFlexion) {
       state = OntogenyState.Hatching
-    } else if (age < flexion) {
+    } else if (age >= preFlexion && age < flexion) {
       state = OntogenyState.Preflexion
-    } else if (age < postFlexion) {
+    } else if (age >= flexion && age < postFlexion) {
       state = OntogenyState.Flexion
     }
     state

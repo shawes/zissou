@@ -19,10 +19,10 @@ class VerticalMigration(val probabilities: List[VerticalMigrationProbability]) {
     val number = random.get
 
     val iterator = list.iterator
-    var currentDepth: Tuple2[ContinuousRange, Double] = new Tuple2(new ContinuousRange(), 0)
+    var currentDepth: (ContinuousRange, Double) = new Tuple2(new ContinuousRange(), 0)
     currentDepth = iterator.next
     cumulativeProb += currentDepth._2
-    while (number < cumulativeProb && iterator.hasNext) {
+    while (number > cumulativeProb && iterator.hasNext) {
       currentDepth = iterator.next
       cumulativeProb += currentDepth._2
     }
