@@ -3,8 +3,10 @@ package biology
 
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
+import locals.OntogenyState._
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.{Constants, PelagicLarvaeState}
+import maths.RandomNumberGenerator
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
 
@@ -16,7 +18,9 @@ abstract class Larva(val id: Int,
                      val maximumLifeSpan: Int,
                      val birthplace: Birthplace,
                      var state: PelagicLarvaeState,
-                     val birthday: DateTime) extends Logging {
+                     val birthday: DateTime,
+                     val ontogeny: Ontogeny,
+                     val verticalMigration: VerticalMigration) extends Logging {
 
   //val birthday : DateTime = DateTime.now()
 
@@ -51,10 +55,16 @@ abstract class Larva(val id: Int,
 
   def saveState(): Unit = {
     debug("Save state called")
-    val currentState = new TimeCapsule(age, state, polygon, position)
+    val currentState = new TimeCapsule(age, getOntogeny, state, polygon, position)
     history append currentState
     debug("History is has this saved " + history.size)
   }
+
+  def getOntogeneticVerticalMigrationDepth(random: RandomNumberGenerator): Double = {
+    verticalMigration.getDepth(getOntogeny, random)
+  }
+
+  def getOntogeny: OntogenyState = ontogeny.getState(age)
 
   override def toString: String = "id:" + id + "," +
     "birthday:" + birthday + "," +

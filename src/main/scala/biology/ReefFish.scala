@@ -3,7 +3,6 @@ package biology
 import grizzled.slf4j.Logging
 import locals.HabitatType
 import locals.PelagicLarvaeState.PelagicLarvaeState
-import maths.RandomNumberGenerator
 import org.joda.time.DateTime
 import physical.GeoCoordinate
 import physical.habitat.{GeometryAdaptor, HabitatPolygon}
@@ -16,7 +15,15 @@ class ReefFish(id: Int,
                spawned: DateTime,
                ontogeny: Ontogeny,
                verticalMigration: VerticalMigration)
-  extends Larva(id, pelagicLarvalDuration, maximumLifeSpan, birthplace, state, spawned) with Logging {
+  extends Larva(
+    id,
+    pelagicLarvalDuration,
+    maximumLifeSpan,
+    birthplace,
+    state,
+    spawned,
+    ontogeny,
+    verticalMigration) with Logging {
 
 
 
@@ -37,11 +44,6 @@ class ReefFish(id: Int,
     }
   }
 
-  def getOntogeneticVerticalMigrationDepth(random: RandomNumberGenerator): Double = {
-    verticalMigration.getDepth(getOntogeny, random)
-  }
-
-  private def getOntogeny = ontogeny.getState(age)
 
   //lazy val maximumLifeSpan: Int = 0
 

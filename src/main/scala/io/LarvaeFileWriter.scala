@@ -2,12 +2,12 @@ package io
 
 import java.io.{BufferedWriter, File}
 
-import biology.Larva
+import biology.ReefFish
 import grizzled.slf4j.Logging
 
-class LarvaeFileWriter(larvae: List[Larva], file: File) extends FileWriterTrait with Logging {
+class LarvaeFileWriter(larvae: List[ReefFish], file: File) extends FileWriterTrait with Logging {
 
-  val columnHeaders = "id,born,age,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
+  val columnHeaders = "id,born,age,stage,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
 
   def write(): Unit = {
     info("Writing " + larvae.size + " larvae")
@@ -18,7 +18,7 @@ class LarvaeFileWriter(larvae: List[Larva], file: File) extends FileWriterTrait 
     bw.close()
   }
 
-  private def writeCsvRow(larva: Larva): String = {
+  private def writeCsvRow(larva: ReefFish): String = {
     debug(larva.toString)
     var distance = 0
     val sb = new StringBuilder()
@@ -26,6 +26,7 @@ class LarvaeFileWriter(larvae: List[Larva], file: File) extends FileWriterTrait 
       sb append larva.id + ","
       sb append larva.birthday + ","
       sb append hist.age + ","
+      sb append hist.stage + ","
       sb append larva.pelagicLarvalDuration + ","
       sb append larva.birthplace.name + ","
       sb append hist.state + ","

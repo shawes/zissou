@@ -9,7 +9,7 @@ class GeoCoordinate(val latitude: Double, val longitude: Double, val depth: Doub
 
   def isValid: Boolean = !isUndefined
 
-  def isUndefined: Boolean = (longitude == Double.NaN) || (latitude == Double.NaN)
+  def isUndefined: Boolean = longitude.isNaN || latitude.isNaN
 
   override def toString : String = "lat=" + latitude + ", lon=" + longitude + ", depth=" + depth
 
