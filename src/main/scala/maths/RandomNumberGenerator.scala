@@ -7,6 +7,8 @@ class RandomNumberGenerator(seed: Long) {
   private val random = new MersenneTwister(seed)
 
   def get: Double = random.nextDouble
+
+  def get(low: Double, high: Double): Double = random.nextDouble * (high - low) + low
 }
 
 

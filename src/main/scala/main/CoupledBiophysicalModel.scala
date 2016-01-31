@@ -19,7 +19,6 @@ import scala.compat.Platform
   */
 class CoupledBiophysicalModel(val config: Configuration) extends Logging {
 
-  //val logger = Logger(classOf[CoupledBiophysicalModel])
   val flow: Flow = config.flow
   val clock = new SimulationClock(flow.period, flow.timeStep)
   val randomSeed: Long = Platform.currentTime
@@ -30,11 +29,11 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
   val ocean = new PhysicalModel(config, randomNumbers)
   val biology = new BiologicalModel(config, clock, randomNumbers)
   val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)
-  val larvaeDisperser = new ParticleDisperser(integrator)
+  val larvaeDisperser = new ParticleDisperser(integrator, randomNumbers)
 
   def run(): Unit = {
     val simulationStartTime = DateTime.now
-    logger.debug("Simulation run started at " + simulationStartTime)
+    debug("Simulation run started at " + simulationStartTime)
     var iteration: Int = 1
     ocean.initialise()
 
@@ -44,12 +43,12 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
       if (clock.isMidnight) {
         ocean.circulate()
       }
-      logger.info("Step " + iteration + " has been completed")
+      info("Step " + iteration + " has been completed")
       iteration = iteration + 1
     }
 
     val resultsWriter = new ResultsWriter(biology.fishLarvae.flatten.toList, config.output)
     resultsWriter.write()
-    logger.debug("Simulation run completed at " + new Duration(DateTime.now, clock.start).getStandardMinutes)
+    debug("Simulation run completed at " + new Duration(DateTime.now, clock.start).getStandardMinutes)
   }
 }

@@ -1,15 +1,16 @@
 package biology
 
 import grizzled.slf4j._
-import io.config.PelagicLarvalDurationConfig
+import io.config.ConfigMappings._
+import io.config.FishConfig
 import locals.{Constants, PelagicLarvaeState}
 import org.apache.commons.math3.distribution.NormalDistribution
 import org.joda.time.DateTime
 
 import scala.collection.mutable.ListBuffer
 
-class TheMaker(pld: PelagicLarvalDurationConfig, save: Boolean) extends Logging {
-  val distribution = new NormalDistribution(pld.mean, pld.stdev)
+class FishFactory(fish: FishConfig, save: Boolean) extends Logging {
+  val distribution = new NormalDistribution(fish.pelagicLarvalDuration.mean, fish.pelagicLarvalDuration.stdev)
   val spawningFish: LarvaConcreteFactory = new LarvaConcreteFactory
   var larvaeCount: Int = 0
 
@@ -25,7 +26,7 @@ class TheMaker(pld: PelagicLarvalDurationConfig, save: Boolean) extends Logging 
         val pld: Double = distribution.sample
         debug("The pld is " + pld)
         larvaeAtSite append spawningFish.createReefFish(larvaeCount, convertDaysToSeconds(pld), convertDaysToSeconds(pld),
-          new Birthplace(site.title, site.location), PelagicLarvaeState.Pelagic, time)
+          new Birthplace(site.title, site.location), PelagicLarvaeState.Pelagic, time, fish.ontogeny, fish.verticalMigrationProbabilities)
       }
       larvae append larvaeAtSite.toList
       debug("Larvae size is now: " + larvaeCount)

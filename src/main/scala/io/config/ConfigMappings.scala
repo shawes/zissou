@@ -6,7 +6,7 @@ import biology._
 import com.github.nscala_time.time.Imports._
 import io.{InputFiles, OutputFiles}
 import locals._
-import maths.NormalDistribution
+import maths.{ContinuousRange, NormalDistribution}
 import org.joda.time.DateTime
 import physical.flow.{Depth, Flow}
 import physical.habitat.Buffer
@@ -58,7 +58,7 @@ object ConfigMappings {
     new VerticalMigration(vm.verticalMigrationProbability.map(x => verticalMigrationProbabilityConfigMap(x)).toList)
 
   implicit def verticalMigrationProbabilityConfigMap(prob: VerticalMigrationProbabilityConfig) : VerticalMigrationProbability =
-    new VerticalMigrationProbability(prob.depth, prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)
+    new VerticalMigrationProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)
 
   implicit def fishConfigMap(f: FishConfig): Fish = new Fish(f.pelagicLarvalDuration, f.ontogeny, "name", true, SwimmingAbility.withName(f.swimmingAbility), f.meanSwimmingSpeed,
     VerticalMigrationPattern.withName(f.verticalMigrationPattern), f.verticalMigrationProbabilities, f.isMortal, f.mortalityRate)

@@ -21,7 +21,7 @@ import scala.collection.mutable.ListBuffer
   */
 class BiologicalModel(val config: Configuration, clock: SimulationClock, randomNumbers: RandomNumberGenerator) extends Logging {
 
-  val god = new TheMaker(config.fish.pelagicLarvalDuration, false)
+  val god = new FishFactory(config.fish, false)
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val fish: Fish = config.fish
   val spawn = new Spawn(config.spawn)
@@ -98,7 +98,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   private def spawnLarvae(): Unit = {
     val spawningSites = spawn.getSitesWhereFishAreSpawning(clock.now)
     if (spawningSites.nonEmpty) {
-      logger.debug("Found non-empty spawning site")
+      debug("Found non-empty spawning site")
       spawnFish(spawningSites)
     }
   }
@@ -110,14 +110,14 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
     for (spawned <- freshLarvae) {
       fishLarvae += spawned.asInstanceOf[List[ReefFish]]
     }
-    logger.debug("Now spawned " + fishLarvae.flatten.size + " fish larvae")
+    debug("Now spawned " + fishLarvae.flatten.size + " fish larvae")
   }
 
   def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvaeCount > 0
 
   private def mortalityCheck(larva: ReefFish): Unit = {
     if (fish.isMortal && randomNumbers.get < mortality.getRate) {
-      logger.debug("Killing larvae " + larva.id)
+      debug("Killing larvae " + larva.id)
       larva.kill()
     }
   }

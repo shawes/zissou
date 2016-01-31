@@ -14,7 +14,9 @@ class Geometry {
 
   private def polynomialTranslation(point: GeoCoordinate, velocity: Velocity,
                                     timeStep: Int, speed: Double): GeoCoordinate = {
-    require(!velocity.isUndefined || point.isUndefined)
+
+    if (velocity.isUndefined) return point
+
     val xDistance = (velocity.u + speed) * timeStep
     val yDistance = (velocity.v + speed) * timeStep
 
@@ -25,14 +27,19 @@ class Geometry {
 
     val depth = ceilingDepth(point.depth + (velocity.w * timeStep))
 
+    //depth = adjustDepth(depth)
+
+
     new GeoCoordinate(point.latitude + (xDistance / (kmLatitude * 1000)),
       point.longitude + (yDistance / (kmLongitude * 1000)), depth)
   }
 
   private def ceilingDepth(depth: Double): Double = {
-    if (depth < 0) return 0
-    if (depth > 90) return 90
+    var newDepth = depth
+    if (depth < 0) newDepth = 0
+    if (depth > 90) newDepth = 90
     depth
   }
+
 
 }

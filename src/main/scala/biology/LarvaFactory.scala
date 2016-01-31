@@ -9,5 +9,7 @@ trait LarvaFactory {
                      maximumLifeSpan: Int,
                      birthplace: Birthplace,
                      state: PelagicLarvaeState,
-                     spawned: DateTime): Larva
+                     spawned: DateTime,
+                     ontogeny: Ontogeny,
+                     migration: VerticalMigration): Larva
 }

@@ -1,6 +1,9 @@
 package biology
 
-class VerticalMigrationProbability(val depth: Double,
+import maths.ContinuousRange
+
+//TODO: Change to continous range for the depth
+class VerticalMigrationProbability(val depth: ContinuousRange,
                                    val hatching: Double,
                                    val preFlexion: Double,
                                    val flexion: Double,

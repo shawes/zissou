@@ -16,8 +16,12 @@ case class Configuration(
   def this() = this(InputFilesConfig("", ""),
     SpawnConfig(new JArrayList[SpawningLocationConfig]),
     TurbulenceConfig(0, 0, applyTurbulence = false, 0),
-    FishConfig(OntogenyConfig(0, 0, 0), "", 0, 0, "", VerticalMigrationConfig(new JArrayList[VerticalMigrationProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, ""), isMortal = false, 0, 0),
-    FlowConfig(PeriodConfig("", ""), TimeStepConfig("", 0), DepthConfig(average = false, averageOverAllDepths = false, 0)),
+    FishConfig(OntogenyConfig(0, 0, 0), "", 0, 0, "",
+      VerticalMigrationConfig(new JArrayList[VerticalMigrationProbabilityConfig]),
+      PelagicLarvalDurationConfig(0, 0, ""), isMortal = false, 0, 0),
+    FlowConfig(PeriodConfig("", ""),
+      TimeStepConfig("", 0),
+      DepthConfig(average = false, averageOverAllDepths = false, 0)),
     HabitatConfig(BufferConfig(isBuffered = false, 0, "")),
     OutputFilesConfig(includeLarvaeHistory = false, "", "", 0, ""))
 }
@@ -170,10 +174,11 @@ case class VerticalMigrationConfig(
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-case class VerticalMigrationProbabilityConfig(depth: Int,
+case class VerticalMigrationProbabilityConfig(depthStart: Int,
+                                              depthFinish: Int,
                                               hatching: Double,
                                               preFlexion: Double,
                                               flexion: Double,
                                               postFlexion: Double) {
-  private def this() = this(0, 0, 0, 0, 0)
+  private def this() = this(0, 0, 0, 0, 0, 0)
 }
