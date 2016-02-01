@@ -49,9 +49,9 @@ libraryDependencies := {
 libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "2.6.0",
   "org.apache.commons" % "commons-math3" % "3.6",
-  "edu.ucar" % "cdm" % "4.5.5" exclude("commons-logging", "commons-logging"),
-  "edu.ucar" % "grib" % "4.5.5" exclude("commons-logging", "commons-logging"),
-  "edu.ucar" % "netcdf4" % "4.5.5" exclude("commons-logging", "commons-logging")
+  "edu.ucar" % "cdm" % "4.5.5",
+  "edu.ucar" % "grib" % "4.5.5",
+  "edu.ucar" % "netcdf4" % "4.5.5"
 )
 
 //logging

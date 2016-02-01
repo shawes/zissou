@@ -22,14 +22,35 @@ object Simulator extends App with Logging {
     val config = configFileReader.read(new File(testConfigPathDesktop))
     debug("Config is read successfully")
     val model = new CoupledBiophysicalModel(config)
-    /*                              val bos : HTTPSession  = new HTTPSession()
-        val inpath = "www.cmar.csiro.au/thredds/dodsC/BRAN2.1/u/ocean_u_2002_10_14.nc."
-        val infileTry = Try(NetcdfFile.open(inpath))
-        if (!infileTry.isSuccess) {
 
-          debug("Couldn't open the input file " + inpath)
-          //sc.stop()
-          System.exit(1)
+
+
+
+
+    /*    val filename = "http://noncom29:JwkPF0@www.cmar.csiro.au/thredds/dodsC/BRAN2.1/u/ocean_u_2002_10_14.nc"
+
+
+        val session = new HTTPSession(filename)
+        val method: HTTPMethod = HTTPMethod.Get(session)
+        val status : Int = method.execute()
+        System.out.printf("Execute: status code = %d\n", status)
+        method.close()
+        session.close()
+
+        var ncfile : NetcdfFile = null
+        try {
+          ncfile = NetcdfDataset.openFile(filename, null)
+          ///process( ncfile);
+        } catch {
+          case ioe: IOException =>
+            error("trying to open " + filename, ioe);
+        } finally {
+          if (null != ncfile) try {
+            ncfile.close()
+          } catch {
+            case ioe: IOException =>
+            error("trying to close " + filename, ioe);
+          }
         }*/
 
     model.run()
