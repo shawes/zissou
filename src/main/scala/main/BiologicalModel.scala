@@ -40,15 +40,16 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
 
   private def processLarva(larvae: List[ReefFish], disperser: ParticleDisperser): Unit = {
 
-    val swimmingLarvae: List[ReefFish] = larvae.filter(x => x.canMove)
+    val swimmingLarvae: List[ReefFish] = larvae.filter(fish => fish.canMove)
     debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
 
     for (larva <- swimmingLarvae) {
-      //mortalityCheck(larva) TODO: Need to put the mortality back in
-      move(disperser, larva)
-      ageLarvae(larva)
-      settle(larva)
-      killCheck(larva)
+      mortalityCheck(larva)
+      if (larva.canMove) {
+        move(disperser, larva)
+        ageLarvae(larva)
+        settle(larva)
+      }
       updateActiveLarvaeCount(larva.state)
     }
     processed += 1
@@ -73,10 +74,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
     larva growOlder clock.step.totalSeconds
   }
 
-  private def killCheck(larva: ReefFish): Unit = {
-    if (larva.attainedMaximumLifeSpan) larva.kill()
-  }
-
   private def settle(larva: ReefFish): Unit = {
     if (larva.inCompetencyWindow) {
       val reefIndex = habitatManager.isCoordinateOverReef(larva.position)
@@ -90,6 +87,19 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
           larva.settle(habitatManager.getReef(reefIndex), clock.now)
         }
       }
+    } else {
+      lifespanCheck(larva)
+    }
+  }
+
+  private def lifespanCheck(larva: ReefFish): Unit = {
+    if (larva.attainedMaximumLifeSpan) larva.kill()
+  }
+
+  private def mortalityCheck(larva: ReefFish): Unit = {
+    if (fish.isMortal && randomNumbers.get < mortality.getRate) {
+      debug("Killing larvae " + larva.id)
+      larva.kill()
     }
   }
 
@@ -114,11 +124,4 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   }
 
   def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvaeCount > 0
-
-  private def mortalityCheck(larva: ReefFish): Unit = {
-    if (fish.isMortal && randomNumbers.get < mortality.getRate) {
-      debug("Killing larvae " + larva.id)
-      larva.kill()
-    }
-  }
 }
