@@ -11,6 +11,7 @@ object Constants {
   val LarvaeCapacityAtSite = 10000
   val NoClosestReefFound = -1
   val MinimumDate = new DateTime(1976,1,1,0,0)
+  val EarthsRadius = 6378137.0
 
   object ShapeAttribute {
     val Geometry = (0, "the_geom")

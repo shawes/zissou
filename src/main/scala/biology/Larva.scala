@@ -41,7 +41,9 @@ abstract class Larva(val id: Int,
 
   def canMove : Boolean = state == PelagicLarvaeState.Pelagic
 
-  def move(newPosition: GeoCoordinate) : Unit
+  def move: Unit = {
+    changeState(PelagicLarvaeState.Pelagic)
+  }
 
   def growOlder(seconds: Int): Unit = age += seconds
 
@@ -49,22 +51,31 @@ abstract class Larva(val id: Int,
     polygon = settlementReef
     settlementDate = date
     state = PelagicLarvaeState.Settled
+    saveState()
   }
 
-  def kill() : Unit = state = PelagicLarvaeState.Dead
-
-  def saveState(): Unit = {
+  private def saveState(): Unit = {
     debug("Save state called")
     val currentState = new TimeCapsule(age, getOntogeny, state, polygon, position)
     history append currentState
     debug("History is has this saved " + history.size)
   }
 
+  def getOntogeny: OntogenyState = ontogeny.getState(age)
+
+  def kill(): Unit = {
+    changeState(PelagicLarvaeState.Dead)
+
+  }
+
+  private def changeState(newState: PelagicLarvaeState): Unit = {
+    state = newState
+    saveState()
+  }
+
   def getOntogeneticVerticalMigrationDepth(random: RandomNumberGenerator): Double = {
     verticalMigration.getDepth(getOntogeny, random)
   }
-
-  def getOntogeny: OntogenyState = ontogeny.getState(age)
 
   override def toString: String = "id:" + id + "," +
     "birthday:" + birthday + "," +

@@ -4,7 +4,6 @@ import physical.{GeoCoordinate, Velocity}
 
 class Geometry {
 
-  val EarthsRadius = 6378137.0
 
   def translatePoint(point: GeoCoordinate, velocity: Velocity,
                      timeStep: Int): GeoCoordinate = translatePoint(point, velocity, timeStep, 0)

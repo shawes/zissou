@@ -34,9 +34,9 @@ class ReefFish(id: Int,
   def move(newPosition: GeoCoordinate): Unit = {
     if (newPosition.isValid) {
       debug("old position: " + position.toString)
-
-      saveState()
+      //saveState()
       position = newPosition
+      super.move
       debug("new position: " + position.toString)
 
     } else {
