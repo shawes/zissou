@@ -23,7 +23,7 @@ class LarvalFileWriterTest extends FlatSpec with MockitoSugar with PrivateMethod
   }
 
   it should "have the following column headers" in {
-    val headers = "id,born,age,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
+    val headers = "id,born,age,stage,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
     val mockFile = mock[File]
     val larvalFileWriter = new LarvaeFileWriter(Nil, mockFile)
     val result = larvalFileWriter.columnHeaders

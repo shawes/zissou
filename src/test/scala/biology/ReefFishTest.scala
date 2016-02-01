@@ -43,5 +43,22 @@ class ReefFishTest extends FlatSpec {
     assert(fish.history.isEmpty)
   }
 
+  it should "not move when there is an invalid position" in {
+    val fish = new ReefFish(1, 2, 3, birthplace, pelagicState, DateTime.now,
+      new Ontogeny(0, 0, 0), new VerticalMigration(List.empty[VerticalMigrationProbability]))
+    val invalidPoint = new GeoCoordinate(Double.NaN, Double.NaN, 0)
+    fish.move(invalidPoint)
+    assert(fish.position == birthplace.location)
+  }
+
+  it should "move when there is an valid position" in {
+    val fish = new ReefFish(1, 2, 3, birthplace, pelagicState, DateTime.now,
+      new Ontogeny(0, 0, 0), new VerticalMigration(List.empty[VerticalMigrationProbability]))
+    val validPoint = new GeoCoordinate(2, 2, 2)
+    fish.move(validPoint)
+    assert(fish.position != birthplace.location)
+    assert(fish.position == validPoint)
+  }
+
 
 }
