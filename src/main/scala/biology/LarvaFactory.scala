@@ -1,6 +1,5 @@
 package biology
 
-import locals.PelagicLarvaeState.PelagicLarvaeState
 import org.joda.time.DateTime
 
 trait LarvaFactory {
@@ -8,7 +7,6 @@ trait LarvaFactory {
                      pelagicLarvalDuration: Int,
                      maximumLifeSpan: Int,
                      birthplace: Birthplace,
-                     state: PelagicLarvaeState,
                      spawned: DateTime,
                      ontogeny: Ontogeny,
                      migration: VerticalMigration): Larva

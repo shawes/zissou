@@ -3,7 +3,7 @@ package biology
 import grizzled.slf4j._
 import io.config.ConfigMappings._
 import io.config.FishConfig
-import locals.{Constants, PelagicLarvaeState}
+import locals.Constants
 import org.apache.commons.math3.distribution.NormalDistribution
 import org.joda.time.DateTime
 
@@ -26,7 +26,7 @@ class FishFactory(fish: FishConfig, save: Boolean) extends Logging {
         val pld: Double = distribution.sample
         debug("The pld is " + pld)
         larvaeAtSite append spawningFish.createReefFish(larvaeCount, convertDaysToSeconds(pld), convertDaysToSeconds(pld),
-          new Birthplace(site.title, site.location), PelagicLarvaeState.Pelagic, time, fish.ontogeny, fish.verticalMigrationProbabilities)
+          new Birthplace(site.title, site.location), time, fish.ontogeny, fish.verticalMigrationProbabilities)
       }
       larvae append larvaeAtSite.toList
       debug("Larvae size is now: " + larvaeCount)

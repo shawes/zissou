@@ -17,15 +17,13 @@ abstract class Larva(val id: Int,
                      val pelagicLarvalDuration: Int,
                      val maximumLifeSpan: Int,
                      val birthplace: Birthplace,
-                     var state: PelagicLarvaeState,
                      val birthday: DateTime,
                      val ontogeny: Ontogeny,
                      val verticalMigration: VerticalMigration) extends Logging {
 
-  //val birthday : DateTime = DateTime.now()
-
   val history: ListBuffer[TimeCapsule] = ListBuffer.empty[TimeCapsule]
-
+  //val birthday : DateTime = DateTime.now()
+  var state = PelagicLarvaeState.Pelagic
   var age: Int = 0
 
   var settlementDate : DateTime = Constants.MinimumDate
@@ -33,17 +31,34 @@ abstract class Larva(val id: Int,
   var polygon: HabitatPolygon
   var hasSettled: Boolean = false
 
-  def attainedPld : Boolean = age >= pelagicLarvalDuration
 
-  def attainedMaximumLifeSpan : Boolean = age >= maximumLifeSpan
+  def hasBeenPelagicTooLong: Boolean = age >= pelagicLarvalDuration
 
-  def inCompetencyWindow: Boolean = age < pelagicLarvalDuration
+  def isTooOld: Boolean = age >= maximumLifeSpan
 
-  def canMove : Boolean = state == PelagicLarvaeState.Pelagic
+  def inCompetencyWindow: Boolean = age < pelagicLarvalDuration //TODO: Need to code in the competency window
 
-  def move: Unit = {
-    changeState(PelagicLarvaeState.Pelagic)
+  def isPelagic: Boolean = state == PelagicLarvaeState.Pelagic
+
+  def isDead: Boolean = state == PelagicLarvaeState.Dead
+
+  def isSettled: Boolean = state == PelagicLarvaeState.Settled
+
+  def move(newPosition: GeoCoordinate): Unit = {
+    if (newPosition.isValid) {
+      updatePosition(newPosition)
+      changeState(PelagicLarvaeState.Pelagic)
+    } else {
+      error("The position the larva is being asked to move to is not valid")
+    }
   }
+
+  private def changeState(newState: PelagicLarvaeState): Unit = {
+    state = newState
+    saveState()
+  }
+
+  def updatePosition(newPos: GeoCoordinate): Unit = position = newPos
 
   def growOlder(seconds: Int): Unit = age += seconds
 
@@ -61,21 +76,16 @@ abstract class Larva(val id: Int,
     debug("History is has this saved " + history.size)
   }
 
-  def getOntogeny: OntogenyState = ontogeny.getState(age)
-
   def kill(): Unit = {
     changeState(PelagicLarvaeState.Dead)
 
   }
 
-  private def changeState(newState: PelagicLarvaeState): Unit = {
-    state = newState
-    saveState()
-  }
-
   def getOntogeneticVerticalMigrationDepth(random: RandomNumberGenerator): Double = {
     verticalMigration.getDepth(getOntogeny, random)
   }
+
+  def getOntogeny: OntogenyState = ontogeny.getState(age)
 
   override def toString: String = "id:" + id + "," +
     "birthday:" + birthday + "," +
