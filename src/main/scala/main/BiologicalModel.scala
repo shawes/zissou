@@ -58,9 +58,9 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
 
   private def move(disperser: ParticleDisperser, larva: ReefFish): Unit = {
     if (fish.canSwim) {
-      disperser.updatePosition(larva, clock, fish.swimmingSpeed)
+      disperser.updatePosition(larva, clock, fish.swimmingSpeed, habitatManager)
     } else {
-      disperser.updatePosition(larva, clock)
+      disperser.updatePosition(larva, clock, habitatManager)
     }
   }
 

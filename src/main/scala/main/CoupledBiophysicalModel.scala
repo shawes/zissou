@@ -47,7 +47,7 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
       iteration = iteration + 1
     }
 
-    val resultsWriter = new ResultsWriter(biology.fishLarvae.flatten.toList, config.output)
+    val resultsWriter = new ResultsWriter(biology.fishLarvae.toList, config.output)
     resultsWriter.write()
     debug("Simulation run completed at " + new Duration(DateTime.now, clock.start).getStandardMinutes)
   }

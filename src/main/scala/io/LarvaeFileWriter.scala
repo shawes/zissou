@@ -5,17 +5,21 @@ import java.io.{BufferedWriter, File}
 import biology.ReefFish
 import grizzled.slf4j.Logging
 
-class LarvaeFileWriter(larvae: List[ReefFish], file: File) extends FileWriterTrait with Logging {
+class LarvaeFileWriter(larvae: List[List[ReefFish]], filepath: String) extends FileWriterTrait with Logging {
 
   val columnHeaders = "id,born,age,stage,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
 
   def write(): Unit = {
     info("Writing " + larvae.size + " larvae")
-    val bw = new BufferedWriter(new java.io.FileWriter(file))
-    bw.write(columnHeaders)
-    bw.newLine()
-    larvae.foreach(larvae => bw.write(writeCsvRow(larvae)))
-    bw.close()
+    var count = 1
+    for (larvaeList <- larvae) {
+      val bw = new BufferedWriter(new java.io.FileWriter(new File(filepath + "//larvae_paths" + count + ".csv")))
+      bw.write(columnHeaders)
+      bw.newLine()
+      larvaeList.foreach(larva => bw.write(writeCsvRow(larva)))
+      bw.close()
+      count += 1
+    }
   }
 
   private def writeCsvRow(larva: ReefFish): String = {
@@ -30,7 +34,7 @@ class LarvaeFileWriter(larvae: List[ReefFish], file: File) extends FileWriterTra
       sb append larva.pelagicLarvalDuration + ","
       sb append larva.birthplace.name + ","
       sb append hist.state + ","
-      sb append hist.habitat.habitat + ","
+      sb append hist.habitat.id + ","
       sb append hist.habitat.habitat.toString + ","
       sb append hist.position.latitude + ","
       sb append hist.position.longitude + ","

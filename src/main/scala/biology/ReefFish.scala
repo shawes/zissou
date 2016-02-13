@@ -21,7 +21,7 @@ class ReefFish(id: Int,
     ontogeny,
     verticalMigration) with Logging {
 
-  var polygon: HabitatPolygon = new GeometryAdaptor(null, 1, HabitatType.Land)
+  var polygon: HabitatPolygon = new GeometryAdaptor(null, -1, HabitatType.Ocean) //TODO: Think about how this works
 
   def this() = this(0, 0, 0, null, DateTime.now(), null, null)
 }

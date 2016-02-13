@@ -68,10 +68,14 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
         }
     }
     debug("The velocity is " + flowPolygons(index).velocity)
-    if (bumped) {
-      interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
+    if (!flowPolygons(index).velocity.isUndefined) {
+      if (bumped) {
+        interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
+      } else {
+        interpolator.interpolate(coordinate, flowPolygons, index)
+      }
     } else {
-      interpolator.interpolate(coordinate, flowPolygons, index)
+      new Velocity()
     }
 
   }

@@ -10,6 +10,7 @@ object Constants {
   val MaxLongitudeShift = 0.015
   val LarvaeCapacityAtSite = 10000
   val NoClosestReefFound = -1
+  val Ocean = -27
   val MinimumDate = new DateTime(1976,1,1,0,0)
   val EarthsRadius = 6378137.0
 

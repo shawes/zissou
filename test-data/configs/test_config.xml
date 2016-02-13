@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <simulationVariables>
     <inputFiles>
-        <flowFilePath>test-data/flow/large/2005</flowFilePath>
+        <flowFilePath>/Users/Steven/Development/NetCdfToXmlParser/data</flowFilePath>
         <habitatFilePath>test-data/shape/ALLpatches.shp</habitatFilePath>
     </inputFiles>
     <spawn>
@@ -9,15 +9,15 @@
             <name>site_1</name>
             <patchNumber>186</patchNumber>
             <site>
-                <longitude>153.022</longitude>
-                <latitude>-24.502</latitude>
+                <longitude>153.11</longitude>
+                <latitude>-32.18</latitude>
                 <depth>5</depth>
                 <flowId>1</flowId>
             </site>
-            <numberOfLarvae>10</numberOfLarvae>
+            <numberOfLarvae>1</numberOfLarvae>
             <releasePeriod>
-                <start>2005-01-01T00:00:00</start>
-                <end>2005-01-05T00:00:00</end>
+                <start>2004-01-01T00:00:00</start>
+                <end>2004-01-05T00:00:00</end>
             </releasePeriod>
             <interval>5</interval>
         </spawningLocation>
@@ -25,15 +25,15 @@
             <name>site_2</name>
             <patchNumber>186</patchNumber>
             <site>
-                <longitude>153.086</longitude>
-                <latitude>-24.402</latitude>
+                <longitude>153.60</longitude>
+                <latitude>-30.60</latitude>
                 <depth>5</depth>
                 <flowId>0</flowId>
             </site>
-            <numberOfLarvae>10</numberOfLarvae>
+            <numberOfLarvae>1</numberOfLarvae>
             <releasePeriod>
-                <start>2005-01-01T00:00:00</start>
-                <end>2005-01-05T00:00:00</end>
+                <start>2004-01-01T00:00:00</start>
+                <end>2004-01-05T00:00:00</end>
             </releasePeriod>
             <interval>5</interval>
         </spawningLocation>
@@ -47,9 +47,9 @@
     <fish>
         <swimmingAbility>Passive</swimmingAbility>
         <ontogeny>
-            <flexion>518400</flexion>
-            <preFlexion>172800</preFlexion>
-            <postFlexion>691200</postFlexion>
+            <flexion>318400</flexion>
+            <preFlexion>132800</preFlexion>
+            <postFlexion>591200</postFlexion>
         </ontogeny>
         <meanSwimmingSpeed>0.102</meanSwimmingSpeed>
         <standDeviationSwimmingSpeed>0.019</standDeviationSwimmingSpeed>
@@ -81,18 +81,18 @@
             </verticalMigrationProbability>
         </verticalMigrationProbabilities>
         <pelagicLarvalDuration>
-            <mean>3</mean>
-            <stdev>1.1</stdev>
+            <mean>10</mean>
+            <stdev>0.6</stdev>
             <distribution>Normal</distribution>
         </pelagicLarvalDuration>
-        <isMortal>true</isMortal>
+        <isMortal>false</isMortal>
         <mortalityRate>0.26</mortalityRate>
         <nonSettlementPeriod>85</nonSettlementPeriod>
     </fish>
     <flow>
         <period>
-            <start>2005-01-01T00:00:00</start>
-            <end>2005-01-05T00:00:00</end>
+            <start>2004-01-01T00:00:00</start>
+            <end>2004-01-14T00:00:00</end>
         </period>
         <timeStep>
             <unit>Hour</unit>

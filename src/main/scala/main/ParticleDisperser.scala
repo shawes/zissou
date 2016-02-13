@@ -5,14 +5,15 @@ import grizzled.slf4j._
 import maths.RandomNumberGenerator
 import maths.integration.RungeKuttaIntegration
 import physical.GeoCoordinate
+import physical.habitat.HabitatManager
 
 class ParticleDisperser(integrator: RungeKuttaIntegration, randomNumbers: RandomNumberGenerator) extends Logging {
 
-  def updatePosition(larva: ReefFish, clock: SimulationClock): Unit = {
-    updatePosition(larva, clock, 0)
+  def updatePosition(larva: ReefFish, clock: SimulationClock, habitats: HabitatManager): Unit = {
+    updatePosition(larva, clock, 0, habitats)
   }
 
-  def updatePosition(larva: ReefFish, clock: SimulationClock, swimmingSpeed: Double): Unit = {
+  def updatePosition(larva: ReefFish, clock: SimulationClock, swimmingSpeed: Double, habitats: HabitatManager): Unit = {
     debug("The old position is " + larva.position)
     val migratedPositionVertically: GeoCoordinate = applyVerticalMigration(larva)
 
@@ -23,7 +24,13 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, randomNumbers: Random
       count += 1
     }
 
-    if (position.isValid) larva.move(position) else larva.move(larva.position)
+    if (position.isValid && habitats.isOcean(position)) {
+      larva.move(position, habitats.getHabitatOfCoordinate(position))
+    }
+    else {
+      // Don't move
+      //larva.move(larva.position,habitats.getHabitatOfCoordinate(position))
+    }
     debug("The new position is " + position)
   }
 

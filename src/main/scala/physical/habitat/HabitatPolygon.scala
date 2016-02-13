@@ -28,6 +28,7 @@ class GeometryAdaptor(val g: Geometry, val id: Int, val habitat: HabitatType) ex
   def contains(coordinate: GeoCoordinate): Boolean = g.contains(GeometryToGeoCoordinateAdaptor.toPoint(coordinate))
   def distance(coordinate: GeoCoordinate): Double = g.distance(GeometryToGeoCoordinateAdaptor.toPoint(coordinate))
 
+
   def isWithinDistance(coordinate: GeoCoordinate, distance: Double): Boolean =
     g.isWithinDistance(GeometryToGeoCoordinateAdaptor.toPoint(coordinate), distance)
 }

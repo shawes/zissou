@@ -1,7 +1,5 @@
 package io
 
-import java.io.File
-
 import org.scalatest.Matchers._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
@@ -17,15 +15,15 @@ class LarvalFileWriterTest extends FlatSpec with MockitoSugar with PrivateMethod
   }
 
   it should "initialise with an empty list" in {
-    val mockFile = mock[File]
-    val larvalFileWriter = new LarvaeFileWriter(Nil, mockFile)
+    //val mockFile = mock[File]
+    val larvalFileWriter = new LarvaeFileWriter(Nil, "")
     larvalFileWriter should not be null
   }
 
   it should "have the following column headers" in {
     val headers = "id,born,age,stage,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
-    val mockFile = mock[File]
-    val larvalFileWriter = new LarvaeFileWriter(Nil, mockFile)
+    //val mockFile = mock[File]
+    val larvalFileWriter = new LarvaeFileWriter(Nil, "")
     val result = larvalFileWriter.columnHeaders
     result should equal(headers)
   }
