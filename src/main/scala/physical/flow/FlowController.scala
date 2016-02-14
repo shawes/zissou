@@ -37,46 +37,67 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
     new Velocity
   }
 
-  def getVelocityOfCoordinate(coordinate: GeoCoordinate, isFuture: Boolean): Velocity = {
+  /*  def getVelocityOfCoordinate(coordinate: GeoCoordinate, isFuture: Boolean): Velocity = {
 
+      var index: Int = 0
+      var bumped: Boolean = false
+      var bumpedCoordinate: GeoCoordinate = new GeoCoordinate()
+      //var coord = coordinate
+
+      val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
+      //logger.debug("Flow polygons is size " + flowPolygons.length)
+      //logger.debug("Coordinate is " + coordinate)
+
+      try {
+        index = getIndexOfPolygon(coordinate)
+        debug("Found the index " + index)
+        //logger.debug("flow lr")
+        //val polygon = flowPolygons(index)
+      } catch {
+        case e: IllegalArgumentException =>
+          warn("Have to bump the coordinate " + coordinate)
+          bumpedCoordinate = bumpCoordinate(coordinate)
+
+          try {
+            index = getIndexOfPolygon(bumpedCoordinate)
+            bumped = true
+          } catch {
+            case e: IllegalArgumentException =>
+              error("The coordinate " + bumpedCoordinate + " is not in the flow field")
+              return new Velocity()
+          }
+      }
+      debug("The velocity is " + flowPolygons(index).velocity)
+      if (!flowPolygons(index).velocity.isUndefined) {
+        if (bumped) {
+          interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
+        } else {
+          interpolator.interpolate(coordinate, flowPolygons, index)
+        }
+      } else {
+        new Velocity()
+      }
+
+    }*/
+
+  def getVelocityOfCoordinate(coordinate: GeoCoordinate, isFuture: Boolean): Velocity = {
     var index: Int = 0
     var bumped: Boolean = false
-    var bumpedCoordinate: GeoCoordinate = new GeoCoordinate()
-    //var coord = coordinate
+    var velocity: Velocity = new Velocity()
+    //var bumpedCoordinate: GeoCoordinate = new GeoCoordinate()
 
     val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
-    //logger.debug("Flow polygons is size " + flowPolygons.length)
-    //logger.debug("Coordinate is " + coordinate)
-
-    try {
-      index = getIndexOfPolygon(coordinate)
-      debug("Found the index " + index)
-      //logger.debug("flow lr")
-      //val polygon = flowPolygons(index)
-    } catch {
-      case e: IllegalArgumentException =>
-        warn("Have to bump the coordinate " + coordinate)
-        bumpedCoordinate = bumpCoordinate(coordinate)
-
-        try {
-          index = getIndexOfPolygon(bumpedCoordinate)
-          bumped = true
-        } catch {
-          case e: IllegalArgumentException =>
-            error("The coordinate " + bumpedCoordinate + " is not in the flow field")
-            return new Velocity()
-        }
-    }
-    debug("The velocity is " + flowPolygons(index).velocity)
-    if (!flowPolygons(index).velocity.isUndefined) {
-      if (bumped) {
-        interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
-      } else {
-        interpolator.interpolate(coordinate, flowPolygons, index)
-      }
+    val polygonIndex = getIndexOfPolygon(coordinate)
+    val velocityAtCentroid = flowPolygons(polygonIndex).velocity
+    if (index == Constants.LightWeightException.CoordinateNotFoundException) {
+      val bumpedCoordinate = bumpCoordinate(coordinate)
+      index = getIndexOfPolygon(bumpedCoordinate)
+      velocity = interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
     } else {
-      new Velocity()
+      velocity = interpolator.interpolate(coordinate, flowPolygons, index)
     }
+
+    if (velocity.isUndefined) velocityAtCentroid else velocity
 
   }
 

@@ -77,12 +77,12 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   private def settle(larva: ReefFish): Unit = {
     if (larva.inCompetencyWindow) {
       val reefIndex = habitatManager.isCoordinateOverReef(larva.position)
-      if (reefIndex != Constants.NoClosestReefFound) {
+      if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
         debug("Larva is over reef")
         larva.settle(habitatManager.getReef(reefIndex), clock.now)
       } else if (habitatManager.isBuffered && habitatManager.isCoordinateOverBuffer(larva.position)) {
         val reefIndex = habitatManager.getIndexOfNearestReef(larva.position)
-        if (reefIndex != Constants.NoClosestReefFound) {
+        if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
           debug("Larva is within reef buffer")
           larva.settle(habitatManager.getReef(reefIndex), clock.now)
         }

@@ -81,12 +81,12 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   //def getReef(index: Int): HabitatPolygon = settlementHabitatsHashTable.get(index).get
 
   def landStuff(): Unit = {
-    debug("The land area has this many points: " + landPolygon.head.coordinates.size)
+    debug("The land area has this many points: " + landPolygon.head.coordinates.length)
   }
 
   def isCoordinateOverReef(coordinate: GeoCoordinate): Int = {
     //debug("Entering isCoordinateOverReef")
-    var reefIndex = Constants.NoClosestReefFound
+    var reefIndex = Constants.LightWeightException.NoReefFoundException
     //val location = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
 
     for (i <- reefHabitatPolygons.indices) {
@@ -106,14 +106,14 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   def getIndexOfNearestReef(coordinate: GeoCoordinate): Int = {
 
     var shortestDistance: Double = Double.MaxValue
-    var closestReefId: Int = Constants.NoClosestReefFound
+    var closestReefId: Int = Constants.LightWeightException.NoReefFoundException
     //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
 
     for (i <- reefHabitatPolygons.indices) {
       val distance = reefHabitatPolygons(i).distance(coordinate)
       debug("Distance between " + coordinate + " and " + reefHabitatPolygons(i).centroid.toString)
       debug("Distance from JTS is " + distance)
-      debug("Distance converted is " + getAngulardistance(distance))
+      debug("Distance converted is " + getAngularDistance(distance))
       if (distance < buffer.size && distance < shortestDistance) {
         shortestDistance = distance
         closestReefId = i
@@ -122,7 +122,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     closestReefId
   }
 
-  private def getAngulardistance(dist: Double): Double = {
+  private def getAngularDistance(dist: Double): Double = {
     dist * (Math.PI / 180) * 6378137
   }
   /*

@@ -9,7 +9,7 @@ object Constants {
   val MaxLatitudeShift = 0.015
   val MaxLongitudeShift = 0.015
   val LarvaeCapacityAtSite = 10000
-  val NoClosestReefFound = -1
+  //val NoClosestReefFound = -1
   val Ocean = -27
   val MinimumDate = new DateTime(1976,1,1,0,0)
   val EarthsRadius = 6378137.0
@@ -24,6 +24,13 @@ object Constants {
     val YCoordinate = (6, "Y_COORD")
     val Area = (7, "AREA")
     val Perimeter = (8, "PERIMETER")
+  }
+
+  object LightWeightException {
+    val NoReefFoundException = -100
+    val UndefinedVelocityException = -200
+    val UndefinedCoordinateException = -300
+    val CoordinateNotFoundException = -400
   }
 
 
