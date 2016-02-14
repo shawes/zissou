@@ -81,14 +81,14 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
     }*/
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, isFuture: Boolean): Velocity = {
-    var index: Int = 0
+    // var index: Int = 0
     var bumped: Boolean = false
     var velocity: Velocity = new Velocity()
     //var bumpedCoordinate: GeoCoordinate = new GeoCoordinate()
 
     val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
-    val polygonIndex = getIndexOfPolygon(coordinate)
-    val velocityAtCentroid = flowPolygons(polygonIndex).velocity
+    var index = getIndexOfPolygon(coordinate)
+    val velocityAtCentroid = flowPolygons(index).velocity
     if (index == Constants.LightWeightException.CoordinateNotFoundException) {
       val bumpedCoordinate = bumpCoordinate(coordinate)
       index = getIndexOfPolygon(bumpedCoordinate)
@@ -102,19 +102,21 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
   }
 
   def getIndexOfPolygon(coordinate: GeoCoordinate): Int = {
-    debug("The flow: " + flow.dimensions.latitudeBoundary)
-    require(flow.dimensions.latitudeBoundary.contains(coordinate.latitude) && flow.dimensions.longitudeBoundary.contains(coordinate.longitude))
+    if (flow.dimensions.latitudeBoundary.contains(coordinate.latitude) && flow.dimensions.longitudeBoundary.contains(coordinate.longitude)) {
 
-    val lat1 = correctNegativeCoordinate(coordinate.latitude)
-    val lon1 = correctNegativeCoordinate(coordinate.longitude)
-    val lat2 = correctNegativeCoordinate(flow.dimensions.latitudeBoundary.start)
-    val lon2 = correctNegativeCoordinate(flow.dimensions.longitudeBoundary.start)
+      val lat1 = correctNegativeCoordinate(coordinate.latitude)
+      val lon1 = correctNegativeCoordinate(coordinate.longitude)
+      val lat2 = correctNegativeCoordinate(flow.dimensions.latitudeBoundary.start)
+      val lon2 = correctNegativeCoordinate(flow.dimensions.longitudeBoundary.start)
 
-    val x = ((lat1 - lat2) / flow.dimensions.cellSize.cell.width).toInt + 1
-    val y = ((lon1 - lon2) / flow.dimensions.cellSize.cell.width).toInt + 1
-    val z = ensureDepthIsInRange((coordinate.depth / flow.dimensions.cellSize.cell.depth).toInt)
+      val x = ((lat1 - lat2) / flow.dimensions.cellSize.cell.width).toInt + 1
+      val y = ((lon1 - lon2) / flow.dimensions.cellSize.cell.width).toInt + 1
+      val z = ensureDepthIsInRange((coordinate.depth / flow.dimensions.cellSize.cell.depth).toInt)
 
-    flow.dimensions.cellSize.width * x + y + z * flow.dimensions.cellSize.layerCellCount
+      flow.dimensions.cellSize.width * x + y + z * flow.dimensions.cellSize.layerCellCount
+    } else {
+      Constants.LightWeightException.CoordinateNotFoundException
+    }
   }
 
   def correctNegativeCoordinate(value: Double): Double = {
