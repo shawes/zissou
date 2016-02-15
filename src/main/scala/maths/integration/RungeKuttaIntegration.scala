@@ -13,7 +13,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
   def integrate(coordinate: GeoCoordinate, time: DateTime, speed: Double): GeoCoordinate = {
 
     val coordinateVelocity = flow.getVelocityOfCoordinate(coordinate, isFuture = false)
-    //debug("Starting an RK4 integration on coord " + coordinate + "with velocity " + coordinateVelocity)
+    debug("Starting an RK4 integration on coord " + coordinate + "with velocity " + coordinateVelocity)
     val velocity = turbulence.apply(coordinateVelocity)
 
     //debug("Got the velocity " + velocity + " at the location " + coordinate)
@@ -56,8 +56,11 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
     //debug("New coord is " + newCoordinate)
     val newVelocity = flow.getVelocityOfCoordinate(newCoordinate, time.plusSeconds(normalisedTime), time, partialTimeStep)
     //debug("New velocity is " + newVelocity)
-
-    new RungeKuttaStepDerivative(newVelocity, newCoordinate)
+    if (newCoordinate.isUndefined || newVelocity.isUndefined) {
+      new RungeKuttaStepDerivative(new Velocity(Double.NaN, Double.NaN), new GeoCoordinate(Double.NaN, Double.NaN, Double.NaN))
+    } else {
+      new RungeKuttaStepDerivative(newVelocity, newCoordinate)
+    }
 
   }
 }
