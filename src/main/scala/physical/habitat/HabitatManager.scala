@@ -18,6 +18,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   //val habitats: SimpleFeatureCollection = habitatReader.read(file)
   private val habitatPolygons: List[GeometryAdaptor] = defineAllPolygons(habitatReader.read(file))
   private val reefHabitatPolygons: List[GeometryAdaptor] = habitatPolygons.filter(x => x.habitat == HabitatType.Reef || x.habitat == HabitatType.Other)
+  private val bufferedPolygons: List[GeometryAdaptor] = defineAllBufferedPolygons()
   private val landPolygon: List[GeometryAdaptor] = habitatPolygons.filter(x => x.habitat == HabitatType.Land)
 
   //val filteredHabitats: SimpleFeatureCollection = filterHabitats
@@ -56,6 +57,10 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     polys.toList
   }
 
+  def landStuff(): Unit = {
+    debug("The land area has this many points: " + landPolygon.head.coordinates.length)
+  }
+
   /*  /*
     This method find the closest reef to the point returns null otherwise
      */
@@ -80,10 +85,6 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
 
   //def getReef(index: Int): HabitatPolygon = settlementHabitatsHashTable.get(index).get
 
-  def landStuff(): Unit = {
-    debug("The land area has this many points: " + landPolygon.head.coordinates.length)
-  }
-
   def isCoordinateOverReef(coordinate: GeoCoordinate): Int = {
     //debug("Entering isCoordinateOverReef")
     var reefIndex = Constants.LightWeightException.NoReefFoundException
@@ -100,7 +101,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
 
   def isCoordinateOverBuffer(coordinate: GeoCoordinate): Boolean = {
     val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
-    buffer.bufferShapes.exists(x => point.within(x))
+    bufferedPolygons.exists(x => point.within(x.g))
   }
 
   def getIndexOfNearestReef(coordinate: GeoCoordinate): Int = {
@@ -117,6 +118,10 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
       }
     }
     closestReefId
+  }
+
+  private def defineAllBufferedPolygons(): List[GeometryAdaptor] = {
+    reefHabitatPolygons.map(reef => new GeometryAdaptor(reef.g.buffer(buffer.size / 100), reef.id, reef.habitat))
   }
 
 
