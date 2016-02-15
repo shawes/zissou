@@ -128,8 +128,9 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
   }
 
   def bumpCoordinate(coordinate: GeoCoordinate): GeoCoordinate = {
-    new GeoCoordinate(coordinate.latitude + (randomNumbers.get * Constants.MaxLatitudeShift),
-      coordinate.longitude + (randomNumbers.get * Constants.MaxLongitudeShift), coordinate.depth)
+    val longitude = if (randomNumbers.coinToss) coordinate.longitude + Constants.MaxLongitudeShift else coordinate.longitude - Constants.MaxLongitudeShift
+    val latitude = if (randomNumbers.coinToss) coordinate.latitude + Constants.MaxLatitudeShift else coordinate.latitude - Constants.MaxLatitudeShift
+    new GeoCoordinate(latitude, longitude, coordinate.depth)
   }
 
   def refresh(polygons: Array[FlowPolygon]) {

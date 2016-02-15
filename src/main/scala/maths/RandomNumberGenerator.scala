@@ -9,6 +9,8 @@ class RandomNumberGenerator(seed: Long) {
   def get: Double = random.nextDouble
 
   def get(low: Double, high: Double): Double = random.nextDouble * (high - low) + low
+
+  def coinToss: Boolean = random.nextBoolean()
 }
 
 
