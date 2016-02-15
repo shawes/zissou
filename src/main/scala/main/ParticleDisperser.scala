@@ -25,11 +25,11 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, randomNumbers: Random
     //}
 
     if (position.isValid) {
-      larva.move(position, habitats.getHabitatOfCoordinate(position))
+      larva.move(position) //, habitats.getHabitatOfCoordinate(position))
     } else {
       // Stay in the same place and try next time
       debug("Couldn't move to position " + position + ", so staying at " + larva.position)
-      larva.move(larva.position, habitats.getHabitatOfCoordinate(position))
+      larva.move(larva.position) //, habitats.getHabitatOfCoordinate(position))
     }
 
     //if (position.isValid && habitats.isOcean(position)) {

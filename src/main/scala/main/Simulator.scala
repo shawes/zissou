@@ -9,7 +9,18 @@ object Simulator extends App with Logging {
 
   try {
 
+    //val sydney = new GeoCoordinate(-33.865143,151.209900)
+    //val orange = new GeoCoordinate(-33.283577,149.101273)
 
+    // val known_dist = 69.0
+
+    //val calc_dist = GeometryToGeoCoordinateAdaptor.toPoint(sydney).distance(GeometryToGeoCoordinateAdaptor.toPoint(orange))
+
+    //info("The calculate distance is: "+ calc_dist)
+    //val calc_dist2 =  calc_dist * (Math.PI / 180) * 6378137
+    //info("Converted to radians is: " + calc_dist2 )
+    //System.exit(0)
+    //info("Using conversion = " + )
 
     //    var chooser = new FileChooser(new File("/Users/Steven/Documents/University/Phd/Modelling/Testing/Scala Conversion"))
     //    chooser.multiSelectionEnabled_=(b = false)

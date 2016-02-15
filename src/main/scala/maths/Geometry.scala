@@ -1,5 +1,6 @@
 package maths
 
+import locals.Constants
 import physical.{GeoCoordinate, Velocity}
 
 class Geometry {
@@ -31,6 +32,18 @@ class Geometry {
 
     new GeoCoordinate(point.latitude + (xDistance / (kmLatitude * 1000)),
       point.longitude + (yDistance / (kmLongitude * 1000)), point.depth)
+  }
+
+  def getDistanceBetweenTwoPoints(p1: GeoCoordinate, p2: GeoCoordinate): Double = {
+
+    val lat1 = Math.toRadians(p1.latitude)
+    val lat2 = Math.toRadians(p2.latitude)
+    val lon1 = Math.toRadians(p1.longitude)
+    val lon2 = Math.toRadians(p2.longitude)
+
+    Math.acos(Math.sin(lat1) * Math.sin(lat2) +
+      Math.cos(lat1) * Math.cos(lat2) *
+        Math.cos(lon2 - lon1)) * Constants.EarthsRadius
   }
 
   private def ceilingDepth(depth: Double): Double = {

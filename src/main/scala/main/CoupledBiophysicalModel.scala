@@ -50,7 +50,7 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
       }
       val stepEnd = DateTime.now()
       val duration = new Duration(stepStart, stepEnd)
-      info("Step " + iteration + " has been completed in " + duration.getStandardMinutes + " mins")
+      info("Step " + iteration + " has been completed in " + duration.toStandardSeconds + " secs")
       iteration = iteration + 1
     }
 

@@ -43,11 +43,11 @@ abstract class Larva(val id: Int,
 
   def isSettled: Boolean = state == PelagicLarvaeState.Settled
 
-  def move(newPosition: GeoCoordinate, newHabitat: HabitatPolygon): Unit = {
+  def move(newPosition: GeoCoordinate): Unit = {
     if (newPosition.isValid) {
       changeState(PelagicLarvaeState.Pelagic)
       updatePosition(newPosition)
-      updateHabitat(newHabitat)
+      //updateHabitat(newHabitat)
     } else {
       error("The position the larva is being asked to move to is not valid")
     }
@@ -83,11 +83,11 @@ abstract class Larva(val id: Int,
     debug("History is has this saved " + history.size)
   }
 
+  def getOntogeny: OntogenyState = ontogeny.getState(age)
+
   def getOntogeneticVerticalMigrationDepth(random: RandomNumberGenerator): Double = {
     verticalMigration.getDepth(getOntogeny, random)
   }
-
-  def getOntogeny: OntogenyState = ontogeny.getState(age)
 
   override def toString: String = "id:" + id + "," +
     "birthday:" + birthday + "," +

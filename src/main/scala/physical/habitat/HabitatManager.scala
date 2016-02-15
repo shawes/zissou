@@ -110,10 +110,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
 
     for (i <- reefHabitatPolygons.indices) {
-      val distance = reefHabitatPolygons(i).distance(coordinate)
-      debug("Distance between " + coordinate + " and " + reefHabitatPolygons(i).centroid.toString)
-      debug("Distance from JTS is " + distance)
-      debug("Distance converted is " + getAngularDistance(distance))
+      val distance = reefHabitatPolygons(i).distance(coordinate) * 100
       if (distance < buffer.size && distance < shortestDistance) {
         shortestDistance = distance
         closestReefId = i
@@ -122,9 +119,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     closestReefId
   }
 
-  private def getAngularDistance(dist: Double): Double = {
-    dist * (Math.PI / 180) * 6378137
-  }
+
   /*
           public int GetIndexOfNearestReef(GeoCoordinate c)
         {
@@ -209,22 +204,20 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
      hash
    }*/
 
-  def isOcean(coordinate: GeoCoordinate): Boolean = {
-    val habitat = getHabitatOfCoordinate(coordinate).habitat
-    debug("Habitat is " + habitat)
-    habitat != HabitatType.Land && habitat != HabitatType.Beach
-  }
+  //  def isOcean(coordinate: GeoCoordinate): Boolean = {
+  //    val habitat = getHabitatOfCoordinate(coordinate).habitat
+  //    debug("Habitat is " + habitat)
+  //    habitat != HabitatType.Land && habitat != HabitatType.Beach
+  //  }
 
   //}
 
-  def getHabitatOfCoordinate(coordinate: GeoCoordinate): HabitatPolygon = {
-
-
-    for (i <- habitatPolygons.indices) {
-      if (habitatPolygons(i).contains(coordinate)) return habitatPolygons(i)
-    }
-    new GeometryAdaptor(null, Constants.Ocean, HabitatType.Ocean)
-  }
+  //  def getHabitatOfCoordinate(coordinate: GeoCoordinate): HabitatPolygon = {
+  //    for (i <- habitatPolygons.indices) {
+  //      if (habitatPolygons(i).contains(coordinate)) return habitatPolygons(i)
+  //    }
+  //    new GeometryAdaptor(null, Constants.Ocean, HabitatType.Ocean)
+  //  }
 
 
   /*
