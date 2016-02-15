@@ -27,34 +27,38 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
     if (future == now) return currentVelocity
     if (future == now.plusSeconds(timeStep)) return futureVelocity
     if (future > now && future < now.plusSeconds(timeStep)) {
-
       val period: Duration = new Duration(future, now)
       val divisor = 1 / timeStep.toDouble
       val ratioA = period.toStandardSeconds.getSeconds
       val ratioB = timeStep - ratioA
       return currentVelocity * (ratioA * divisor) + futureVelocity * (ratioB * divisor)
     }
-    new Velocity
+    new Velocity(Double.NaN, Double.NaN)
   }
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, isFuture: Boolean): Velocity = {
 
-    var velocity: Velocity = new Velocity()
+    var velocity: Velocity = new Velocity(Double.NaN, Double.NaN)
 
     val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
     var index = getIndexOfPolygon(coordinate)
     val velocityAtCentroid = flowPolygons(index).velocity
-    if (index == Constants.LightWeightException.CoordinateNotFoundException) {
-      val bumpedCoordinate = bumpCoordinate(coordinate)
-      index = getIndexOfPolygon(bumpedCoordinate)
-      if (index != Constants.LightWeightException.CoordinateNotFoundException) {
-        velocity = interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
-      }
-    } else {
-      velocity = interpolator.interpolate(coordinate, flowPolygons, index)
-    }
-    if (velocity.isUndefined) velocityAtCentroid else velocity
+    if (!velocityAtCentroid.isUndefined) {
+      debug("Index of flowpolygon is: " + index + ", with coord " + coordinate + ", and centroid velocity is " + velocityAtCentroid)
 
+      if (index == Constants.LightWeightException.CoordinateNotFoundException) {
+        val bumpedCoordinate = bumpCoordinate(coordinate)
+        index = getIndexOfPolygon(bumpedCoordinate)
+        if (index != Constants.LightWeightException.CoordinateNotFoundException) {
+          velocity = interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
+        }
+      } else {
+        velocity = interpolator.interpolate(coordinate, flowPolygons, index)
+      }
+      debug("The interpolated velocity is " + velocity)
+      if (velocity.isUndefined) velocityAtCentroid else velocity
+    }
+    velocity
   }
 
   def getIndexOfPolygon(coordinate: GeoCoordinate): Int = {

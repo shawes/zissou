@@ -11,19 +11,19 @@ import scala.collection.mutable.ArrayBuffer
 class Interpolator(var dim: Dimensions) extends Logging {
 
   def interpolate(coordinate: GeoCoordinate, polygons: Array[FlowPolygon], index: Int): Velocity = {
-    debug("Interpolating the coordinate " + coordinate)
+    //debug("Interpolating the coordinate " + coordinate)
     val polygon = polygons(index)
-    debug("Retrieved the polygon " + polygon.id)
+    //debug("Retrieved the polygon " + polygon.id)
     val latitudeDisplacement = (coordinate.latitude - polygon.vertices(0).latitude) * (1.0 / dim.cellSize.cell.height) + 1.0
     val longitudeDisplacement = (coordinate.longitude - polygon.vertices(0).longitude) * (1.0 / dim.cellSize.cell.width) + 1.0
-    debug("Latitude displacement = " + latitudeDisplacement + ", longitude displacement = " + longitudeDisplacement)
+    //debug("Latitude displacement = " + latitudeDisplacement + ", longitude displacement = " + longitudeDisplacement)
 
     var result = bicubicInterpolation(polygons, index, longitudeDisplacement, latitudeDisplacement)
-    debug("Bi-cubic interpolation = " + result._2)
+    //debug("Bi-cubic interpolation = " + result._2)
 
     if (!result._1) {
       result = bilinearInterpolation(polygons, index, longitudeDisplacement, latitudeDisplacement)
-      debug("Bi-linear interpolation = " + result._2)
+      //debug("Bi-linear interpolation = " + result._2)
     }
     result._2
 

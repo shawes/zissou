@@ -45,9 +45,9 @@ abstract class Larva(val id: Int,
 
   def move(newPosition: GeoCoordinate, newHabitat: HabitatPolygon): Unit = {
     if (newPosition.isValid) {
+      changeState(PelagicLarvaeState.Pelagic)
       updatePosition(newPosition)
       updateHabitat(newHabitat)
-      changeState(PelagicLarvaeState.Pelagic)
     } else {
       error("The position the larva is being asked to move to is not valid")
     }
@@ -58,13 +58,23 @@ abstract class Larva(val id: Int,
   def growOlder(seconds: Int): Unit = age += seconds
 
   def settle(settlementReef: HabitatPolygon, date: DateTime) : Unit = {
+    saveState()
     updateHabitat(settlementReef)
     settlementDate = date
     state = PelagicLarvaeState.Settled
-    saveState()
+
   }
 
   def updateHabitat(newHabitat: HabitatPolygon): Unit = polygon = newHabitat
+
+  def kill(): Unit = {
+    changeState(PelagicLarvaeState.Dead)
+  }
+
+  private def changeState(newState: PelagicLarvaeState): Unit = {
+    state = newState
+    saveState()
+  }
 
   private def saveState(): Unit = {
     debug("Save state called")
@@ -73,21 +83,11 @@ abstract class Larva(val id: Int,
     debug("History is has this saved " + history.size)
   }
 
-  def getOntogeny: OntogenyState = ontogeny.getState(age)
-
-  def kill(): Unit = {
-    changeState(PelagicLarvaeState.Dead)
-
-  }
-
-  private def changeState(newState: PelagicLarvaeState): Unit = {
-    state = newState
-    saveState()
-  }
-
   def getOntogeneticVerticalMigrationDepth(random: RandomNumberGenerator): Double = {
     verticalMigration.getDepth(getOntogeny, random)
   }
+
+  def getOntogeny: OntogenyState = ontogeny.getState(age)
 
   override def toString: String = "id:" + id + "," +
     "birthday:" + birthday + "," +

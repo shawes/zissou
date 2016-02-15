@@ -1,8 +1,9 @@
 package physical.flow
 
-import physical.{Velocity, GeoCoordinate}
-import scala.collection.mutable.ArrayBuffer
 import locals.Constants
+import physical.{GeoCoordinate, Velocity}
+
+import scala.collection.mutable.ArrayBuffer
 
 class FlowPolygon(var id: Int,
                   var vertices: ArrayBuffer[GeoCoordinate],
@@ -12,5 +13,5 @@ class FlowPolygon(var id: Int,
                   var salinity: Double,
                   var seaSurfaceHeight: Double,
                   var isLand: Boolean) {
-  def this() = this(0, new ArrayBuffer(Constants.FlowPolygonVertices), new GeoCoordinate(), new Velocity(), 0, 0, 0, false)
+  def this() = this(0, new ArrayBuffer(Constants.FlowPolygonVertices), new GeoCoordinate(), new Velocity(0, 0), 0, 0, 0, false)
 }
