@@ -37,54 +37,9 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
     new Velocity
   }
 
-  /*  def getVelocityOfCoordinate(coordinate: GeoCoordinate, isFuture: Boolean): Velocity = {
-
-      var index: Int = 0
-      var bumped: Boolean = false
-      var bumpedCoordinate: GeoCoordinate = new GeoCoordinate()
-      //var coord = coordinate
-
-      val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
-      //logger.debug("Flow polygons is size " + flowPolygons.length)
-      //logger.debug("Coordinate is " + coordinate)
-
-      try {
-        index = getIndexOfPolygon(coordinate)
-        debug("Found the index " + index)
-        //logger.debug("flow lr")
-        //val polygon = flowPolygons(index)
-      } catch {
-        case e: IllegalArgumentException =>
-          warn("Have to bump the coordinate " + coordinate)
-          bumpedCoordinate = bumpCoordinate(coordinate)
-
-          try {
-            index = getIndexOfPolygon(bumpedCoordinate)
-            bumped = true
-          } catch {
-            case e: IllegalArgumentException =>
-              error("The coordinate " + bumpedCoordinate + " is not in the flow field")
-              return new Velocity()
-          }
-      }
-      debug("The velocity is " + flowPolygons(index).velocity)
-      if (!flowPolygons(index).velocity.isUndefined) {
-        if (bumped) {
-          interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
-        } else {
-          interpolator.interpolate(coordinate, flowPolygons, index)
-        }
-      } else {
-        new Velocity()
-      }
-
-    }*/
-
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, isFuture: Boolean): Velocity = {
-    // var index: Int = 0
-    var bumped: Boolean = false
+
     var velocity: Velocity = new Velocity()
-    //var bumpedCoordinate: GeoCoordinate = new GeoCoordinate()
 
     val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
     var index = getIndexOfPolygon(coordinate)
@@ -92,11 +47,12 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
     if (index == Constants.LightWeightException.CoordinateNotFoundException) {
       val bumpedCoordinate = bumpCoordinate(coordinate)
       index = getIndexOfPolygon(bumpedCoordinate)
-      velocity = interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
+      if (index != Constants.LightWeightException.CoordinateNotFoundException) {
+        velocity = interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
+      }
     } else {
       velocity = interpolator.interpolate(coordinate, flowPolygons, index)
     }
-
     if (velocity.isUndefined) velocityAtCentroid else velocity
 
   }
@@ -134,32 +90,22 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
   }
 
   def refresh(polygons: Array[FlowPolygon]) {
-    debug("Refreshing the queue")
     if (flowDataQueue.nonEmpty) {
-      debug("Queue size is " + flowDataQueue.size + "before dequeuing")
       flowDataQueue.dequeue()
-      debug("Queue size is " + flowDataQueue.size + "and after dequeuing")
     }
     flowDataQueue += polygons
-    debug("Queue size is " + flowDataQueue.size + "and after enqueuing")
   }
 
   def initialiseFlow(reader: FlowReader) {
     for (i <- 0 until SizeOfQueue) {
-      debug("Reading the first flow data")
-      debug("started reading flow queue")
       val start = DateTime.now
       if (reader.hasNext) flowDataQueue += reader.next()
       val seconds = DateTime.now.getSecondOfDay - start.getSecondOfDay
-      debug("finished reading in " + seconds + " seconds")
+      debug("Finished reading the next flow data in " + seconds + " seconds")
     }
     flow.dimensions = reader.flow.dimensions
     interpolator.dim = reader.flow.dimensions
   }
-
-  //  override def finalize(): Unit = {
-  //     flowDataQueue.dequeueAll(x => true)
-  //  }
 
 
 }
