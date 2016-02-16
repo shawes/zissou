@@ -13,7 +13,7 @@ class DispersalKernelFileWriter(larvae: List[Larva], csvFile: File) extends File
     val bw = new BufferedWriter(new java.io.FileWriter(csvFile))
     bw.write(columnHeaders)
     bw.newLine()
-    larvae.find(l => (l != null) && l.hasSettled).foreach(l => bw.write(getCsvLarvaRow(l)))
+    larvae.find(l => l.isSettled).foreach(l => bw.write(getCsvLarvaRow(l)))
     bw.close()
   }
 

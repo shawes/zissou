@@ -21,7 +21,7 @@ import scala.collection.mutable.ListBuffer
   */
 class BiologicalModel(val config: Configuration, clock: SimulationClock, randomNumbers: RandomNumberGenerator) extends Logging {
 
-  val god = new FishFactory(config.fish, false)
+  val god = new ReefFishFactory(config.fish, false)
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val fish: Fish = config.fish
   val spawn = new Spawn(config.spawn)

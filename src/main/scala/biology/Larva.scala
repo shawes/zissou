@@ -28,7 +28,6 @@ abstract class Larva(val id: Int,
   var settlementDate : DateTime = Constants.MinimumDate
   var position: GeoCoordinate = birthplace.location
   var polygon: HabitatPolygon
-  var hasSettled: Boolean = false
 
 
   def hasBeenPelagicTooLong: Boolean = age >= pelagicLarvalDuration
@@ -60,12 +59,8 @@ abstract class Larva(val id: Int,
     saveState()
   }
 
-  private def saveState(): Unit = {
-    debug("Save state called")
-    val currentState = new TimeCapsule(age, getOntogeny, state, polygon, position)
-    history append currentState
-    debug("History is has this saved " + history.size)
-  }
+  private def saveState() = history append new TimeCapsule(age, getOntogeny, state, polygon, position)
+
 
   def growOlder(seconds: Int): Unit = age += seconds
 

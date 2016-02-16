@@ -12,10 +12,8 @@ import physical.flow.FlowController
   */
 class PhysicalModel(val config: Configuration, randomNumbers: RandomNumberGenerator) extends Logging {
 
-
   val flowDataReader = new FlowReader(config.inputFiles, config.flow)
   val flowController = new FlowController(config.flow, randomNumbers)
-
 
   def initialise(): Unit = {
     flowController.initialiseFlow(flowDataReader)
@@ -26,5 +24,4 @@ class PhysicalModel(val config: Configuration, randomNumbers: RandomNumberGenera
       flowController.refresh(flowDataReader.next())
     }
   }
-
 }

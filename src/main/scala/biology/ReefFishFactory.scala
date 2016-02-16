@@ -9,7 +9,7 @@ import org.joda.time.DateTime
 
 import scala.collection.mutable.ListBuffer
 
-class FishFactory(fish: FishConfig, save: Boolean) extends Logging {
+class ReefFishFactory(fish: FishConfig, save: Boolean) extends Logging {
   val distribution = new NormalDistribution(fish.pelagicLarvalDuration.mean, fish.pelagicLarvalDuration.stdev)
   val spawningFish: LarvaConcreteFactory = new LarvaConcreteFactory
   var larvaeCount: Int = 0

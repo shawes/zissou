@@ -39,15 +39,16 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
     //val coord= new GeoCoordinate(-30.54,152.99)
     //val vel = ocean.flowController.getVelocityOfCoordinate(coord,false)
     //info("Velocity is "+vel)
-
+    val stepTimer = new Timer()
     while (clock.stillTime && biology.canDisperse(clock.now)) {
-      val stepTimer = new Timer()
+      if (clock.isMidnight) stepTimer.reset()
       biology.apply(iteration, larvaeDisperser)
       clock.tick()
       if (clock.isMidnight) {
         ocean.circulate()
+        info("Day iteration " + iteration / 12 + " has been completed in " + stepTimer.stop() + " secs")
       }
-      info("Step iteration " + iteration + " has been completed in " + stepTimer.stop() + " secs")
+
       iteration = iteration + 1
     }
 

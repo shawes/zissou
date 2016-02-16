@@ -28,7 +28,7 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, randomNumbers: Random
       larva.move(position) //, habitats.getHabitatOfCoordinate(position))
     } else {
       // Stay in the same place and try next time
-      warn("Couldn't move to position " + position + ", so staying at " + larva.position)
+      debug("Couldn't move to position " + position + ", so staying at " + larva.position)
       larva.move(larva.position) //, habitats.getHabitatOfCoordinate(position))
     }
 

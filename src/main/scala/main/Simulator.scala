@@ -4,22 +4,25 @@ import java.io.File
 
 import grizzled.slf4j.Logging
 import io.ConfigurationFileReader
+import io.config.Configuration
 
 object Simulator extends App with Logging {
 
   try {
 
-    val configFileReader = new ConfigurationFileReader()
-    val testConfigPathDesktop = args(0)
-
-    val config = configFileReader.read(new File(testConfigPathDesktop))
-    val model = new CoupledBiophysicalModel(config)
-
+    val model = new CoupledBiophysicalModel(readConfigurationFile)
     model.run()
 
   } catch {
-    case ex: Exception => new Error("Zissou could not recover")
+    case ex: Exception =>
+      error("Unrecoverable exception")
+      new Error("Zissou could not recover")
   }
 
 
+  private def readConfigurationFile: Configuration = {
+    val configFileReader = new ConfigurationFileReader()
+    val testConfigPathDesktop = args(0)
+    configFileReader.read(new File(testConfigPathDesktop))
+  }
 }
