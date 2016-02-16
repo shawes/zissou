@@ -1,16 +1,17 @@
 package physical.flow
 
 import com.github.nscala_time.time.Imports._
-import physical.{TimeStep, Grid}
 import maths.ContinuousRange
+import physical.{Grid, TimeStep}
 
-class Flow(var grid: Grid,
-           var latitudeRange: ContinuousRange,
-           var longitudeRange: ContinuousRange,
+class Flow(
            var depth: Depth,
            var period: Interval,
            var timeStep: TimeStep) {
-  def this() = this(new Grid(), null, null, new Depth(), null, null)
+  var dimensions = new Dimensions(new ContinuousRange(), new ContinuousRange(), new ContinuousRange(), new Grid())
 
-  def this(depth: Depth) = this(new Grid(), null, null, depth, null, null)
+  def this() = this(new Depth(), null, new TimeStep())
+
+
+  // def this(peoperties: OceanData) = this(new Grid(), new ContinuousRange(), new ContinuousRange(), depth, null, new TimeStep())
 }

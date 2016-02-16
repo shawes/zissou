@@ -1,17 +1,12 @@
 package io.config
 
+import java.util.{ArrayList => JArrayList, Arrays => JArrays, List => JList}
 import javax.xml.bind.annotation._
-import java.util.{List => JList}
-import java.util.{ArrayList => JArrayList}
-import java.util.{Arrays => JArrays}
 
 @XmlRootElement(name = "simulationVariables")
 @XmlAccessorType(XmlAccessType.FIELD)
 case class Configuration(
-
-                          //@XmlElement(required = true, name="Fish") val fish : FishConfig,
                           @XmlElementWrapper inputFiles: InputFilesConfig,
-                          //@XmlElementWrapper(name="spawn") @XmlElement spawningLocation: java.util.List[SpawningLocationConfig],
                           @XmlElementWrapper spawn: SpawnConfig,
                           @XmlElementWrapper turbulence: TurbulenceConfig,
                           @XmlElementWrapper fish: FishConfig,
@@ -20,11 +15,15 @@ case class Configuration(
                           @XmlElementWrapper output: OutputFilesConfig) {
   def this() = this(InputFilesConfig("", ""),
     SpawnConfig(new JArrayList[SpawningLocationConfig]),
-    TurbulenceConfig(0, 0, false, 0),
-    FishConfig(OntogenyConfig(0, 0, 0), "", 0, 0, "", VerticalMigrationConfig(new JArrayList[VerticalMigrationProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, ""), false, 0, 0),
-    FlowConfig(PeriodConfig("", ""), TimeStepConfig("", 0), DepthConfig(false, false, 0)),
-    HabitatConfig(BufferConfig(false, 0, "")),
-    OutputFilesConfig(false, "", "", 0, ""))
+    TurbulenceConfig(0, 0, applyTurbulence = false, 0),
+    FishConfig(OntogenyConfig(0, 0, 0), "", 0, 0, "",
+      VerticalMigrationConfig(new JArrayList[VerticalMigrationProbabilityConfig]),
+      PelagicLarvalDurationConfig(0, 0, ""), isMortal = false, 0, 0),
+    FlowConfig(PeriodConfig("", ""),
+      TimeStepConfig("", 0),
+      DepthConfig(average = false, averageOverAllDepths = false, 0)),
+    HabitatConfig(BufferConfig(isBuffered = false, 0, "")),
+    OutputFilesConfig(includeLarvaeHistory = false, "", "", 0, ""))
 }
 
 @XmlRootElement
@@ -35,17 +34,6 @@ case class InputFilesConfig(
   private def this() = this("", "")
 }
 
-@XmlRootElement(name = "spawn")
-@XmlAccessorType(XmlAccessType.FIELD)
-case class SpawnConfig(
-                        @XmlElements(
-                          value = Array(new XmlElement(name = "spawningLocation", `type` = classOf[SpawningLocationConfig]))
-                        )
-                        spawningLocation: JList[SpawningLocationConfig]
-                        ) {
-  private def this() = this(new JArrayList[SpawningLocationConfig])
-}
-
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 case class SpawningLocationConfig(
@@ -53,9 +41,22 @@ case class SpawningLocationConfig(
                                    patchNumber: Int,
                                    site: SiteConfig,
                                    numberOfLarvae: Int,
-                                   releasePeriod: ReleasePeriodConfig, interval: Int) {
-  private def this() = this("", 0, null, 0, null, 0)
+                                   releasePeriod: ReleasePeriodConfig,
+                                   interval: Int) {
+  private def this() = this("", 0, SiteConfig(0, 0, 0, 0), 0, null, 0)
 }
+
+@XmlRootElement(name = "spawn")
+@XmlAccessorType(XmlAccessType.FIELD)
+case class SpawnConfig(
+                        @XmlElements(
+                          value = Array(new XmlElement(name = "spawningLocation"))
+                        )
+                        spawningLocation: java.util.List[SpawningLocationConfig]
+                        ) {
+  private def this() = this(new JArrayList[SpawningLocationConfig])
+}
+
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -89,7 +90,7 @@ case class FlowConfig(
                        @XmlElementWrapper period: PeriodConfig,
                        @XmlElementWrapper timeStep: TimeStepConfig,
                        @XmlElementWrapper depth: DepthConfig) {
-  private def this() = this(PeriodConfig("", ""), TimeStepConfig("", 0), DepthConfig(false, false, 0))
+  private def this() = this(PeriodConfig("", ""), TimeStepConfig("", 0), DepthConfig(average = false, averageOverAllDepths = false, 0))
 }
 
 @XmlRootElement
@@ -164,19 +165,20 @@ case class PelagicLarvalDurationConfig(mean: Double, stdev: Double, distribution
 @XmlAccessorType(XmlAccessType.FIELD)
 case class VerticalMigrationConfig(
                                     @XmlElements(
-                                      value = Array(new XmlElement(name = "verticalMigrationProbability", `type` = classOf[VerticalMigrationProbabilityConfig]))
+                                      value = Array(new XmlElement(name = "verticalMigrationProbability"))
                                     )
-                                    verticalMigrationProbability: JList[VerticalMigrationProbabilityConfig]
+                                    verticalMigrationProbability: java.util.List[VerticalMigrationProbabilityConfig]
                                     ) {
   private def this() = this(new JArrayList[VerticalMigrationProbabilityConfig])
 }
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-case class VerticalMigrationProbabilityConfig(depth: Int,
+case class VerticalMigrationProbabilityConfig(depthStart: Int,
+                                              depthFinish: Int,
                                               hatching: Double,
                                               preFlexion: Double,
                                               flexion: Double,
                                               postFlexion: Double) {
-  private def this() = this(0, 0, 0, 0, 0)
+  private def this() = this(0, 0, 0, 0, 0, 0)
 }

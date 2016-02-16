@@ -1,118 +1,108 @@
 package io
 
-import org.scalatest.{PrivateMethodTester, FlatSpec}
 import org.scalatest.mock.MockitoSugar
-import physical.flow.{FlowPolygon, Flow}
-import scala.xml.pull.XMLEventReader
+import org.scalatest.{FlatSpec, PrivateMethodTester}
+import physical.flow.FlowPolygon
+import physical.{Cell, GeoCoordinate}
+
 import scala.io.Source
-import physical.{GeoCoordinate, Cell}
+import scala.xml.pull.XMLEventReader
 
 class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   "The flow xml reader" should "parse the flow node of id = 1" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.length == 1)
     assert(elements.head.id == 1)
   }
 
   it should "parse multiple flow nodes" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(twoFlowNodesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.length == 2, "There should be two elements here")
   }
 
   it should "parse depth node in the properties" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
-    assert(flow.depth.range.start == 0)
-    assert(flow.depth.range.end == 100)
+    assert(reader.flowDimensions.depth.start == 0)
+    assert(reader.flowDimensions.depth.end == 100)
   }
 
   it should "parse latitude range node in the properties" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
-    assert(flow.latitudeRange.start == -40.0)
-    assert(flow.latitudeRange.end == -10.0)
+    assert(reader.flowDimensions.latitudeBoundary.start == -40.0)
+    assert(reader.flowDimensions.latitudeBoundary.end == -10.0)
   }
 
   it should "parse longitude range node in the properties" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
-    assert(flow.longitudeRange.start == 142.0)
-    assert(flow.longitudeRange.end == 162.0)
+    assert(reader.flowDimensions.longitudeBoundary.start == 142.0)
+    assert(reader.flowDimensions.longitudeBoundary.end == 162.0)
   }
 
   it should "parse cell range node in the properties" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
-    assert(flow.grid.cell.width == 0.1)
-    assert(flow.grid.cell.height == 0.1)
-    assert(flow.grid.cell.depth == 10.0)
+    assert(reader.flowDimensions.cellSize.cell.width == 0.1)
+    assert(reader.flowDimensions.cellSize.cell.height == 0.1)
+    assert(reader.flowDimensions.cellSize.cell.depth == 10.0)
   }
 
   it should "parse the properties attributes" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
-    assert(flow.grid.width == 201)
-    assert(flow.grid.height == 301)
-    assert(flow.grid.depth == 11)
+    assert(reader.flowDimensions.cellSize.width == 201)
+    assert(reader.flowDimensions.cellSize.height == 301)
+    assert(reader.flowDimensions.cellSize.depth == 11)
     assert(elements.length > 0)
   }
 
   it should "parse the depth node" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.centroid.depth == 5.01)
   }
 
   it should "parse the salinity node" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.salinity == 35.24)
   }
 
   it should "parse the temperature node" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.temperature == 14.85)
   }
 
   it should "parse the velocity node" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.velocity.u == -0.18)
     assert(elements.head.velocity.v == 0.05)
@@ -120,29 +110,28 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse the locus node" in {
-    var flow = new Flow()
-    val reader = new FlowXmlReader(flow)
+    val reader = new FlowXmlReader()
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.centroid.latitude == -40.000534)
     assert(elements.head.centroid.longitude == 142.00035)
   }
 
   it should "construct okawana grid from locus" in {
-    var flow = new Flow()
-    flow.grid.cell = new Cell(0.1, 0.1, 10.0)
-    val reader = new FlowXmlReader(flow)
+
+    val cell = new Cell(0.1, 0.1, 10.0)
+    val reader = new FlowXmlReader()
+    reader.flowDimensions.cellSize.cell = cell
     val xml = new XMLEventReader(Source.fromString(flowXml))
-    val readFlowNodes = PrivateMethod[Vector[FlowPolygon]]('readXmlElements)
+    val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
     assert(elements.head.vertices.length == 4)
   }
 
   it should "construct okawana grid using half cell width" in {
-    var flow = mock[Flow]
-    val reader = new FlowXmlReader(flow)
-    val constructArakawaAGrid = PrivateMethod[Vector[FlowPolygon]]('constructArakawaAGrid)
+    val reader = new FlowXmlReader()
+    val constructArakawaAGrid = PrivateMethod[Array[FlowPolygon]]('constructArakawaAGrid)
     var polygon = new FlowPolygon()
     reader invokePrivate constructArakawaAGrid(polygon, new GeoCoordinate(1.0, 2.0, 3.0), 0.5)
     assert(polygon.vertices.length == 4)

@@ -9,5 +9,5 @@ case class Bool(b: Boolean) {
 }
 
 object Bool {
-  implicit def BooleanBool(b: Boolean) = Bool(b)
+  implicit def BooleanBool(b: Boolean) : Bool = Bool(b)
 }

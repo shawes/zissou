@@ -1,19 +1,17 @@
 package physical
 
 import scala.math.abs
-import com.vividsolutions.jts.geom.{GeometryFactory, Coordinate, Point}
 
-class GeoCoordinate(var latitude: Double, var longitude: Double, var depth: Double) extends Ordered[GeoCoordinate] {
+class GeoCoordinate(val latitude: Double, val longitude: Double, val depth: Double) extends Ordered[GeoCoordinate] {
 
   def this(lat: Double, lon: Double) = this(lat, lon, 0)
-
-  def this(point: Point) = this(point.getCoordinate.y, point.getCoordinate.x, 0)
-
   def this() = this(0, 0, 0)
 
-  def isUndefined: Boolean = longitude == Double.NaN || latitude == Double.NaN
+  def isValid: Boolean = !isUndefined
 
-  override def toString = "lat=" + latitude + ", lon=" + longitude + ", depth=" + depth
+  def isUndefined: Boolean = longitude.isNaN || latitude.isNaN
+
+  override def toString : String = "lat=" + latitude + ", lon=" + longitude + ", depth=" + depth
 
   //TODO Need to code the epsilon for doubles
   def compare(that: GeoCoordinate): Int = {
@@ -22,7 +20,5 @@ class GeoCoordinate(var latitude: Double, var longitude: Double, var depth: Doub
       + abs(this.depth.compare(that.depth)))
   }
 
-  def toGeometry: Point = {
-    new GeometryFactory().createPoint(new Coordinate(latitude, longitude))
-  }
+
 }

@@ -2,10 +2,12 @@ package io
 
 import java.io.File
 
+import grizzled.slf4j._
 import maths.ContinuousRange
-import physical.flow.{Flow, FlowPolygon}
-import physical.{Cell, GeoCoordinate, Velocity}
+import physical.flow.{Dimensions, FlowPolygon}
+import physical.{Cell, GeoCoordinate, Grid, Velocity}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 import scala.xml.MetaData
 import scala.xml.pull._
@@ -13,25 +15,25 @@ import scala.xml.pull._
 /** Parses the flow xml config generated from the net-cdf config
   *
   * @constructor create a new flow file xml reader
-  * @param oceanData defines the oceanography
   */
-class FlowXmlReader(val oceanData: Flow) {
+class FlowXmlReader() extends FileReaderTrait with Logging {
 
+  var flowDimensions = new Dimensions(new ContinuousRange(), new ContinuousRange(), new ContinuousRange(), new Grid())
   /** Reads in the XML from a file
     *
-    * @param filePath the location of the XML file
+    * @param file the location of the XML file
     * @return a vector of flow polygons comprising the data from the XML file
     */
-  def read(filePath: String): Vector[FlowPolygon] = {
-    Logger.info("File path is " + filePath)
-    val src = Source.fromFile(new File(filePath))
+  def read(file: File): Array[FlowPolygon] = {
+    debug("File path is " + file.getPath)
+    val src = Source.fromFile(file)
     val reader = new XMLEventReader(src)
     //printElements(reader)
     readXmlElements(reader)
   }
 
-  private def readXmlElements(xml: XMLEventReader): Vector[FlowPolygon] = {
-    var polygons: Vector[FlowPolygon] = Vector.empty
+  private def readXmlElements(xml: XMLEventReader): Array[FlowPolygon] = {
+    var polygons: ArrayBuffer[FlowPolygon] = ArrayBuffer.empty
     var polygon: FlowPolygon = new FlowPolygon()
 
     while (xml.hasNext) {
@@ -39,20 +41,20 @@ class FlowXmlReader(val oceanData: Flow) {
         case EvElemStart(_, "step", attributes, _) =>
           val timestep = attributes("timestep").text
         case EvElemStart(_, "dimensions", attributes, _) =>
-          oceanData.grid.width = attributes("longitude").text.toInt
-          oceanData.grid.height = attributes("latitude").text.toInt
-          oceanData.grid.depth = attributes("depth").text.toInt
+          flowDimensions.cellSize.width = attributes("longitude").text.toInt
+          flowDimensions.cellSize.height = attributes("latitude").text.toInt
+          flowDimensions.cellSize.depth = attributes("depth").text.toInt
         case EvElemStart(_, "latitudeRange", attributes, _) =>
-          oceanData.latitudeRange =
+          flowDimensions.latitudeBoundary =
             new ContinuousRange(attributes("start").text.toDouble, attributes("end").text.toDouble, true)
         case EvElemStart(_, "longitudeRange", attributes, _) =>
-          oceanData.longitudeRange =
+          flowDimensions.longitudeBoundary =
             new ContinuousRange(attributes("start").text.toDouble, attributes("end").text.toDouble, true)
         case EvElemStart(_, "depthRange", attributes, _) =>
-          oceanData.depth.range =
+          flowDimensions.depth =
             new ContinuousRange(attributes("start").text.toDouble, attributes("end").text.toDouble, true)
         case EvElemStart(_, "cellRange", attributes, _) =>
-          oceanData.grid.cell =
+          flowDimensions.cellSize.cell =
             new Cell(attributes("width").text.toDouble,
               attributes("width").text.toDouble,
               attributes("depth").text.toDouble)
@@ -60,8 +62,7 @@ class FlowXmlReader(val oceanData: Flow) {
           polygon = new FlowPolygon()
           polygon.id = attributes("id").text.toInt
         case EvElemStart(_, "depth", attributes, _) =>
-          val depth = attributes.value.head.toString().toDouble
-          polygon.centroid = new GeoCoordinate(0, 0, depth)
+          polygon.centroid = new GeoCoordinate(0, 0, attributes.value.head.toString().toDouble)
         case EvElemStart(_, "salt", attributes, _) =>
           polygon.salinity = attributes.value.head.toString().toDouble
         case EvElemStart(_, "temp", attributes, _) =>
@@ -70,23 +71,17 @@ class FlowXmlReader(val oceanData: Flow) {
           polygon.velocity = readVelocityElement(attributes)
         case EvElemStart(_, "locus", attributes, _) =>
           val locus = readLocusElement(attributes)
-          polygon.centroid.latitude = locus.latitude
-          polygon.centroid.longitude = locus.longitude
-          constructArakawaAGrid(polygon, locus, oceanData.grid.cell.width * 0.5)
+          polygon.centroid = new GeoCoordinate(locus.latitude, locus.longitude, polygon.centroid.depth)
+          constructArakawaAGrid(polygon, locus, flowDimensions.cellSize.cell.width * 0.5)
         case EvElemEnd(_, "flow") =>
-          polygons = polygons :+ polygon
+          polygons += polygon
         case _ => ()
       }
     }
     xml.stop()
-    Logger.info("Returning " + polygons.size + " polygons")
-    polygons
+    debug("Returning " + polygons.size + " polygons")
+    polygons.toArray
   }
-
-  def printElements(xml: XMLEventReader) {
-    while (xml.hasNext) Logger.info(xml.next().toString)
-  }
-
 
   private def readVelocityElement(velocities: MetaData): Velocity = {
     val u = velocities("u").text.toDouble
@@ -106,6 +101,10 @@ class FlowXmlReader(val oceanData: Flow) {
     polygon.vertices += new GeoCoordinate(locus.latitude - halfLength, locus.longitude + halfLength)
     polygon.vertices += new GeoCoordinate(locus.latitude + halfLength, locus.longitude + halfLength)
     polygon.vertices += new GeoCoordinate(locus.latitude + halfLength, locus.longitude - halfLength)
+  }
+
+  private def printElements(xml: XMLEventReader) {
+    while (xml.hasNext) logger.trace(xml.next().toString)
   }
 
 }

@@ -50,4 +50,9 @@ object LoggingLevel extends Enumeration {
   val None, Concise, Verbose = Value
 }
 
+object OntogenyState extends Enumeration {
+  type OntogenyState = Value
+  val Hatching, Preflexion, Flexion, Postflexion = Value
+}
+
 

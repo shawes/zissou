@@ -1,19 +1,35 @@
 package biology
 
+
 import com.github.nscala_time.time.Imports._
 
-class Spawn(val spawningLocations: Vector[SpawningLocation]) {
-  def this() = this(Vector.empty[SpawningLocation])
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
-  def GetSitesWhereFishAreSpawning(date: DateTime): Vector[SpawningLocation] = {
+//import scala.collection.mutable.ArrayBuffer
+
+class Spawn(val spawningLocations: mutable.Buffer[SpawningLocation]) {
+  def this() = this(mutable.Buffer.empty[SpawningLocation])
+
+  def getSitesWhereFishAreSpawning(date: DateTime): mutable.Buffer[SpawningLocation] = {
+
+    var spawningSites = new ArrayBuffer[SpawningLocation].toBuffer
+
     // only spawns at midnight
-    //if(date.hourOfDay()!=0) return List[SpawningLocation]
+    if (date.getHourOfDay == 0) {
+      spawningSites = spawningLocations.filter(x => x.canSpawn(date))
+    }
 
-    spawningLocations.filter(x => x.CanSpawn(date))
+    spawningSites
 
   }
 
-  def IsItSpawningSeason(date: DateTime): Boolean = {
-    spawningLocations.count(x => x.CanSpawn(date)) > 0
+  def isItSpawningSeason(date: DateTime): Boolean = {
+    spawningLocations.count(x => x.canSpawn(date)) > 0
+
   }
 }
+
+//object Spawn {
+//  def apply(spawningLocationsJavaList: java.util.List[SpawningLocation]) = new Spawn(spawningLocationsJavaList)
+//}

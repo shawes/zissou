@@ -1,22 +1,25 @@
 package physical.flow
 
 import com.github.nscala_time.time.Imports._
-import io.{FlowReader, Logger}
+import grizzled.slf4j.Logging
+import io.FlowReader
 import locals.Constants
-import org.apache.commons.math.random.MersenneTwister
+import maths.RandomNumberGenerator
+import maths.interpolation.Interpolator
 import physical.{GeoCoordinate, Velocity}
 
 import scala.collection.mutable
-import scala.compat.Platform
 
-class FlowController(var flow: Flow) {
+
+class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) extends Logging {
 
   val SizeOfQueue = 2
-  val flowDataQueue: mutable.Queue[Array[FlowPolygon]] = new mutable.Queue[Array[FlowPolygon]]
+  val flowDataQueue = mutable.Queue.empty[Array[FlowPolygon]]
+  val interpolator = new Interpolator(flow.dimensions)
 
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Velocity = {
-    require(future > now, "flow field information for this period is not loaded into memory")
+    require(future >= now, "flow field information for this period is not loaded into memory")
 
     val currentVelocity = getVelocityOfCoordinate(coordinate, isFuture = false)
     val futureVelocity = getVelocityOfCoordinate(coordinate, isFuture = true)
@@ -24,47 +27,56 @@ class FlowController(var flow: Flow) {
     if (future == now) return currentVelocity
     if (future == now.plusSeconds(timeStep)) return futureVelocity
     if (future > now && future < now.plusSeconds(timeStep)) {
-
       val period: Duration = new Duration(future, now)
       val divisor = 1 / timeStep.toDouble
       val ratioA = period.toStandardSeconds.getSeconds
       val ratioB = timeStep - ratioA
       return currentVelocity * (ratioA * divisor) + futureVelocity * (ratioB * divisor)
     }
-    new Velocity
+    new Velocity(Double.NaN, Double.NaN)
   }
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, isFuture: Boolean): Velocity = {
 
-    var index: Int = 0
-    val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
+    var velocity: Velocity = new Velocity(Double.NaN, Double.NaN)
 
-    try {
-      index = getIndexOfPolygon(coordinate)
-      //val polygon = flowPolygons(index)
-    } catch {
-      case e: IllegalArgumentException =>
+    val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
+    var index = getIndexOfPolygon(coordinate)
+    val velocityAtCentroid = flowPolygons(index).velocity
+    if (!velocityAtCentroid.isUndefined) {
+      debug("Index of flowpolygon is: " + index + ", with coord " + coordinate + ", and centroid velocity is " + velocityAtCentroid)
+
+      if (index == Constants.LightWeightException.CoordinateNotFoundException) {
         val bumpedCoordinate = bumpCoordinate(coordinate)
         index = getIndexOfPolygon(bumpedCoordinate)
+        if (index != Constants.LightWeightException.CoordinateNotFoundException) {
+          velocity = interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
+        }
+      } else {
+        velocity = interpolator.interpolate(coordinate, flowPolygons, index)
+      }
+      debug("The interpolated velocity is " + velocity)
+      if (velocity.isUndefined) velocityAtCentroid else velocity
     }
-    flowPolygons(index).velocity
-
-
+    velocity
   }
 
   def getIndexOfPolygon(coordinate: GeoCoordinate): Int = {
-    require(flow.latitudeRange.contains(coordinate.latitude) && flow.latitudeRange.contains(coordinate.longitude))
+    if (flow.dimensions.latitudeBoundary.contains(coordinate.latitude) && flow.dimensions.longitudeBoundary.contains(coordinate.longitude)) {
 
-    val lat1 = correctNegativeCoordinate(coordinate.latitude)
-    val lon1 = correctNegativeCoordinate(coordinate.longitude)
-    val lat2 = correctNegativeCoordinate(flow.latitudeRange.start)
-    val lon2 = correctNegativeCoordinate(flow.longitudeRange.start)
+      val lat1 = correctNegativeCoordinate(coordinate.latitude)
+      val lon1 = correctNegativeCoordinate(coordinate.longitude)
+      val lat2 = correctNegativeCoordinate(flow.dimensions.latitudeBoundary.start)
+      val lon2 = correctNegativeCoordinate(flow.dimensions.longitudeBoundary.start)
 
-    val x = ((lat1 - lat2) / flow.grid.cell.width).toInt + 1
-    val y = ((lon1 - lon2) / flow.grid.cell.width).toInt + 1
-    val z = ensureDepthIsInRange((coordinate.depth / flow.grid.cell.depth).toInt)
+      val x = ((lat1 - lat2) / flow.dimensions.cellSize.cell.width).toInt + 1
+      val y = ((lon1 - lon2) / flow.dimensions.cellSize.cell.width).toInt + 1
+      val z = ensureDepthIsInRange((coordinate.depth / flow.dimensions.cellSize.cell.depth).toInt)
 
-    flow.grid.width * x + y + z * flow.grid.layerCellCount
+      flow.dimensions.cellSize.width * x + y + z * flow.dimensions.cellSize.layerCellCount
+    } else {
+      Constants.LightWeightException.CoordinateNotFoundException
+    }
   }
 
   def correctNegativeCoordinate(value: Double): Double = {
@@ -72,26 +84,31 @@ class FlowController(var flow: Flow) {
   }
 
   def ensureDepthIsInRange(value: Int): Int = {
-    if (value < 0) 0 else if (value > flow.grid.depth) flow.grid.depth else value
+    if (value < 0) 0 else if (value > flow.dimensions.cellSize.depth) flow.dimensions.cellSize.depth else value
   }
 
   def bumpCoordinate(coordinate: GeoCoordinate): GeoCoordinate = {
-    val random = new MersenneTwister(Platform.currentTime.toInt)
-    new GeoCoordinate(coordinate.latitude + (random.nextDouble() * Constants.MaxLatitudeShift),
-      coordinate.longitude + (random.nextDouble() * Constants.MaxLongitudeShift))
+    val longitude = if (randomNumbers.coinToss) coordinate.longitude + Constants.MaxLongitudeShift else coordinate.longitude - Constants.MaxLongitudeShift
+    val latitude = if (randomNumbers.coinToss) coordinate.latitude + Constants.MaxLatitudeShift else coordinate.latitude - Constants.MaxLatitudeShift
+    new GeoCoordinate(latitude, longitude, coordinate.depth)
   }
 
   def refresh(polygons: Array[FlowPolygon]) {
-    if (flowDataQueue.size > 0) flowDataQueue.dequeue()
-    flowDataQueue.enqueue(polygons)
+    if (flowDataQueue.nonEmpty) {
+      flowDataQueue.dequeue()
+    }
+    flowDataQueue += polygons
   }
 
   def initialiseFlow(reader: FlowReader) {
     for (i <- 0 until SizeOfQueue) {
-      Logger.info("Reading the first flow data")
-      if (reader.hasNext) flowDataQueue.enqueue(reader.next())
+      val start = DateTime.now
+      if (reader.hasNext) flowDataQueue += reader.next()
+      val seconds = DateTime.now.getSecondOfDay - start.getSecondOfDay
+      debug("Finished reading the next flow data in " + seconds + " seconds")
     }
-    flow = reader.flow
+    flow.dimensions = reader.flow.dimensions
+    interpolator.dim = reader.flow.dimensions
   }
 
 

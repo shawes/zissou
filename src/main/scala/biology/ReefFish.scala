@@ -1,31 +1,27 @@
 package biology
 
-import locals.{HabitatType, PelagicLarvaeState}
-import com.github.nscala_time.time.Imports._
-import physical.GeoCoordinate
+import grizzled.slf4j.Logging
+import locals.HabitatType
+import org.joda.time.DateTime
 import physical.habitat.{GeometryAdaptor, HabitatPolygon}
 
-class ReefFish(val id: Int,
-               val pelagicLarvalDuration: Int,
-               val maximumLifeSpan: Int) extends MarineLarvae {
-  def this() = this(0, 0, 0)
+class ReefFish(id: Int,
+               pelagicLarvalDuration: Int,
+               maximumLifeSpan: Int,
+               birthplace: Birthplace,
+               spawned: DateTime,
+               ontogeny: Ontogeny,
+               verticalMigration: VerticalMigration)
+  extends Larva(
+    id,
+    pelagicLarvalDuration,
+    maximumLifeSpan,
+    birthplace,
+    spawned,
+    ontogeny,
+    verticalMigration) with Logging {
 
-  val birthday = DateTime.now
-  var age = 0
-  var state = PelagicLarvaeState.Pelagic
-  var currentPosition = new GeoCoordinate()
-  var hasSettled = false
-  var settlementDate: DateTime = null
-  var currentPolygon: HabitatPolygon = new GeometryAdaptor(null, 1, HabitatType.Reef)
-  val history: Vector[TimeCapsule] = Vector.empty[TimeCapsule]
+  var polygon: HabitatPolygon = new GeometryAdaptor(null, -1, HabitatType.Ocean) //TODO: Think about how this works
 
-  def move(newPosition: GeoCoordinate) = {
-    require(!newPosition.isUndefined)
-    saveHistory()
-    currentPosition = newPosition
-  }
-
-  //lazy val maximumLifeSpan: Int = 0
-
-
+  def this() = this(0, 0, 0, null, DateTime.now(), null, null)
 }

@@ -1,139 +1,252 @@
 package physical.habitat
 
 import java.io.File
-import java.util
 
-import com.vividsolutions.jts.geom.Point
-import locals.Constants
-import org.geotools.data.FileDataStoreFinder
+import grizzled.slf4j.Logging
+import io.HabitatFileReader
+import locals.{Constants, HabitatType}
 import org.geotools.data.simple.SimpleFeatureCollection
-import org.geotools.factory.{CommonFactoryFinder, GeoTools}
-import org.opengis.feature.simple.SimpleFeature
-import org.opengis.filter.Filter
 import physical.GeoCoordinate
 
-import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 
-class HabitatManager(file: File, buffer: Buffer, habitatTypes: Array[String]) {
+class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]) extends Logging {
 
-  val habitats: SimpleFeatureCollection = loadHabitats()
-  val filteredHabitats: SimpleFeatureCollection = filterHabitats
-  //private val habitatsHashTable = new collection.mutable.HashMap[Int, HabitatPolygon]
-  var habitatList: util.ArrayList[HabitatPolygon] = new util.ArrayList()
-  private val habitatsHashTable = defineHashTable()
+  private val habitatReader = new HabitatFileReader()
+  //val habitats: SimpleFeatureCollection = habitatReader.read(file)
+  private val habitatPolygons: List[GeometryAdaptor] = defineAllPolygons(habitatReader.read(file))
+  private val reefHabitatPolygons: List[GeometryAdaptor] = habitatPolygons.filter(x => x.habitat == HabitatType.Reef || x.habitat == HabitatType.Other)
+  private val bufferedPolygons: List[GeometryAdaptor] = defineAllBufferedPolygons()
+  private val landPolygon: List[GeometryAdaptor] = habitatPolygons.filter(x => x.habitat == HabitatType.Land)
 
-  def loadHabitats(): SimpleFeatureCollection = {
-    val store = FileDataStoreFinder.getDataStore(file)
-    try {
-      store.getFeatureSource.getFeatures
-    } finally {
-      store.dispose()
-    }
-  }
+  info("There are this many polygons " + habitatPolygons.size + " of which this many are reefs " + reefHabitatPolygons.size)
 
-  /*
-  def loadHabitats(file: File, habitatTypes: Array[String]) : Unit = {
-    val store = FileDataStoreFinder.getDataStore(file)
+  //val filteredHabitats: SimpleFeatureCollection = filterHabitats
+  //private val settlementHabitatsHashTable = new collection.mutable.HashMap[Int, HabitatPolygon]
+  //val habitatList = ArrayBuffer.empty[HabitatPolygon]
+  //private val settlementHabitatsHashTable = defineReefHashTable()
+  //private val habitatsHashTable = defineHashTable()
 
+  def isBuffered: Boolean = buffer.isBuffered
 
-    val featureSource = store.getFeatureSource
+  def getReef(index: Int): HabitatPolygon = habitatPolygons(index)
 
-    //val collection = featureSource.getFeatures() //simple feature collection
-    //println("There are "+collection.size()+" polygons in total")
-    //filterHabitats(collection, Array("Reef", "Other"))
-    filterHabitats(habitatTypes)
-    //println("There are "+habitatFiltered.size()+" reef and other polygons")
-    //filteredHabitats
-    val shapes = filteredHabitats.features() //simple feature iterator
-    val shape = shapes.next()
-    val geometry = shape.getAttribute(Constants.ShapeAttribute.Geometry._1).asInstanceOf[Geometry]
+  def defineAllPolygons(habitats: SimpleFeatureCollection): List[GeometryAdaptor] = {
 
-    val attributes = shape.getAttributes
-    val multi: MultiPolygon = null
-
-
-
-
-    println("Scored some features")
-
-  }
-  */
-
-
-  private def filterHabitats: SimpleFeatureCollection = {
-    //val filterFactory = CQL.toFilter("HABITAT = 'REEF'")
-    //val filter  = filterFactory.property
-    val filterFactory = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints)
-    val filterList: util.List[Filter] = new util.ArrayList[Filter]()
-    habitatTypes.foreach(x => filterList.add(filterFactory.equals(filterFactory.property(Constants.ShapeAttribute.Habitat._2), filterFactory.literal(x))))
-
-
-    //reefFilter.add(ff.equals(ff.property("HABITAT"),ff.literal(HabitatType.Reef)))
-    //reefFilter.add(ff.equals(ff.property("HABITAT"),ff.literal(HabitatType.Other)))
-
-    val filter = filterFactory.or(filterList)
-
-    //PropertyName propertyName = ff.property( "testString" );
-    //Literal literal = ff.literal( 2 );
-    //PropertyIsEqualTo filter = ff.equals( propertyName, literal );
-    habitats.subCollection(filter)
-  }
-
-  private def defineHashTable(): mutable.HashMap[Int, HabitatPolygon] = {
-
-    val hash = new collection.mutable.HashMap[Int, HabitatPolygon]
-    val shapes = filteredHabitats.features()
+    val polys: ListBuffer[GeometryAdaptor] = ListBuffer.empty[GeometryAdaptor]
+    val shapes = habitats.features()
     try {
       while (shapes.hasNext) {
         val shape = shapes.next()
         val geometry = SimpleFeatureAdaptor.getGeometry(shape)
-        val id: Int = SimpleFeatureAdaptor.getId(shape)
-        val habitatType = SimpleFeatureAdaptor.getHabitatType(shape)
-        val habitatPolygon = new GeometryAdaptor(geometry, id, habitatType) with HabitatPolygonToJtsGeometryAdaptor with HabitatPolygon
-        hash.put(id, habitatPolygon)
-        habitatList.add(habitatPolygon.asInstanceOf[HabitatPolygon])
+
+        //        if (geometry.getNumGeometries > 1) {
+        //          val multipolygon = SimpleFeatureAdaptor.getMultiPolygon(shape)
+        //          for (i <- 0 until geometry.getNumGeometries) {
+        //            polys += new GeometryAdaptor(multipolygon.getGeometryN(i), SimpleFeatureAdaptor.getId(shape), SimpleFeatureAdaptor.getHabitatType(shape))
+        //
+        //          }
+        //        } else {
+          polys += new GeometryAdaptor(geometry, SimpleFeatureAdaptor.getId(shape), SimpleFeatureAdaptor.getHabitatType(shape))
+        //}
       }
     } finally {
       shapes.close()
     }
-    hash
+    debug("There are actually this many polygons: " + polys.size)
+    polys.toList
   }
 
-  /*
-  This method find the closest reef to the point returns null otherwise
-   */
-  //TODO: Uses brute-force algorithm, need to change to divide and conquer
-  def getClosestHabitat(coordinate: GeoCoordinate): SimpleFeature = {
+  def landStuff(): Unit = {
+    debug("The land area has this many points: " + landPolygon.head.coordinates.length)
+  }
 
-    val location: Point = coordinate.toGeometry
-    var shortestDistance: Double = Double.MaxValue
-    var closestReef: SimpleFeature = null
-    val shapes = filteredHabitats.features()
-    while (shapes.hasNext) {
-      val shape = shapes.next()
-      val geometry = SimpleFeatureAdaptor.getGeometry(shape)
-      val distance = geometry.distance(location)
-      if (distance < shortestDistance) {
-        shortestDistance = distance
-        closestReef = shape
+  /*  /*
+    This method find the closest reef to the point returns null otherwise
+     */
+    //TODO: Uses brute-force algorithm, need to change to divide and conquer
+    def getClosestHabitat(coordinate: GeoCoordinate): SimpleFeature = {
+
+      val location: Point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
+      var shortestDistance: Double = Double.MaxValue
+      var closestReef: SimpleFeature = null
+      val shapes = filteredHabitats.features()
+      while (shapes.hasNext) {
+        val shape = shapes.next()
+        val geometry = SimpleFeatureAdaptor.getGeometry(shape)
+        val distance = geometry.distance(location)
+        if (distance < shortestDistance) {
+          shortestDistance = distance
+          closestReef = shape
+        }
       }
-    }
-    closestReef
-  }
+      closestReef
+    }*/
 
-  def getReef(index: Int): HabitatPolygon = habitatsHashTable.get(index).get
+  //def getReef(index: Int): HabitatPolygon = settlementHabitatsHashTable.get(index).get
 
   def isCoordinateOverReef(coordinate: GeoCoordinate): Int = {
-    val shapes = filteredHabitats.features()
-    val location: Point = coordinate.toGeometry
-    while (shapes.hasNext) {
-      val shape = shapes.next
-      val geometry = SimpleFeatureAdaptor.getGeometry(shape)
-      if (geometry.contains(location)) return SimpleFeatureAdaptor.getId(shape)
+    //debug("Entering isCoordinateOverReef")
+    var reefIndex = Constants.LightWeightException.NoReefFoundException
+    //val location = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
+
+    for (i <- reefHabitatPolygons.indices) {
+      if (reefHabitatPolygons(i).intersects(coordinate)) {
+        debug("Coordinate is actually over a reef")
+        reefIndex = i
+      }
     }
-    -1
+    reefIndex
   }
+
+  def isCoordinateOverBuffer(coordinate: GeoCoordinate): Boolean = {
+    //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
+    //bufferedPolygons.exists(x => x.intersects(coordinate))
+    reefHabitatPolygons.exists(x => x.isWithinDistance(coordinate, buffer.size / 100))
+  }
+
+  def getIndexOfNearestReef(coordinate: GeoCoordinate): Int = {
+
+    var shortestDistance: Double = Double.MaxValue
+    var closestReefId: Int = Constants.LightWeightException.NoReefFoundException
+    //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
+
+    for (i <- reefHabitatPolygons.indices) {
+      val distance = reefHabitatPolygons(i).distance(coordinate) * 100
+      if (distance < buffer.size && distance < shortestDistance) {
+        shortestDistance = distance
+        closestReefId = i
+      }
+    }
+    closestReefId
+  }
+
+  private def defineAllBufferedPolygons(): List[GeometryAdaptor] = {
+    reefHabitatPolygons.map(reef => new GeometryAdaptor(reef.g.buffer(buffer.size / 100), reef.id, reef.habitat))
+  }
+
+
+  /*
+          public int GetIndexOfNearestReef(GeoCoordinate c)
+        {
+            var geometry = new Geometry();
+            double shortestDistance = Double.MaxValue;
+            int closestReefId = Constants.NoClosestReefFound;
+            foreach (ShapeRange reef in reefs)
+            {
+                var centroid = new GeoCoordinate(reef.Extent.Center.Y, reef.Extent.Center.Y);
+                double distance = geometry.GetDistanceBetweenTwoPoints(c, centroid);
+                if (distance < buffer.BufferSize && distance < shortestDistance)
+                {
+                    shortestDistance = distance;
+                    closestReefId = reef.RecordNumber;
+                }
+            }
+            return closestReefId;
+
+        }
+   */
+
+
+  /* private def filterHabitats: SimpleFeatureCollection = {
+     //val filterFactory = CQL.toFilter("HABITAT = 'REEF'")
+     //val filter  = filterFactory.property
+     val filterFactory = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints)
+     val filterList: util.List[Filter] = new util.ArrayList[Filter]()
+     habitatTypes foreach (x => filterList.add(filterFactory.equals(filterFactory.property(Constants.ShapeAttribute.Habitat._2), filterFactory.literal(x))))
+
+
+     //reefFilter.add(ff.equals(ff.property("HABITAT"),ff.literal(HabitatType.Reef)))
+     //reefFilter.add(ff.equals(ff.property("HABITAT"),ff.literal(HabitatType.Other)))
+
+     val filter = filterFactory.or(filterList)
+
+     //PropertyName propertyName = ff.property( "testString" );
+     //Literal literal = ff.literal( 2 );
+     //PropertyIsEqualTo filter = ff.equals( propertyName, literal );
+     habitats.subCollection(filter)
+   }
+
+   private def defineReefHashTable(): mutable.HashMap[Int, HabitatPolygon] = {
+
+     val hash = new collection.mutable.HashMap[Int, HabitatPolygon]
+     val shapes = filteredHabitats.features()
+     try {
+       while (shapes.hasNext) {
+         val shape = shapes.next()
+         val geometry = SimpleFeatureAdaptor.getGeometry(shape)
+         val id: Int = SimpleFeatureAdaptor.getId(shape)
+         val habitatType = SimpleFeatureAdaptor.getHabitatType(shape)
+         val habitatPolygon = new GeometryAdaptor(geometry, id, habitatType) with HabitatPolygonToJtsGeometryAdaptor with HabitatPolygon
+         hash.put(id, habitatPolygon)
+         habitatList += habitatPolygon.asInstanceOf[HabitatPolygon]
+       }
+     } finally {
+       shapes.close()
+     }
+     debug("The reef and other number is "+hash.size)
+     hash
+   }
+
+   private def defineHashTable(): mutable.HashMap[Int, HabitatPolygon] = {
+
+     val hash = new collection.mutable.HashMap[Int, HabitatPolygon]
+     val shapes = habitats.features()
+     try {
+       while (shapes.hasNext) {
+         val shape = shapes.next()
+         val geometry = SimpleFeatureAdaptor.getGeometry(shape)
+         val id: Int = SimpleFeatureAdaptor.getId(shape)
+         val habitatType = SimpleFeatureAdaptor.getHabitatType(shape)
+         debug("habitat_type="+habitatType + " and it is of type " + geometry.getGeometryType)
+         val habitatPolygon = new GeometryAdaptor(geometry, id, habitatType) with HabitatPolygonToJtsGeometryAdaptor with HabitatPolygon
+         hash.put(id, habitatPolygon)
+         habitatList += habitatPolygon.asInstanceOf[HabitatPolygon]
+       }
+     } finally {
+       shapes.close()
+     }
+     debug("The habitat number is "+hash.size)
+     hash
+   }*/
+
+  //  def isOcean(coordinate: GeoCoordinate): Boolean = {
+  //    val habitat = getHabitatOfCoordinate(coordinate).habitat
+  //    debug("Habitat is " + habitat)
+  //    habitat != HabitatType.Land && habitat != HabitatType.Beach
+  //  }
+
+  //}
+
+  //  def getHabitatOfCoordinate(coordinate: GeoCoordinate): HabitatPolygon = {
+  //    for (i <- habitatPolygons.indices) {
+  //      if (habitatPolygons(i).contains(coordinate)) return habitatPolygons(i)
+  //    }
+  //    new GeometryAdaptor(null, Constants.Ocean, HabitatType.Ocean)
+  //  }
+
+
+  /*
+    private def getHabitat(location : Point) : Int = {
+      val shapes = habitats.features()
+      while (shapes.hasNext) {
+        val shape = shapes.next
+        val geometry = SimpleFeatureAdaptor.getGeometry(shape)
+        //val size = geometry.getNumGeometries
+        if (geometry.getNumGeometries > 1) {
+          val multipolygon = SimpleFeatureAdaptor.getMultiPolygon(shape)
+          for(i<- 0 until geometry.getNumGeometries) {
+            val polygon = multipolygon.getGeometryN(i)
+            if(location.within(polygon)) return SimpleFeatureAdaptor.getId(shape)
+          }
+        } else {
+          if (location.within(geometry)) return SimpleFeatureAdaptor.getId(shape)
+        }
+      }
+      Constants.Ocean
+    }
+  */
 
 
   //    private int GetIndexOfReef(GeoCoordinate c)

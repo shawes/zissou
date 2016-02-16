@@ -1,11 +1,15 @@
 package io
 
-import physical.flow.{Depth, Flow, FlowPolygon}
+import java.io.File
 
-class FlowReader(val inputs: InputFiles, val depth: Depth) {
+import grizzled.slf4j._
+import physical.flow.{Flow, FlowPolygon}
+
+import scala.collection.mutable.ArrayBuffer
+
+class FlowReader(val inputs: InputFiles, val flow: Flow) extends Logging {
   val files: Array[String] = inputs.flowFiles.toArray
   var currentFile: Int = 0
-  var flow = new Flow(depth)
 
 
   def next(): Array[FlowPolygon] = {
@@ -17,16 +21,13 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
     polygons.toArray
   }
 
-  def hasNext = currentFile < files.length
-
-
-  private def loadNextFile(): Vector[FlowPolygon] = {
-    val reader = new FlowXmlReader(flow)
+  private def loadNextFile(): Array[FlowPolygon] = {
+    val flowXmlReader = new FlowXmlReader()
     val file = skipHiddenAndSystemFiles(files(currentFile))
 
-    Logger.info("Reading in " + file + " from " + files.toString)
-    val polygons = reader.read(inputs.flowFilePath + "/" + file)
-    flow = reader.oceanData
+    debug("Reading in " + file + " from " + files.toString)
+    val polygons = flowXmlReader.read(new File(inputs.flowFilePath + "/" + file))
+    flow.dimensions = flowXmlReader.flowDimensions
     if (flow.depth.average) averageDepthDimension(polygons) else polygons
   }
 
@@ -39,10 +40,11 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
     tempFile
   }
 
+  //private def updateFlowWithDimensions(properties)
 
-  private def averageDepthDimension(polygons: Vector[FlowPolygon]): Vector[FlowPolygon] = {
-    val cellCount: Int = flow.grid.width * flow.grid.height
-    val averagedPolygons: Vector[FlowPolygon] = Vector.empty[FlowPolygon]
+  private def averageDepthDimension(polygons: Array[FlowPolygon]): Array[FlowPolygon] = {
+    val cellCount: Int = flow.dimensions.cellSize.width * flow.dimensions.cellSize.height
+    val averagedPolygons = ArrayBuffer.empty[FlowPolygon]
     for (i <- 0 until cellCount) {
       var sumU: Double = 0.0
       var sumV: Double = 0.0
@@ -51,7 +53,7 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
       var count: Int = 0
       var isLand = true
 
-      for (j <- 0 until flow.grid.depth) {
+      for (j <- 0 until flow.dimensions.cellSize.depth) {
         val polygon = polygons(i + (j * cellCount))
         if (!polygon.isLand) {
           isLand = false
@@ -72,10 +74,12 @@ class FlowReader(val inputs: InputFiles, val depth: Depth) {
         averagedPolygon.temperature = sumTemp / count
 
       }
-      averagedPolygons :+ averagedPolygon
+      averagedPolygons += averagedPolygon
     }
-    averagedPolygons
+    averagedPolygons.toArray
   }
+
+  def hasNext : Boolean = currentFile < files.length
 
 
 }

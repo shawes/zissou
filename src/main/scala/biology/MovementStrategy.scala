@@ -8,5 +8,5 @@ package biology
  * To change this template use File | Settings | File Templates.
  */
 abstract class MovementStrategy {
-  def Move()
+  def move() : Unit
 }
