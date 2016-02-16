@@ -8,7 +8,7 @@ import physical.flow.{Flow, FlowPolygon}
 import scala.collection.mutable.ArrayBuffer
 
 class FlowReader(val inputs: InputFiles, val flow: Flow) extends Logging {
-  val files: Array[String] = inputs.flowFiles.toArray
+  val files: Array[String] = inputs.flowFiles
   var currentFile: Int = 0
 
 

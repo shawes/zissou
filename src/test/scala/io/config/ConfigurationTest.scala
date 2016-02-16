@@ -77,11 +77,10 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
   }
 
   it should "parse the habitat node" in {
-    val configXml = "<simulationVariables><habitat><buffer><isBuffered>true</isBuffered><bufferSize>25</bufferSize><filePath>path</filePath></buffer></habitat></simulationVariables>"
+    val configXml = "<simulationVariables><habitat><buffer><isBuffered>true</isBuffered><bufferSize>25</bufferSize></buffer></habitat></simulationVariables>"
     val config = context.createUnmarshaller().unmarshal(new StringReader(configXml)).asInstanceOf[Configuration]
     assert(config.habitat.buffer.bufferSize == 25)
     assert(config.habitat.buffer.isBuffered)
-    assert(config.habitat.buffer.filePath == "path")
   }
 
   it should "parse the output node" in {

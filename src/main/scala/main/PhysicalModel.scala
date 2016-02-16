@@ -19,14 +19,10 @@ class PhysicalModel(val config: Configuration, randomNumbers: RandomNumberGenera
 
   def initialise(): Unit = {
     flowController.initialiseFlow(flowDataReader)
-    debug("There are this many polygons " + flowController.flowDataQueue.head.length)
-    debug("There are this many days loaded " + flowController.flowDataQueue.length)
   }
 
   def circulate(): Unit = {
-    debug("Reading next flow step")
     if (flowDataReader.hasNext) {
-      debug("Refreshing next flow step")
       flowController.refresh(flowDataReader.next())
     }
   }

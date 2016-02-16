@@ -24,7 +24,7 @@ assemblyJarName in assembly := "zissou.jar"
 val geotoolsVersion = "13.2"
 
 libraryDependencies ++= Seq(
-  "org.geotools" % "gt-shapefile" % geotoolsVersion % "provided"
+  "org.geotools" % "gt-shapefile" % geotoolsVersion
   // "org.geotools" % "gt-epsg-hsql" % geotoolsVersion,
   //  "org.geotools" % "gt-swing" % geotoolsVersion
 )
@@ -48,19 +48,16 @@ libraryDependencies := {
 
 //other
 libraryDependencies ++= Seq(
-  "com.github.nscala-time" %% "nscala-time" % "2.6.0" % "provided",
-  "org.apache.commons" % "commons-math3" % "3.6" % "provided",
-  "edu.ucar" % "cdm" % "4.5.5" % "provided",
-  "edu.ucar" % "grib" % "4.5.5" % "provided",
-  "edu.ucar" % "netcdf4" % "4.5.5" % "provided"
+  "com.github.nscala-time" %% "nscala-time" % "2.6.0",
+  "org.apache.commons" % "commons-math3" % "3.6"
 )
 
 //logging
 
 libraryDependencies ++= Seq(
-  "org.clapper" %% "grizzled-slf4j" % "1.0.2" % "provided",
-  "org.slf4j" % "slf4j-api" % "1.7.14" % "provided",
-  "org.slf4j" % "slf4j-simple" % "1.7.14" % "provided"
+  "org.clapper" %% "grizzled-slf4j" % "1.0.2",
+  "org.slf4j" % "slf4j-api" % "1.7.14",
+  "org.slf4j" % "slf4j-simple" % "1.7.14"
 )
 
 

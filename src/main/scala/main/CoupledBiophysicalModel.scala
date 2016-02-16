@@ -1,15 +1,14 @@
 package main
 
-import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
 import io.ResultsWriter
 import io.config.ConfigMappings._
 import io.config.Configuration
 import maths.RandomNumberGenerator
 import maths.integration.RungeKuttaIntegration
-import org.joda.time.Duration
 import physical.Turbulence
 import physical.flow.Flow
+import utilities.Timer
 
 import scala.compat.Platform
 
@@ -22,7 +21,7 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
   val flow: Flow = config.flow
   val clock = new SimulationClock(flow.period, flow.timeStep)
   val randomSeed: Long = Platform.currentTime
-  info("The random number seed is :" + randomSeed)
+  info("The random number seed for this simulation is :" + randomSeed)
   val randomNumbers = new RandomNumberGenerator(randomSeed)
   val turbulence: Turbulence = new Turbulence(config.turbulence.horizontalDiffusionCoefficient,
     config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds, randomNumbers)
@@ -32,8 +31,8 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
   val larvaeDisperser = new ParticleDisperser(integrator, randomNumbers)
 
   def run(): Unit = {
-    val simulationStartTime = DateTime.now
-    info("Simulation run started at " + simulationStartTime)
+    val simulationTimer = new Timer()
+    info("Simulation run started at " + simulationTimer.start)
     var iteration: Int = 1
     ocean.initialise()
 
@@ -42,20 +41,18 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
     //info("Velocity is "+vel)
 
     while (clock.stillTime && biology.canDisperse(clock.now)) {
-      val stepStart = DateTime.now()
+      val stepTimer = new Timer()
       biology.apply(iteration, larvaeDisperser)
       clock.tick()
       if (clock.isMidnight) {
         ocean.circulate()
       }
-      val stepEnd = DateTime.now()
-      val duration = new Duration(stepStart, stepEnd)
-      info("Step " + iteration + " has been completed in " + duration.toStandardSeconds + " secs")
+      info("Step iteration " + iteration + " has been completed in " + stepTimer.stop() + " secs")
       iteration = iteration + 1
     }
 
     val resultsWriter = new ResultsWriter(biology.fishLarvae.toList, config.output)
     resultsWriter.write()
-    info("Simulation run completed at " + new Duration(DateTime.now, clock.start).toStandardSeconds)
+    info("Simulation run completed at " + simulationTimer.stop())
   }
 }

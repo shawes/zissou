@@ -22,7 +22,7 @@ case class Configuration(
     FlowConfig(PeriodConfig("", ""),
       TimeStepConfig("", 0),
       DepthConfig(average = false, averageOverAllDepths = false, 0)),
-    HabitatConfig(BufferConfig(isBuffered = false, 0, "")),
+    HabitatConfig(BufferConfig(isBuffered = false, 0)),
     OutputFilesConfig(includeLarvaeHistory = false, "", "", 0, ""))
 }
 
@@ -114,13 +114,13 @@ case class DepthConfig(average: Boolean, averageOverAllDepths: Boolean, maximumD
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 case class HabitatConfig(@XmlElementWrapper buffer: BufferConfig) {
-  private def this() = this(BufferConfig(isBuffered = false, 0, ""))
+  private def this() = this(BufferConfig(isBuffered = false, 0))
 }
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-case class BufferConfig(isBuffered: Boolean, bufferSize: Int, filePath: String) {
-  private def this() = this(false, 0, "")
+case class BufferConfig(isBuffered: Boolean, bufferSize: Int) {
+  private def this() = this(false, 0)
 }
 
 @XmlRootElement

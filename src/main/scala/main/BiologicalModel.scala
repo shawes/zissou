@@ -86,14 +86,13 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
       if (habitatManager.isBuffered && habitatManager.isCoordinateOverBuffer(larva.position)) {
         val reefIndex = habitatManager.getIndexOfNearestReef(larva.position)
         if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
-          debug("Larva is within reef buffer")
+          trace("Larva is within reef buffer")
           larva.settle(habitatManager.getReef(reefIndex), clock.now)
         }
       }
       else {
         val reefIndex = habitatManager.isCoordinateOverReef(larva.position)
         if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
-          debug("Larva is over reef")
           larva.settle(habitatManager.getReef(reefIndex), clock.now)
         }
       }
@@ -109,7 +108,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   private def spawnLarvae(): Unit = {
     val spawningSites = spawn.getSitesWhereFishAreSpawning(clock.now)
     if (spawningSites.nonEmpty) {
-      debug("Found non-empty spawning site")
+      trace("Found non-empty spawning site")
       spawnFish(spawningSites)
     }
   }
@@ -121,7 +120,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
     for (spawned <- freshLarvae) {
       fishLarvae += spawned.asInstanceOf[List[ReefFish]]
     }
-    debug("Now spawned " + fishLarvae.flatten.size + " fish larvae")
   }
 
   def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvaeCount > 0

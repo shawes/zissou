@@ -7,6 +7,7 @@ import locals.Constants
 import maths.RandomNumberGenerator
 import maths.interpolation.Interpolator
 import physical.{GeoCoordinate, Velocity}
+import utilities.Timer
 
 import scala.collection.mutable
 
@@ -44,7 +45,7 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
     var index = getIndexOfPolygon(coordinate)
     val velocityAtCentroid = flowPolygons(index).velocity
     if (!velocityAtCentroid.isUndefined) {
-      debug("Index of flowpolygon is: " + index + ", with coord " + coordinate + ", and centroid velocity is " + velocityAtCentroid)
+      trace("Index of flowpolygon is: " + index + ", with coord " + coordinate + ", and centroid velocity is " + velocityAtCentroid)
 
       if (index == Constants.LightWeightException.CoordinateNotFoundException) {
         val bumpedCoordinate = bumpCoordinate(coordinate)
@@ -55,7 +56,7 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
       } else {
         velocity = interpolator.interpolate(coordinate, flowPolygons, index)
       }
-      debug("The interpolated velocity is " + velocity)
+      trace("The interpolated velocity is " + velocity)
       if (velocity.isUndefined) velocityAtCentroid else velocity
     }
     velocity
@@ -102,10 +103,9 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
 
   def initialiseFlow(reader: FlowReader) {
     for (i <- 0 until SizeOfQueue) {
-      val start = DateTime.now
+      val timer = new Timer()
       if (reader.hasNext) flowDataQueue += reader.next()
-      val seconds = DateTime.now.getSecondOfDay - start.getSecondOfDay
-      debug("Finished reading the next flow data in " + seconds + " seconds")
+      debug("Finished reading the next flow data in " + timer.stop() + " seconds")
     }
     flow.dimensions = reader.flow.dimensions
     interpolator.dim = reader.flow.dimensions
