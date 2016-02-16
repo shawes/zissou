@@ -35,7 +35,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   def apply(iteration: Int, disperser: ParticleDisperser): Unit = {
     calculateMortalityRate(iteration)
     spawnLarvae()
-    fishLarvae.foreach(fish => processLarva(fish, disperser))
+    fishLarvae.par.foreach(fish => processLarva(fish, disperser))
   }
 
   private def processLarva(larvae: List[ReefFish], disperser: ParticleDisperser): Unit = {
@@ -48,7 +48,8 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
       if (larva.isPelagic) {
         move(disperser, larva)
         ageLarvae(larva)
-        //settle(larva)
+        settle(larva)
+        lifespanCheck(larva)
       }
       updateActiveLarvaeCount(larva.state)
     }
@@ -80,6 +81,29 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
     }
   }
 
+  private def settle(larva: ReefFish): Unit = {
+    if (larva.inCompetencyWindow) {
+      if (habitatManager.isBuffered && habitatManager.isCoordinateOverBuffer(larva.position)) {
+        val reefIndex = habitatManager.getIndexOfNearestReef(larva.position)
+        if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
+          debug("Larva is within reef buffer")
+          larva.settle(habitatManager.getReef(reefIndex), clock.now)
+        }
+      }
+      else {
+        val reefIndex = habitatManager.isCoordinateOverReef(larva.position)
+        if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
+          debug("Larva is over reef")
+          larva.settle(habitatManager.getReef(reefIndex), clock.now)
+        }
+      }
+    }
+  }
+
+  private def lifespanCheck(larva: ReefFish): Unit = {
+    if (larva.isTooOld) larva.kill()
+  }
+
   private def calculateMortalityRate(iteration: Int) = mortality.calculateMortalityRate(iteration)
 
   private def spawnLarvae(): Unit = {
@@ -101,26 +125,4 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   }
 
   def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvaeCount > 0
-
-  private def settle(larva: ReefFish): Unit = {
-    if (larva.inCompetencyWindow) {
-      val reefIndex = habitatManager.isCoordinateOverReef(larva.position)
-      if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
-        debug("Larva is over reef")
-        larva.settle(habitatManager.getReef(reefIndex), clock.now)
-      } else if (habitatManager.isBuffered && habitatManager.isCoordinateOverBuffer(larva.position)) {
-        val reefIndex = habitatManager.getIndexOfNearestReef(larva.position)
-        if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
-          debug("Larva is within reef buffer")
-          larva.settle(habitatManager.getReef(reefIndex), clock.now)
-        }
-      }
-    } else {
-      lifespanCheck(larva)
-    }
-  }
-
-  private def lifespanCheck(larva: ReefFish): Unit = {
-    if (larva.isTooOld) larva.kill()
-  }
 }

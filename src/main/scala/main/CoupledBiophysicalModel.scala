@@ -33,7 +33,7 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
 
   def run(): Unit = {
     val simulationStartTime = DateTime.now
-    debug("Simulation run started at " + simulationStartTime)
+    info("Simulation run started at " + simulationStartTime)
     var iteration: Int = 1
     ocean.initialise()
 
@@ -56,6 +56,6 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
 
     val resultsWriter = new ResultsWriter(biology.fishLarvae.toList, config.output)
     resultsWriter.write()
-    debug("Simulation run completed at " + new Duration(DateTime.now, clock.start).getStandardMinutes)
+    info("Simulation run completed at " + new Duration(DateTime.now, clock.start).toStandardSeconds)
   }
 }

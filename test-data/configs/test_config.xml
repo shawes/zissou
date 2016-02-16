@@ -14,7 +14,7 @@
                 <depth>5</depth>
                 <flowId>1</flowId>
             </site>
-            <numberOfLarvae>5</numberOfLarvae>
+            <numberOfLarvae>1</numberOfLarvae>
             <releasePeriod>
                 <start>2004-01-01T00:00:00</start>
                 <end>2004-01-02T00:00:00</end>
@@ -22,15 +22,15 @@
             <interval>5</interval>
         </spawningLocation>
         <spawningLocation>
-            <name>site_2</name>
+            <name>north_sol</name>
             <patchNumber>186</patchNumber>
             <site>
-                <longitude>153.13</longitude>
-                <latitude>-30.48</latitude>
+                <longitude>153.39</longitude>
+                <latitude>-29.82</latitude>
                 <depth>5</depth>
                 <flowId>0</flowId>
             </site>
-            <numberOfLarvae>5</numberOfLarvae>
+            <numberOfLarvae>1</numberOfLarvae>
             <releasePeriod>
                 <start>2004-01-01T00:00:00</start>
                 <end>2004-01-02T00:00:00</end>
@@ -39,17 +39,17 @@
         </spawningLocation>
     </spawn>
     <turbulence>
-        <horizontalDiffusionCoefficient>0.3</horizontalDiffusionCoefficient>
-        <verticalDiffusionCoefficient>0.2</verticalDiffusionCoefficient>
+        <horizontalDiffusionCoefficient>0.015</horizontalDiffusionCoefficient>
+        <verticalDiffusionCoefficient>0.015</verticalDiffusionCoefficient>
         <applyTurbulence>true</applyTurbulence>
         <interval>1</interval>
     </turbulence>
     <fish>
         <swimmingAbility>Passive</swimmingAbility>
         <ontogeny>
-            <flexion>318400</flexion>
-            <preFlexion>132800</preFlexion>
-            <postFlexion>591200</postFlexion>
+            <flexion>118400</flexion>
+            <preFlexion>032800</preFlexion>
+            <postFlexion>291200</postFlexion>
         </ontogeny>
         <meanSwimmingSpeed>0.102</meanSwimmingSpeed>
         <standDeviationSwimmingSpeed>0.019</standDeviationSwimmingSpeed>
@@ -92,7 +92,7 @@
     <flow>
         <period>
             <start>2004-01-01T00:00:00</start>
-            <end>2004-01-05T00:00:00</end>
+            <end>2004-01-14T00:00:00</end>
         </period>
         <timeStep>
             <unit>Hour</unit>
@@ -106,7 +106,7 @@
     </flow>
     <habitat>
         <buffer>
-            <isBuffered>false</isBuffered>
+            <isBuffered>true</isBuffered>
             <bufferSize>20</bufferSize>
             <filePath>test-data/shape/ALLPatches_Buffer20km</filePath>
         </buffer>

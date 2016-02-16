@@ -7,7 +7,6 @@ import io.HabitatFileReader
 import locals.{Constants, HabitatType}
 import org.geotools.data.simple.SimpleFeatureCollection
 import physical.GeoCoordinate
-import physical.adaptors.GeometryToGeoCoordinateAdaptor
 
 import scala.collection.mutable.ListBuffer
 
@@ -20,6 +19,8 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   private val reefHabitatPolygons: List[GeometryAdaptor] = habitatPolygons.filter(x => x.habitat == HabitatType.Reef || x.habitat == HabitatType.Other)
   private val bufferedPolygons: List[GeometryAdaptor] = defineAllBufferedPolygons()
   private val landPolygon: List[GeometryAdaptor] = habitatPolygons.filter(x => x.habitat == HabitatType.Land)
+
+  info("There are this many polygons " + habitatPolygons.size + " of which this many are reefs " + reefHabitatPolygons.size)
 
   //val filteredHabitats: SimpleFeatureCollection = filterHabitats
   //private val settlementHabitatsHashTable = new collection.mutable.HashMap[Int, HabitatPolygon]
@@ -40,15 +41,15 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
         val shape = shapes.next()
         val geometry = SimpleFeatureAdaptor.getGeometry(shape)
 
-        if (geometry.getNumGeometries > 1) {
-          val multipolygon = SimpleFeatureAdaptor.getMultiPolygon(shape)
-          for (i <- 0 until geometry.getNumGeometries) {
-            polys += new GeometryAdaptor(multipolygon.getGeometryN(i), SimpleFeatureAdaptor.getId(shape), SimpleFeatureAdaptor.getHabitatType(shape))
-
-          }
-        } else {
+        //        if (geometry.getNumGeometries > 1) {
+        //          val multipolygon = SimpleFeatureAdaptor.getMultiPolygon(shape)
+        //          for (i <- 0 until geometry.getNumGeometries) {
+        //            polys += new GeometryAdaptor(multipolygon.getGeometryN(i), SimpleFeatureAdaptor.getId(shape), SimpleFeatureAdaptor.getHabitatType(shape))
+        //
+        //          }
+        //        } else {
           polys += new GeometryAdaptor(geometry, SimpleFeatureAdaptor.getId(shape), SimpleFeatureAdaptor.getHabitatType(shape))
-        }
+        //}
       }
     } finally {
       shapes.close()
@@ -91,7 +92,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     //val location = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
 
     for (i <- reefHabitatPolygons.indices) {
-      if (reefHabitatPolygons(i).contains(coordinate)) {
+      if (reefHabitatPolygons(i).intersects(coordinate)) {
         debug("Coordinate is actually over a reef")
         reefIndex = i
       }
@@ -100,8 +101,9 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   }
 
   def isCoordinateOverBuffer(coordinate: GeoCoordinate): Boolean = {
-    val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
-    bufferedPolygons.exists(x => point.within(x.g))
+    //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
+    //bufferedPolygons.exists(x => x.intersects(coordinate))
+    reefHabitatPolygons.exists(x => x.isWithinDistance(coordinate, buffer.size / 100))
   }
 
   def getIndexOfNearestReef(coordinate: GeoCoordinate): Int = {

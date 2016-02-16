@@ -28,10 +28,11 @@ object Simulator extends App with Logging {
     val configFileReader = new ConfigurationFileReader()
     //    val config = configFileWriter.read(chooser.selectedFile)
 
-    val testConfigPathLaptop = "/Users/Steven/Documents/University/Phd/Modelling/Testing/Scala Conversion/test_config.xml"
-    val testConfigPathDesktop = "test-data/configs/test_config.xml"
+    //val testConfigPathLaptop = "/Users/Steven/Documents/University/Phd/Modelling/Testing/Scala Conversion/test_config.xml"
+    val testConfigPathDesktop = args(0)
+
     val config = configFileReader.read(new File(testConfigPathDesktop))
-    debug("Config is read successfully")
+    info("Configuration loaded")
     val model = new CoupledBiophysicalModel(config)
 
 
