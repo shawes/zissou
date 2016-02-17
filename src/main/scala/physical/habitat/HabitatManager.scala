@@ -22,6 +22,10 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
 
   info("There are this many polygons " + habitatPolygons.size + " of which this many are reefs " + reefHabitatPolygons.size)
 
+  for (reef <- reefHabitatPolygons) {
+    debug("Patch num: " + reef.id)
+  }
+
   //val filteredHabitats: SimpleFeatureCollection = filterHabitats
   //private val settlementHabitatsHashTable = new collection.mutable.HashMap[Int, HabitatPolygon]
   //val habitatList = ArrayBuffer.empty[HabitatPolygon]
@@ -36,6 +40,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
 
     val polys: ListBuffer[GeometryAdaptor] = ListBuffer.empty[GeometryAdaptor]
     val shapes = habitats.features()
+
     try {
       while (shapes.hasNext) {
         val shape = shapes.next()
