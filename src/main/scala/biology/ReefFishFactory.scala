@@ -3,7 +3,7 @@ package biology
 import grizzled.slf4j._
 import io.config.ConfigMappings._
 import io.config.FishConfig
-import locals.Constants
+import maths.Time
 import org.apache.commons.math3.distribution.NormalDistribution
 import org.joda.time.DateTime
 
@@ -25,7 +25,7 @@ class ReefFishFactory(fish: FishConfig, save: Boolean) extends Logging {
         larvaeCount += 1
         val pld: Double = distribution.sample
         debug("The pld is " + pld)
-        larvaeAtSite append spawningFish.createReefFish(larvaeCount, convertDaysToSeconds(pld), convertDaysToSeconds(pld),
+        larvaeAtSite append spawningFish.createReefFish(larvaeCount, Time.convertDaysToSeconds(pld), Time.convertDaysToSeconds(pld),
           new Birthplace(site.title, site.location), time, fish.ontogeny, fish.verticalMigrationProbabilities)
       }
       larvae append larvaeAtSite.toList
@@ -33,8 +33,6 @@ class ReefFishFactory(fish: FishConfig, save: Boolean) extends Logging {
     }
     larvae.toList
   }
-
-  private def convertDaysToSeconds(days: Double) = (days * Constants.SecondsInDay).toInt
 
 
 }

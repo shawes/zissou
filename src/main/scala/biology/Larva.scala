@@ -30,9 +30,9 @@ abstract class Larva(val id: Int,
   var polygon: HabitatPolygon
 
 
-  def hasBeenPelagicTooLong: Boolean = age >= pelagicLarvalDuration
+  //def hasBeenPelagicTooLong: Boolean = age >= pelagicLarvalDuration
 
-  def isTooOld: Boolean = age >= maximumLifeSpan
+  def isTooOld: Boolean = age > maximumLifeSpan
 
   def inCompetencyWindow: Boolean = age < pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion //TODO: Need to code in the competency window
 
@@ -60,7 +60,6 @@ abstract class Larva(val id: Int,
   }
 
   private def saveState() = history append new TimeCapsule(age, getOntogeny, state, polygon, position)
-
 
   def growOlder(seconds: Int): Unit = age += seconds
 

@@ -25,13 +25,9 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val fish: Fish = config.fish
   val spawn = new Spawn(config.spawn)
-  //val logger = Logger(classOf[BiologicalModel])
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
   var fishLarvae: ListBuffer[List[ReefFish]] = ListBuffer.empty
   var pelagicLarvaeCount = 0
-  //var startRun: DateTime = null
-  var processed = 0
-
   def apply(iteration: Int, disperser: ParticleDisperser): Unit = {
     calculateMortalityRate(iteration)
     spawnLarvae()
@@ -44,17 +40,13 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
     debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
 
     for (larva <- swimmingLarvae) {
+      move(disperser, larva)
+      ageLarvae(larva)
+      settle(larva)
+      lifespanCheck(larva)
       mortalityCheck(larva)
-      if (larva.isPelagic) {
-        move(disperser, larva)
-        ageLarvae(larva)
-        settle(larva)
-        lifespanCheck(larva)
-      }
       updateActiveLarvaeCount(larva.state)
     }
-    processed += 1
-    debug("Processed the larvae")
   }
 
   private def move(disperser: ParticleDisperser, larva: ReefFish): Unit = {
@@ -66,7 +58,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   }
 
   private def updateActiveLarvaeCount(state: PelagicLarvaeState): Unit = {
-    if (state == PelagicLarvaeState.Dead || state == PelagicLarvaeState.Settled) {
+    if (state != PelagicLarvaeState.Pelagic) {
       pelagicLarvaeCount -= 1
     }
   }
@@ -83,8 +75,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
 
   private def settle(larva: ReefFish): Unit = {
     if (larva.inCompetencyWindow) {
-      if (habitatManager.isBuffered && habitatManager.isCoordinateOverBuffer(larva.position)) {
-        val reefIndex = habitatManager.getIndexOfNearestReef(larva.position)
+      trace("Larva " + larva.id + " is in the competency window now")
+      if (habitatManager.isBuffered) {
+        val reefIndex = habitatManager.isCoordinateOverBuffer(larva.position)
+        // = habitatManager.getIndexOfNearestReef(larva.position)
         if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
           trace("Larva is within reef buffer")
           larva.settle(habitatManager.getReef(reefIndex), clock.now)

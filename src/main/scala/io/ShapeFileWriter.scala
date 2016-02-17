@@ -25,15 +25,17 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
 
   val ShapeFileName = "LarvaePaths.shp"
 
-  def write(): Unit = {
-    require(larvae != null && shape != null)
+  def write(): Unit = shape match {
+    //require(larvae != null && shape != null)
+    case ShapeFileType.Line => writeLineShapeFile(file)
+    case ShapeFileType.Point => writePointShapeFile(file)
+    case _ => throw new scala.IllegalArgumentException()
+  }
 
-    if (shape == ShapeFileType.Line) {
-      writeLineShapeFile(file)
-    } else {
-      writePointShapeFile(file) // Will need to expand if more options
-    }
-
+  def matchTest(x: Int): String = x match {
+    case 1 => "one"
+    case 2 => "two"
+    case _ => "many"
   }
 
   private def writeLineShapeFile(file: File) = {
@@ -58,27 +60,9 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
     }
   }
 
-  private def writeFeaturesToShapeFile(features: util.ArrayList[SimpleFeature], dataStore: DataStore): Unit = {
-    val transaction = new DefaultTransaction("create")
-    val typeName: String = dataStore.getTypeNames()(0)
-    val featureSource = dataStore.getFeatureSource(typeName)
-
-    featureSource match {
-      case sfs: SimpleFeatureStore =>
-        val featureStore = featureSource.asInstanceOf[SimpleFeatureStore]
-        val collection = new ListFeatureCollection(createLineSchema(), features)
-        featureStore.setTransaction(transaction)
-        featureStore.addFeatures(collection)
-        transaction.commit()
-        transaction.close()
-      case _ =>
-        throw new scala.IllegalArgumentException()
-    }
-  }
-
   private def writePointShapeFile(file: File) = {
     val features = new java.util.ArrayList[SimpleFeature]
-    val featureBuilder = new SimpleFeatureBuilder(createLineSchema())
+    val featureBuilder = new SimpleFeatureBuilder(createPointSchema())
     larvae.foreach(l => l.history.foreach(hist => addPointFeature(featureBuilder, l.id, hist)))
     val dataStoreFactory: ShapefileDataStoreFactory = new ShapefileDataStoreFactory()
 
@@ -88,6 +72,35 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
     newDataStore.createSchema(createPointSchema())
     writeFeaturesToShapeFile(features, newDataStore)
   }
+
+  private def writeFeaturesToShapeFile(features: util.ArrayList[SimpleFeature], dataStore: DataStore): Unit = {
+    val transaction = new DefaultTransaction("create")
+    val typeName: String = dataStore.getTypeNames()(0)
+    val featureSource = dataStore.getFeatureSource(typeName)
+
+    featureSource match {
+      case sfs: SimpleFeatureStore =>
+        val featureStore = featureSource.asInstanceOf[SimpleFeatureStore]
+        if (shape == ShapeFileType.Line) {
+        val collection = new ListFeatureCollection(createLineSchema(), features)
+        featureStore.setTransaction(transaction)
+        featureStore.addFeatures(collection)
+        transaction.commit()
+          transaction.close()
+        }
+        else {
+          val collection = new ListFeatureCollection(createLineSchema(), features)
+          featureStore.setTransaction(transaction)
+          featureStore.addFeatures(collection)
+          transaction.commit()
+        transaction.close()
+        }
+      case _ =>
+        throw new scala.IllegalArgumentException()
+    }
+  }
+
+
 
   private def createParams(file: File): util.HashMap[String, Serializable] = {
     val params = new util.HashMap[String, Serializable]()
@@ -117,7 +130,6 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
     schema.setCRS(DefaultGeographicCRS.WGS84)
     schema.add("id", classOf[Integer])
     schema.add("location", classOf[Point])
-    //schema.add("settled", classOf[java.lang.Boolean])
     schema.buildFeatureType()
   }
 

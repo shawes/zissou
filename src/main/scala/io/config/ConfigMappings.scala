@@ -6,7 +6,7 @@ import biology._
 import com.github.nscala_time.time.Imports._
 import io.{InputFiles, OutputFiles}
 import locals._
-import maths.{ContinuousRange, NormalDistribution}
+import maths.{ContinuousRange, NormalDistribution, Time}
 import org.joda.time.DateTime
 import physical.flow.{Depth, Flow}
 import physical.habitat.Buffer
@@ -52,7 +52,8 @@ object ConfigMappings {
   implicit def pelagicLarvalDurationMap(pld: PelagicLarvalDurationConfig): PelagicLarvalDuration =
     new PelagicLarvalDuration(new NormalDistribution(pld.mean, pld.stdev), DistributionType.Normal)
 
-  implicit def ontogenyConfigMap(o: OntogenyConfig): Ontogeny = new Ontogeny(o.preFlexion, o.flexion, o.postFlexion)
+  implicit def ontogenyConfigMap(o: OntogenyConfig): Ontogeny = new Ontogeny(Time.convertDaysToSeconds(o.preFlexion),
+    Time.convertDaysToSeconds(o.flexion), Time.convertDaysToSeconds(o.postFlexion))
 
   implicit def verticalMigrationConfigMap(vm: VerticalMigrationConfig): VerticalMigration =
     new VerticalMigration(vm.verticalMigrationProbability.map(x => verticalMigrationProbabilityConfigMap(x)).toList)

@@ -100,10 +100,14 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     reefIndex
   }
 
-  def isCoordinateOverBuffer(coordinate: GeoCoordinate): Boolean = {
+  def isCoordinateOverBuffer(coordinate: GeoCoordinate): Int = {
     //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
-    //bufferedPolygons.exists(x => x.intersects(coordinate))
-    reefHabitatPolygons.exists(x => x.isWithinDistance(coordinate, buffer.size / 100))
+    val inside = bufferedPolygons.filter(x => x.intersects(coordinate))
+    if (inside.nonEmpty) {
+      inside.head.id
+    } else {
+      Constants.LightWeightException.NoReefFoundException
+    }
   }
 
   def getIndexOfNearestReef(coordinate: GeoCoordinate): Int = {
@@ -123,7 +127,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   }
 
   private def defineAllBufferedPolygons(): List[GeometryAdaptor] = {
-    reefHabitatPolygons.map(reef => new GeometryAdaptor(reef.g.buffer(buffer.size / 100), reef.id, reef.habitat))
+    reefHabitatPolygons.map(reef => new GeometryAdaptor(reef.g.buffer(buffer.size), reef.id, reef.habitat))
   }
 
 
