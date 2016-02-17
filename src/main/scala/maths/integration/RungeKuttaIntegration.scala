@@ -20,18 +20,18 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
     //debug("Performing step 1")
     val step1 = performRungeKuttaIteration(coordinate, velocity, timeStep, time)
     debug("Step1 v= " + step1.velocity + " at the location " + step1.coordinate)
-    if (step1.velocity.isUndefined) return step1.coordinate //TODO Turn into exception
+    if (step1.velocity.isUndefined) return new GeoCoordinate(Double.NaN, Double.NaN)
     val step2 = performRungeKuttaIteration(coordinate, step1.velocity, (timeStep * 1.5).toInt, time)
     debug("Step2 v= " + step2.velocity + " at the location " + step2.coordinate)
-    if (step2.velocity.isUndefined) return step2.coordinate
+    if (step2.velocity.isUndefined) return new GeoCoordinate(Double.NaN, Double.NaN)
     //debug("Performing step 3")
     val step3 = performRungeKuttaIteration(coordinate, step2.velocity, (timeStep * 1.5).toInt, time)
     debug("Step3 v= " + step3.velocity + " at the location " + step3.coordinate)
-    if (step3.velocity.isUndefined) return step3.coordinate
+    if (step3.velocity.isUndefined) return new GeoCoordinate(Double.NaN, Double.NaN)
     //debug("Performing step 4")
     val step4 = performRungeKuttaIteration(coordinate, step3.velocity, timeStep * 2, time)
     debug("Step4 v= " + step4.velocity + " at the location " + step4.coordinate)
-    if (step4.velocity.isUndefined) return step4.coordinate
+    if (step4.velocity.isUndefined) return new GeoCoordinate(Double.NaN, Double.NaN)
 
     val u = (step1.velocity.u + (2 * step2.velocity.u) + (2 * step3.velocity.u) + step4.velocity.u) * 0.16666
     val v = (step1.velocity.v + (2 * step2.velocity.v) + (2 * step3.velocity.v) + step4.velocity.v) * 0.16666
