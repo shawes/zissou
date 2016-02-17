@@ -62,7 +62,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
     val newVelocity = flow.getVelocityOfCoordinate(newCoordinate, time.plusSeconds(normalisedTime), time, partialTimeStep)
     //debug("New velocity is " + newVelocity)
     if (newVelocity.isUndefined) {
-      new RungeKuttaStepDerivative(new Velocity(Double.NaN, Double.NaN), coordinate)
+      new RungeKuttaStepDerivative(new Velocity(Double.NaN, Double.NaN), newCoordinate)
     } else {
       new RungeKuttaStepDerivative(newVelocity, newCoordinate)
     }

@@ -37,20 +37,17 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
     val featureBuilder = new SimpleFeatureBuilder(createLineSchema())
 
     for (larva <- larvae) {
-
       val coordinates = new ListBuffer[Coordinate]()
       for (hist <- larva.history) {
         coordinates += new Coordinate(hist.position.latitude, hist.position.longitude)
       }
       addLineFeature(featureBuilder, larva.id, coordinates.toArray)
-      val dataStoreFactory = new ShapefileDataStoreFactory()
-      val params = createParams(file)
-      val newDataStore = dataStoreFactory.createNewDataStore(params).asInstanceOf[ShapefileDataStore]
-      newDataStore.createSchema(createLineSchema())
-
-      writeFeaturesToShapeFile(features, newDataStore)
-
     }
+    val dataStoreFactory = new ShapefileDataStoreFactory()
+    val params = createParams(file)
+    val newDataStore = dataStoreFactory.createNewDataStore(params).asInstanceOf[ShapefileDataStore]
+    newDataStore.createSchema(createLineSchema())
+    writeFeaturesToShapeFile(features, newDataStore)
   }
 
   private def writePointShapeFile(file: File) = {
