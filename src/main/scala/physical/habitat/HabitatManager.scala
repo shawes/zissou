@@ -107,12 +107,12 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   def getIndexOfNearestReef(coordinate: GeoCoordinate): Int = {
 
     var shortestDistance: Double = Double.MaxValue
-    var closestReefId: Int = Constants.LightWeightException.NoReefFoundException
+    var closestReefId: Int = reefHabitatPolygons.head.id
     //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
 
     for (i <- reefHabitatPolygons.indices) {
       val distance = reefHabitatPolygons(i).distance(coordinate) * 100
-      if (distance < buffer.size && distance < shortestDistance) {
+      if (distance < shortestDistance) {
         shortestDistance = distance
         closestReefId = i
       }
