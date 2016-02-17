@@ -7,8 +7,7 @@ import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
 import io.config.ConfigMappings._
 import io.config.Configuration
-import locals.PelagicLarvaeState.PelagicLarvaeState
-import locals.{Constants, PelagicLarvaeState}
+import locals.Constants
 import maths.RandomNumberGenerator
 import physical.habitat.HabitatManager
 
@@ -45,7 +44,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
       settle(larva)
       lifespanCheck(larva)
       mortalityCheck(larva)
-      updateActiveLarvaeCount(larva.state)
+      updateActiveLarvaeCount(larva)
     }
   }
 
@@ -57,8 +56,8 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
     }
   }
 
-  private def updateActiveLarvaeCount(state: PelagicLarvaeState): Unit = {
-    if (state != PelagicLarvaeState.Pelagic) {
+  private def updateActiveLarvaeCount(larva: ReefFish): Unit = {
+    if (!larva.isPelagic) {
       pelagicLarvaeCount -= 1
     }
   }
@@ -75,13 +74,18 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
 
   private def settle(larva: ReefFish): Unit = {
     if (larva.inCompetencyWindow) {
-      trace("Larva " + larva.id + " is in the competency window now")
+      debug("Larva " + larva.id + " is in the competency window now")
       if (habitatManager.isBuffered) {
+        debug("Searching buffered reefs")
         val reefIndex = habitatManager.isCoordinateOverBuffer(larva.position)
         // = habitatManager.getIndexOfNearestReef(larva.position)
         if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
-          trace("Larva is within reef buffer")
+          debug("Larva is within reef buffer")
           larva.settle(habitatManager.getReef(reefIndex), clock.now)
+        } else {
+          val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
+          val reef = habitatManager.getReef(distanceIndex)
+          debug("Closest reef is still " + reef.distance(larva.position) * 100 + "km away")
         }
       }
       else {

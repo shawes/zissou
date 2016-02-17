@@ -22,12 +22,11 @@ abstract class Larva(val id: Int,
                      val verticalMigration: VerticalMigration) extends Logging {
 
   val history: ListBuffer[TimeCapsule] = ListBuffer.empty[TimeCapsule]
-  var state = PelagicLarvaeState.Pelagic
   var age: Int = 0
-
   var settlementDate : DateTime = Constants.MinimumDate
   var position: GeoCoordinate = birthplace.location
   var polygon: HabitatPolygon
+  private var state = PelagicLarvaeState.Pelagic
 
 
   //def hasBeenPelagicTooLong: Boolean = age >= pelagicLarvalDuration
@@ -54,6 +53,16 @@ abstract class Larva(val id: Int,
 
   def updatePosition(newPos: GeoCoordinate): Unit = position = newPos
 
+  def growOlder(seconds: Int): Unit = age += seconds
+
+  def settle(settlementReef: HabitatPolygon, date: DateTime): Unit = {
+    //saveState()
+    updateHabitat(settlementReef)
+    settlementDate = date
+    changeState(PelagicLarvaeState.Settled)
+
+  }
+
   private def changeState(newState: PelagicLarvaeState): Unit = {
     state = newState
     saveState()
@@ -61,15 +70,7 @@ abstract class Larva(val id: Int,
 
   private def saveState() = history append new TimeCapsule(age, getOntogeny, state, polygon, position)
 
-  def growOlder(seconds: Int): Unit = age += seconds
-
-  def settle(settlementReef: HabitatPolygon, date: DateTime) : Unit = {
-    //saveState()
-    updateHabitat(settlementReef)
-    settlementDate = date
-    changeState(PelagicLarvaeState.Settled)
-
-  }
+  def getOntogeny: OntogenyState = ontogeny.getState(age)
 
   def updateHabitat(newHabitat: HabitatPolygon): Unit = polygon = newHabitat
 
@@ -80,8 +81,6 @@ abstract class Larva(val id: Int,
   def getOntogeneticVerticalMigrationDepth(random: RandomNumberGenerator): Double = {
     verticalMigration.getDepth(getOntogeny, random)
   }
-
-  def getOntogeny: OntogenyState = ontogeny.getState(age)
 
   override def toString: String = "id:" + id + "," +
     "birthday:" + birthday + "," +
