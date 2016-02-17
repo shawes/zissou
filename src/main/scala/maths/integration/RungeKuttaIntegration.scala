@@ -38,8 +38,10 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
     val w = (step1.velocity.w + (2 * step2.velocity.w) + (2 * step3.velocity.w) + step4.velocity.w) * 0.16666
 
     val integratedVelocity = new Velocity(u, v, w)
-    debug("Integrated velocity is " + integratedVelocity)
-    geometry.translatePoint(coordinate, integratedVelocity, timeStep, speed)
+
+    val point = geometry.translatePoint(coordinate, integratedVelocity, timeStep, speed)
+    debug("RK4 velocity is " + integratedVelocity + " and moved to " + point)
+    point
     //val newVelocity = flow.getVelocityOfCoordinate(point, isFuture = true)
     // If there is no velocity at the next time step, assume its land and don't move
     //if(newVelocity.isUndefined) new GeoCoordinate(Double.NaN,Double.NaN) else point
@@ -48,8 +50,8 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
   private def performRungeKuttaIteration(coordinate: GeoCoordinate, velocity: Velocity,
                                          partialTimeStep: Int, time: DateTime): RungeKuttaStepDerivative = {
     //debug("Starting an RK4 integration STEP")
-    if (coordinate.isUndefined || velocity.isUndefined) {
-      return new RungeKuttaStepDerivative(new Velocity(Double.NaN, Double.NaN), new GeoCoordinate(Double.NaN, Double.NaN, Double.NaN))
+    if (velocity.isUndefined) {
+      return new RungeKuttaStepDerivative(new Velocity(Double.NaN, Double.NaN), coordinate)
     }
 
     val normalisedTime = partialTimeStep - timeStep
@@ -59,8 +61,8 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
     //debug("New coord is " + newCoordinate)
     val newVelocity = flow.getVelocityOfCoordinate(newCoordinate, time.plusSeconds(normalisedTime), time, partialTimeStep)
     //debug("New velocity is " + newVelocity)
-    if (newCoordinate.isUndefined || newVelocity.isUndefined) {
-      new RungeKuttaStepDerivative(new Velocity(Double.NaN, Double.NaN), new GeoCoordinate(Double.NaN, Double.NaN, Double.NaN))
+    if (newVelocity.isUndefined) {
+      new RungeKuttaStepDerivative(new Velocity(Double.NaN, Double.NaN), coordinate)
     } else {
       new RungeKuttaStepDerivative(newVelocity, newCoordinate)
     }
