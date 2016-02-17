@@ -4,9 +4,9 @@ import java.io.{File, Serializable}
 import java.util
 
 import biology.{Larva, TimeCapsule}
-import com.vividsolutions.jts.geom.{Coordinate, LineString, Point}
-import locals.ShapeFileType
+import com.vividsolutions.jts.geom.{Coordinate, LineString, MultiLineString, Point}
 import locals.ShapeFileType._
+import locals.{OntogenyState, ShapeFileType}
 import org.geotools.data.{DataStore, DefaultTransaction}
 
 //import org.geotools.data.{DataStore, DefaultTransaction}
@@ -24,6 +24,7 @@ import scala.collection.mutable.ListBuffer
 class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) extends FileWriterTrait {
 
   val ShapeFileName = "LarvaePaths.shp"
+  val geometryFactory = JTSFactoryFinder.getGeometryFactory()
 
   def write(): Unit = shape match {
     case ShapeFileType.Line => writeLineShapeFile(file)
@@ -37,17 +38,32 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
     val featureBuilder = new SimpleFeatureBuilder(createLineSchema())
 
     for (larva <- larvae) {
-      val coordinates = new ListBuffer[Coordinate]()
-      for (hist <- larva.history) {
-        coordinates += new Coordinate(hist.position.latitude, hist.position.longitude)
-      }
-      addLineFeature(featureBuilder, larva.id, coordinates.toArray)
+      val hatchingFilter = larva.history.filter(x => x.stage == OntogenyState.Hatching)
+      val preflexionFilter = larva.history.filter(x => x.stage == OntogenyState.Preflexion)
+      val flexionFilter = larva.history.filter(x => x.stage == OntogenyState.Flexion)
+      val postFlexionFilter = larva.history.filter(x => x.stage == OntogenyState.Postflexion)
+
+      val lines = new ListBuffer[LineString]()
+      lines += writeStageLine(hatchingFilter.toList)
+      lines += writeStageLine(preflexionFilter.toList)
+      lines += writeStageLine(flexionFilter.toList)
+      lines += writeStageLine(postFlexionFilter.toList)
+
+      addMultiLineFeature(featureBuilder, larva.id, lines.toArray)
     }
     val dataStoreFactory = new ShapefileDataStoreFactory()
     val params = createParams(file)
     val newDataStore = dataStoreFactory.createNewDataStore(params).asInstanceOf[ShapefileDataStore]
     newDataStore.createSchema(createLineSchema())
     writeFeaturesToShapeFile(features, newDataStore)
+  }
+
+  private def writeStageLine(history: List[TimeCapsule]): LineString = {
+    val coordinates = new ListBuffer[Coordinate]()
+    for (hist <- history) {
+      coordinates += new Coordinate(hist.position.latitude, hist.position.longitude)
+    }
+    geometryFactory.createLineString(coordinates.toArray)
   }
 
   private def writePointShapeFile(file: File) = {
@@ -106,11 +122,11 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
     featureBuilder.buildFeature(null)
   }
 
-  private def addLineFeature(featureBuilder: SimpleFeatureBuilder, id: Int, coords: Array[Coordinate]): SimpleFeature = {
-    val geometryFactory = JTSFactoryFinder.getGeometryFactory()
-    val line = geometryFactory.createLineString(coords)
+  private def addMultiLineFeature(featureBuilder: SimpleFeatureBuilder, id: Int, lines: Array[LineString]): SimpleFeature = {
+
+    val lines = geometryFactory.createMultiLineString(lines)
     featureBuilder.add(id)
-    featureBuilder.add(line)
+    featureBuilder.add(lines)
     featureBuilder.buildFeature(null)
   }
 
@@ -128,7 +144,7 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
     schema.setName("LarvaePaths")
     schema.setCRS(DefaultGeographicCRS.WGS84)
     schema.add("id", classOf[Integer])
-    schema.add("path", classOf[LineString])
+    schema.add("path", classOf[MultiLineString])
     schema.buildFeatureType()
   }
 
