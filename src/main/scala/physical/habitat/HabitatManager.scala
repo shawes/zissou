@@ -111,12 +111,13 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
 
     for (i <- reefHabitatPolygons.indices) {
-      val distance = reefHabitatPolygons(i).distance(coordinate) * 100
+      val distance = reefHabitatPolygons(i).distance(coordinate)
       if (distance < shortestDistance) {
         shortestDistance = distance
         closestReefId = i
       }
     }
+    debug("The closest reef centroid is: " + reefHabitatPolygons(closestReefId).centroid)
     closestReefId
   }
 
