@@ -8,16 +8,8 @@ import io.config.Configuration
 
 object Simulator extends App with Logging {
 
-  try {
-
     val model = new CoupledBiophysicalModel(readConfigurationFile)
     model.run()
-
-  } catch {
-    case ex: Exception =>
-      error("Unrecoverable exception")
-      new Error("Zissou could not recover")
-  }
 
 
   private def readConfigurationFile: Configuration = {
