@@ -5,6 +5,7 @@ import java.io.File
 import grizzled.slf4j.Logging
 import io.HabitatFileReader
 import locals.{Constants, HabitatType}
+import maths.Geometry
 import org.geotools.data.simple.SimpleFeatureCollection
 import physical.GeoCoordinate
 
@@ -19,12 +20,12 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   private val reefHabitatPolygons: List[GeometryAdaptor] = habitatPolygons.filter(x => x.habitat == HabitatType.Reef || x.habitat == HabitatType.Other)
   private val bufferedPolygons: List[GeometryAdaptor] = defineAllBufferedPolygons()
   private val landPolygon: List[GeometryAdaptor] = habitatPolygons.filter(x => x.habitat == HabitatType.Land)
-
+  private val geometry = new Geometry
   info("There are this many polygons " + habitatPolygons.size + " of which this many are reefs " + reefHabitatPolygons.size)
 
-  for (reef <- reefHabitatPolygons) {
-    debug("Patch num: " + reef.id)
-  }
+  //for (reef <- reefHabitatPolygons) {
+  //  debug("Patch num: " + reef.id)
+  //}
 
   //val filteredHabitats: SimpleFeatureCollection = filterHabitats
   //private val settlementHabitatsHashTable = new collection.mutable.HashMap[Int, HabitatPolygon]
@@ -109,16 +110,33 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     }
   }
 
+  def isCoordinateOverBufferLazy(coordinate: GeoCoordinate): Int = {
+    val nearestReefIndex = getIndexOfNearestReef(coordinate)
+    val distance = geometry.getDistanceBetweenTwoPoints(coordinate, reefHabitatPolygons(nearestReefIndex).centroid)
+    // val distances = reefHabitatPolygons.map(reef => geometry.getDistanceBetweenTwoPoints(coordinate,reef.centroid))
+    if (distance < buffer.size * 1000) {
+      nearestReefIndex
+    } else {
+      Constants.LightWeightException.NoReefFoundException
+    }
+  }
+
+
   def getIndexOfNearestReef(coordinate: GeoCoordinate): Int = {
+
+    //val point =
 
     var shortestDistance: Double = Double.MaxValue
     var closestReefId: Int = reefHabitatPolygons.head.id
     //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
 
     for (i <- reefHabitatPolygons.indices) {
-      val distance = reefHabitatPolygons(i).distance(coordinate)
-      if (distance < shortestDistance) {
-        shortestDistance = distance
+      //val distance = point.distance(reefHabitatPolygons(i).g)
+      //debug("Patch number "+ reefHabitatPolygons(i).id +" is km away "+distance+" with centroid "+reefHabitatPolygons(i).centroid)
+      val geomDist = geometry.getDistanceBetweenTwoPoints(coordinate, reefHabitatPolygons(i).centroid)
+      //debug("Geometry distance is "+ geomDist)
+      if (geomDist < shortestDistance) {
+        shortestDistance = geomDist
         closestReefId = i
       }
     }

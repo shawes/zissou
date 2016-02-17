@@ -13,7 +13,7 @@ class DispersalKernelFileWriter(larvae: List[Larva], csvFile: File) extends File
     val bw = new BufferedWriter(new java.io.FileWriter(csvFile))
     bw.write(columnHeaders)
     bw.newLine()
-    larvae.find(l => l.isSettled).foreach(l => bw.write(getCsvLarvaRow(l)))
+    larvae.par.filter(l => l.isSettled).foreach(l => bw.write(getCsvLarvaRow(l)))
     bw.close()
   }
 
@@ -35,11 +35,11 @@ class DispersalKernelFileWriter(larvae: List[Larva], csvFile: File) extends File
     val sb = new StringBuilder()
     sb ++= larva.id + ","
     sb ++= larva.birthday + ","
-    sb ++= larva.birthplace + ","
+    sb ++= larva.birthplace.name + ","
+    sb ++= larva.age + ","
     sb ++= larva.settlementDate + ","
     sb ++= larva.polygon.id + ","
-    sb ++= larva.polygon.habitat.toString + ","
-    sb ++= larva.age + ",\n"
+    sb ++= larva.polygon.habitat.toString + ",\n"
     sb.toString()
   }
 
@@ -47,6 +47,6 @@ class DispersalKernelFileWriter(larvae: List[Larva], csvFile: File) extends File
    *
    * @return A csv list of column headers
    */
-  private def columnHeaders: String = "id,born,age,birth_place,recruited,reef_id,reef_type"
+  private def columnHeaders: String = "id,born,birth_place,age,recruited,reef_id,reef_type"
 
 }

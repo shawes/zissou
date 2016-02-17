@@ -34,6 +34,14 @@ class Geometry {
       point.longitude + (yDistance / (kmLongitude * 1000)), point.depth)
   }
 
+  /**
+    *
+    * Returns units of metres
+    *
+    * @param p1
+    * @param p2
+    * @return
+    */
   def getDistanceBetweenTwoPoints(p1: GeoCoordinate, p2: GeoCoordinate): Double = {
 
     val lat1 = Math.toRadians(p1.latitude)

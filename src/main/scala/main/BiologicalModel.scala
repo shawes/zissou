@@ -73,7 +73,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
       debug("Larva " + larva.id + " is in the competency window now")
       if (habitatManager.isBuffered) {
         debug("Searching buffered reefs")
-        val reefIndex = habitatManager.isCoordinateOverBuffer(larva.position)
+        val reefIndex = habitatManager.isCoordinateOverBufferLazy(larva.position)
         // = habitatManager.getIndexOfNearestReef(larva.position)
         if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
           debug("Larva is within reef buffer")

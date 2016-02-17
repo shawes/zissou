@@ -6,31 +6,15 @@
     </inputFiles>
     <spawn>
         <spawningLocation>
-            <name>gbr</name>
+            <name>solitary</name>
             <patchNumber>186</patchNumber>
             <site>
-                <longitude>153.022</longitude>
-                <latitude>-24.502</latitude>
+                <longitude>153.283482</longitude>
+                <latitude>-30.199443</latitude>
                 <depth>5</depth>
                 <flowId>1</flowId>
             </site>
-            <numberOfLarvae>1</numberOfLarvae>
-            <releasePeriod>
-                <start>2004-01-01T00:00:00</start>
-                <end>2004-01-02T00:00:00</end>
-            </releasePeriod>
-            <interval>5</interval>
-        </spawningLocation>
-        <spawningLocation>
-            <name>north_sol</name>
-            <patchNumber>186</patchNumber>
-            <site>
-                <longitude>153.39</longitude>
-                <latitude>-29.82</latitude>
-                <depth>5</depth>
-                <flowId>0</flowId>
-            </site>
-            <numberOfLarvae>1</numberOfLarvae>
+            <numberOfLarvae>5</numberOfLarvae>
             <releasePeriod>
                 <start>2004-01-01T00:00:00</start>
                 <end>2004-01-02T00:00:00</end>
@@ -39,7 +23,7 @@
         </spawningLocation>
     </spawn>
     <turbulence>
-        <horizontalDiffusionCoefficient>0.015</horizontalDiffusionCoefficient>
+        <horizontalDiffusionCoefficient>1.0</horizontalDiffusionCoefficient>
         <verticalDiffusionCoefficient>0.015</verticalDiffusionCoefficient>
         <applyTurbulence>true</applyTurbulence>
         <interval>1</interval>
@@ -47,9 +31,9 @@
     <fish>
         <swimmingAbility>Passive</swimmingAbility>
         <ontogeny>
-            <flexion>118400</flexion>
-            <preFlexion>032800</preFlexion>
-            <postFlexion>291200</postFlexion>
+            <flexion>2</flexion>
+            <preFlexion>1</preFlexion>
+            <postFlexion>3</postFlexion>
         </ontogeny>
         <meanSwimmingSpeed>0.102</meanSwimmingSpeed>
         <standDeviationSwimmingSpeed>0.019</standDeviationSwimmingSpeed>
@@ -57,24 +41,24 @@
         <verticalMigrationProbabilities>
             <verticalMigrationProbability>
                 <depthStart>0</depthStart>
-                <depthFinish>3</depthFinish>
-                <hatching>1.0</hatching>
+                <depthFinish>10</depthFinish>
+                <hatching>0.60</hatching>
                 <preFlexion>0.8</preFlexion>
                 <flexion>0.4</flexion>
                 <postFlexion>0.2</postFlexion>
             </verticalMigrationProbability>
             <verticalMigrationProbability>
-                <depthStart>4</depthStart>
-                <depthFinish>30</depthFinish>
-                <hatching>0</hatching>
+                <depthStart>11</depthStart>
+                <depthFinish>50</depthFinish>
+                <hatching>0.3</hatching>
                 <preFlexion>0.2</preFlexion>
                 <flexion>0.4</flexion>
                 <postFlexion>0.55</postFlexion>
             </verticalMigrationProbability>
             <verticalMigrationProbability>
-                <depthStart>31</depthStart>
-                <depthFinish>50</depthFinish>
-                <hatching>0</hatching>
+                <depthStart>51</depthStart>
+                <depthFinish>100</depthFinish>
+                <hatching>0.1</hatching>
                 <preFlexion>0</preFlexion>
                 <flexion>0.2</flexion>
                 <postFlexion>0.25</postFlexion>
@@ -82,7 +66,7 @@
         </verticalMigrationProbabilities>
         <pelagicLarvalDuration>
             <mean>10</mean>
-            <stdev>0.6</stdev>
+            <stdev>0.2</stdev>
             <distribution>Normal</distribution>
         </pelagicLarvalDuration>
         <isMortal>false</isMortal>
@@ -107,13 +91,12 @@
     <habitat>
         <buffer>
             <isBuffered>true</isBuffered>
-            <bufferSize>20</bufferSize>
-            <filePath>test-data/shape/ALLPatches_Buffer20km</filePath>
+            <bufferSize>50</bufferSize>
         </buffer>
     </habitat>
     <output>
         <includeLarvaeHistory>true</includeLarvaeHistory>
-        <shape>Point</shape>
+        <shape>Line</shape>
         <saveOutputFilePath>test-data/output</saveOutputFilePath>
         <percentage>25</percentage>
         <logLevel>verbose</logLevel>
