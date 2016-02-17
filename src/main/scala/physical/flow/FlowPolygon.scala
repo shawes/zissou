@@ -14,4 +14,6 @@ class FlowPolygon(var id: Int,
                   var seaSurfaceHeight: Double,
                   var isLand: Boolean) {
   def this() = this(0, new ArrayBuffer(Constants.FlowPolygonVertices), new GeoCoordinate(), new Velocity(0, 0), 0, 0, 0, false)
+
+  def onLand: Boolean = velocity.isUndefined
 }

@@ -16,18 +16,21 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
     debug("Starting an RK4 integration on coord " + coordinate + "with velocity " + coordinateVelocity)
     val velocity = turbulence.apply(coordinateVelocity)
 
-    //debug("Got the velocity " + velocity + " at the location " + coordinate)
+    debug("Got the velocity " + velocity + " at the location " + coordinate)
     //debug("Performing step 1")
     val step1 = performRungeKuttaIteration(coordinate, velocity, timeStep, time)
+    debug("Step1 v= " + step1.velocity + " at the location " + step1.coordinate)
     if (step1.velocity.isUndefined) return step1.coordinate //TODO Turn into exception
-    //debug("Performing step 2")
     val step2 = performRungeKuttaIteration(coordinate, step1.velocity, (timeStep * 1.5).toInt, time)
+    debug("Step2 v= " + step2.velocity + " at the location " + step2.coordinate)
     if (step2.velocity.isUndefined) return step2.coordinate
     //debug("Performing step 3")
     val step3 = performRungeKuttaIteration(coordinate, step2.velocity, (timeStep * 1.5).toInt, time)
+    debug("Step3 v= " + step3.velocity + " at the location " + step3.coordinate)
     if (step3.velocity.isUndefined) return step3.coordinate
     //debug("Performing step 4")
     val step4 = performRungeKuttaIteration(coordinate, step3.velocity, timeStep * 2, time)
+    debug("Step4 v= " + step4.velocity + " at the location " + step4.coordinate)
     if (step4.velocity.isUndefined) return step4.coordinate
 
     val u = (step1.velocity.u + (2 * step2.velocity.u) + (2 * step3.velocity.u) + step4.velocity.u) * 0.16666
@@ -35,7 +38,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
     val w = (step1.velocity.w + (2 * step2.velocity.w) + (2 * step3.velocity.w) + step4.velocity.w) * 0.16666
 
     val integratedVelocity = new Velocity(u, v, w)
-    //debug("Integrated velocity is " + integratedVelocity)
+    debug("Integrated velocity is " + integratedVelocity)
     geometry.translatePoint(coordinate, integratedVelocity, timeStep, speed)
     //val newVelocity = flow.getVelocityOfCoordinate(point, isFuture = true)
     // If there is no velocity at the next time step, assume its land and don't move
@@ -65,4 +68,4 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
   }
 }
 
-case class RungeKuttaStepDerivative(velocity: Velocity, coordinate: GeoCoordinate)
+case class RungeKuttaStepDerivative(val velocity: Velocity, val coordinate: GeoCoordinate)

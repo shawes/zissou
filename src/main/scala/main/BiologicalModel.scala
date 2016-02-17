@@ -36,7 +36,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
 
   private def processLarva(larvae: List[ReefFish], disperser: ParticleDisperser): Unit = {
 
-    val swimmingLarvae: List[ReefFish] = larvae.filter(fish => fish.isPelagic)
+    val swimmingLarvae: List[ReefFish] = larvae.view.filter(fish => fish.isPelagic).force
     debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
 
     for (larva <- swimmingLarvae) {

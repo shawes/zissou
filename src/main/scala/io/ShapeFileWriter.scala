@@ -26,16 +26,9 @@ class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) ext
   val ShapeFileName = "LarvaePaths.shp"
 
   def write(): Unit = shape match {
-    //require(larvae != null && shape != null)
     case ShapeFileType.Line => writeLineShapeFile(file)
     case ShapeFileType.Point => writePointShapeFile(file)
     case _ => throw new scala.IllegalArgumentException()
-  }
-
-  def matchTest(x: Int): String = x match {
-    case 1 => "one"
-    case 2 => "two"
-    case _ => "many"
   }
 
   private def writeLineShapeFile(file: File) = {

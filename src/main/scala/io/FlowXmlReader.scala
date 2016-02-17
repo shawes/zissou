@@ -25,10 +25,8 @@ class FlowXmlReader() extends FileReaderTrait with Logging {
     * @return a vector of flow polygons comprising the data from the XML file
     */
   def read(file: File): Array[FlowPolygon] = {
-    debug("File path is " + file.getPath)
     val src = Source.fromFile(file)
     val reader = new XMLEventReader(src)
-    //printElements(reader)
     readXmlElements(reader)
   }
 
@@ -79,7 +77,6 @@ class FlowXmlReader() extends FileReaderTrait with Logging {
       }
     }
     xml.stop()
-    debug("Returning " + polygons.size + " polygons")
     polygons.toArray
   }
 
@@ -101,10 +98,6 @@ class FlowXmlReader() extends FileReaderTrait with Logging {
     polygon.vertices += new GeoCoordinate(locus.latitude - halfLength, locus.longitude + halfLength)
     polygon.vertices += new GeoCoordinate(locus.latitude + halfLength, locus.longitude + halfLength)
     polygon.vertices += new GeoCoordinate(locus.latitude + halfLength, locus.longitude - halfLength)
-  }
-
-  private def printElements(xml: XMLEventReader) {
-    while (xml.hasNext) logger.trace(xml.next().toString)
   }
 
 }

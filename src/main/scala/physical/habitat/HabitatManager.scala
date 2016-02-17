@@ -87,22 +87,16 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   //def getReef(index: Int): HabitatPolygon = settlementHabitatsHashTable.get(index).get
 
   def isCoordinateOverReef(coordinate: GeoCoordinate): Int = {
-    //debug("Entering isCoordinateOverReef")
-    var reefIndex = Constants.LightWeightException.NoReefFoundException
-    //val location = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
-
-    for (i <- reefHabitatPolygons.indices) {
-      if (reefHabitatPolygons(i).intersects(coordinate)) {
-        debug("Coordinate is actually over a reef")
-        reefIndex = i
-      }
+    val inside = reefHabitatPolygons.find(x => x.contains(coordinate))
+    if (inside.nonEmpty) {
+      inside.head.id
+    } else {
+      Constants.LightWeightException.NoReefFoundException
     }
-    reefIndex
   }
 
   def isCoordinateOverBuffer(coordinate: GeoCoordinate): Int = {
-    //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
-    val inside = bufferedPolygons.filter(x => x.intersects(coordinate))
+    val inside = bufferedPolygons.find(x => x.contains(coordinate))
     if (inside.nonEmpty) {
       inside.head.id
     } else {
@@ -127,7 +121,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   }
 
   private def defineAllBufferedPolygons(): List[GeometryAdaptor] = {
-    reefHabitatPolygons.map(reef => new GeometryAdaptor(reef.g.buffer(buffer.size), reef.id, reef.habitat))
+    reefHabitatPolygons.map(reef => new GeometryAdaptor(reef.g.buffer(buffer.size / 100), reef.id, reef.habitat))
   }
 
 

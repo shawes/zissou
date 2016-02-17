@@ -54,6 +54,6 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
 
     val resultsWriter = new ResultsWriter(biology.fishLarvae.toList, config.output)
     resultsWriter.write()
-    info("Simulation run completed at " + simulationTimer.stop())
+    info("Simulation run completed in " + simulationTimer.stop() / 60 + " minutes")
   }
 }
