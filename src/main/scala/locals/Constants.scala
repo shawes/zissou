@@ -6,8 +6,8 @@ object Constants {
 
   val SecondsInDay = 86400
   val FlowPolygonVertices = 4
-  val MaxLatitudeShift = 0.002
-  val MaxLongitudeShift = 0.002
+  val MaxLatitudeShift = 0.02
+  val MaxLongitudeShift = 0.02
   val LarvaeCapacityAtSite = 10000
   //val NoClosestReefFound = -1
   val Ocean = -27

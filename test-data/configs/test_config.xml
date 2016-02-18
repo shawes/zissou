@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <simulationVariables>
     <inputFiles>
-        <flowFilePath>/Users/Steven/Development/NetCdfToXmlParser/data</flowFilePath>
+        <flowFilePath>/Volumes/Silver Box/netCDF/BRAN2.1/2004</flowFilePath>
         <habitatFilePath>test-data/shape/ALLpatches.shp</habitatFilePath>
     </inputFiles>
     <spawn>
@@ -14,7 +14,7 @@
                 <depth>5</depth>
                 <flowId>1</flowId>
             </site>
-            <numberOfLarvae>5</numberOfLarvae>
+            <numberOfLarvae>10000</numberOfLarvae>
             <releasePeriod>
                 <start>2004-01-01T00:00:00</start>
                 <end>2004-01-02T00:00:00</end>
@@ -31,9 +31,9 @@
     <fish>
         <swimmingAbility>Passive</swimmingAbility>
         <ontogeny>
-            <flexion>2</flexion>
-            <preFlexion>1</preFlexion>
-            <postFlexion>3</postFlexion>
+            <flexion>6</flexion>
+            <preFlexion>3</preFlexion>
+            <postFlexion>9</postFlexion>
         </ontogeny>
         <meanSwimmingSpeed>0.102</meanSwimmingSpeed>
         <standDeviationSwimmingSpeed>0.019</standDeviationSwimmingSpeed>
@@ -65,18 +65,18 @@
             </verticalMigrationProbability>
         </verticalMigrationProbabilities>
         <pelagicLarvalDuration>
-            <mean>10</mean>
-            <stdev>0.2</stdev>
+            <mean>20</mean>
+            <stdev>1.3</stdev>
             <distribution>Normal</distribution>
         </pelagicLarvalDuration>
         <isMortal>false</isMortal>
         <mortalityRate>0.26</mortalityRate>
-        <nonSettlementPeriod>85</nonSettlementPeriod>
+        <nonSettlementPeriod>80</nonSettlementPeriod>
     </fish>
     <flow>
         <period>
             <start>2004-01-01T00:00:00</start>
-            <end>2004-01-14T00:00:00</end>
+            <end>2004-10-01T00:00:00</end>
         </period>
         <timeStep>
             <unit>Hour</unit>
@@ -91,7 +91,7 @@
     <habitat>
         <buffer>
             <isBuffered>true</isBuffered>
-            <bufferSize>50</bufferSize>
+            <bufferSize>25</bufferSize>
         </buffer>
     </habitat>
     <output>

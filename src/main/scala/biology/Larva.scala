@@ -33,7 +33,7 @@ abstract class Larva(val id: Int,
 
   def isTooOld: Boolean = age > maximumLifeSpan
 
-  def inCompetencyWindow: Boolean = age < pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion //TODO: Need to code in the competency window
+  def inCompetencyWindow: Boolean = age < pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion //TODO: Need to code in a better competency window
 
   def isPelagic: Boolean = state == PelagicLarvaeState.Pelagic
 
