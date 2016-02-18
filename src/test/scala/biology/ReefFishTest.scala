@@ -84,7 +84,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   it should "be pelagic when it is born" in {
     val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
-    assert(fish.state == PelagicLarvaeState.Pelagic)
+    assert(fish.isPelagic)
   }
 
   it should "have no history when its born" in {
@@ -161,7 +161,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     fish.settle(reef, settleTime)
     assert(fish.polygon == reef)
     assert(fish.settlementDate == settleTime)
-    assert(fish.state == PelagicLarvaeState.Settled)
+    assert(fish.isSettled)
   }
 
   it should "know when it's settled" in {

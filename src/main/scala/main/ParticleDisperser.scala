@@ -7,7 +7,7 @@ import maths.integration.RungeKuttaIntegration
 import physical.GeoCoordinate
 import physical.habitat.HabitatManager
 
-class ParticleDisperser(integrator: RungeKuttaIntegration, randomNumbers: RandomNumberGenerator) extends Logging {
+class ParticleDisperser(integrator: RungeKuttaIntegration, randomNumbers: RandomNumberGenerator, ovm: Boolean) extends Logging {
 
   def updatePosition(larva: ReefFish, clock: SimulationClock, habitats: HabitatManager): Unit = {
     updatePosition(larva, clock, 0, habitats)
@@ -15,7 +15,12 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, randomNumbers: Random
 
   def updatePosition(larva: ReefFish, clock: SimulationClock, swimmingSpeed: Double, habitats: HabitatManager): Unit = {
     //debug("The old position is " + larva.position)
-    val migratedPositionVertically: GeoCoordinate = applyVerticalMigration(larva)
+
+    val migratedPositionVertically: GeoCoordinate = if (ovm) {
+      applyVerticalMigration(larva)
+    } else {
+      larva.position
+    }
 
     val position = integrator.integrate(migratedPositionVertically, clock.now, swimmingSpeed)
     //var count = 0

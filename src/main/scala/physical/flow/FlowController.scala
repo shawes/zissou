@@ -76,6 +76,7 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
 
       flow.dimensions.cellSize.width * x + y + z * flow.dimensions.cellSize.layerCellCount
     } else {
+      println("coodinate not found is: " + coordinate.toString)
       Constants.LightWeightException.CoordinateNotFoundException
     }
   }

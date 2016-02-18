@@ -4,13 +4,14 @@ import grizzled.slf4j._
 import io.config.ConfigMappings._
 import io.config.FishConfig
 import locals.Constants
-import maths.Time
+import maths.{RandomNumberGenerator, Time}
 import org.apache.commons.math3.distribution.NormalDistribution
 import org.joda.time.DateTime
+import physical.GeoCoordinate
 
 import scala.collection.mutable.ListBuffer
 
-class ReefFishFactory(fish: FishConfig, save: Boolean) extends Logging {
+class ReefFishFactory(fish: FishConfig, save: Boolean, random: RandomNumberGenerator) extends Logging {
   val pldDistribution = new NormalDistribution(fish.pelagicLarvalDuration.mean, fish.pelagicLarvalDuration.stdev)
   val preflexionDistribution = new NormalDistribution(fish.ontogeny.preFlexion, Constants.SecondsInDay * 0.5)
   val flexionDistribution = new NormalDistribution(fish.ontogeny.flexion, Constants.SecondsInDay * 0.75)
@@ -27,11 +28,14 @@ class ReefFishFactory(fish: FishConfig, save: Boolean) extends Logging {
       for (i <- 0 until site.numberOfLarvae) {
         larvaeCount += 1
         val pld: Double = pldDistribution.sample
+
+        val birthLoc = new GeoCoordinate(site.location.latitude + random.getPlusMinus * Constants.MaxLatitudeShift,
+          site.location.longitude + random.getPlusMinus * Constants.MaxLongitudeShift)
         debug("The pld is " + pld)
         larvaeAtSite append spawningFish.createReefFish(larvaeCount,
           Time.convertDaysToSeconds(pld),
           Time.convertDaysToSeconds(pld),
-          new Birthplace(site.title, site.location),
+          new Birthplace(site.title, birthLoc),
           time,
           new Ontogeny(preflexionDistribution.sample.toInt, flexionDistribution.sample().toInt, postFlexionDistribution.sample().toInt),
           fish.verticalMigrationProbabilities)

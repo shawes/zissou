@@ -4,6 +4,7 @@ import grizzled.slf4j.Logging
 import io.ResultsWriter
 import io.config.ConfigMappings._
 import io.config.Configuration
+import locals.VerticalMigrationPattern
 import maths.RandomNumberGenerator
 import maths.integration.RungeKuttaIntegration
 import physical.Turbulence
@@ -28,7 +29,8 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
   val ocean = new PhysicalModel(config, randomNumbers)
   val biology = new BiologicalModel(config, clock, randomNumbers)
   val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)
-  val larvaeDisperser = new ParticleDisperser(integrator, randomNumbers)
+  val ovm = config.fish.verticalMigrationPattern == VerticalMigrationPattern.Ontogenetic.toString
+  val larvaeDisperser = new ParticleDisperser(integrator, randomNumbers, ovm)
 
   def run(): Unit = {
     val simulationTimer = new Timer()

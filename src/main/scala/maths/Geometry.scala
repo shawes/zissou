@@ -27,9 +27,6 @@ class Geometry {
 
     //val depth = ceilingDepth(point.depth + (velocity.w * timeStep))
 
-    //depth = adjustDepth(depth)
-
-
     new GeoCoordinate(point.latitude + (xDistance / (kmLatitude * 1000)),
       point.longitude + (yDistance / (kmLongitude * 1000)), point.depth)
   }

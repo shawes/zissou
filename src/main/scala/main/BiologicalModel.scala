@@ -20,7 +20,7 @@ import scala.collection.mutable.ListBuffer
   */
 class BiologicalModel(val config: Configuration, clock: SimulationClock, randomNumbers: RandomNumberGenerator) extends Logging {
 
-  val god = new ReefFishFactory(config.fish, false)
+  val fishFactory = new ReefFishFactory(config.fish, false, randomNumbers)
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val fish: Fish = config.fish
   val spawn = new Spawn(config.spawn)
@@ -113,7 +113,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   }
 
   private def spawnFish(sites: mutable.Buffer[SpawningLocation]) = {
-    val freshLarvae = god.createReefFish(sites.toList, clock.now)
+    val freshLarvae = fishFactory.createReefFish(sites.toList, clock.now)
     pelagicLarvaeCount += freshLarvae.flatten.size
     freshLarvae.foreach(x => fishLarvae :: x)
     for (spawned <- freshLarvae) {

@@ -10,6 +10,15 @@ class RandomNumberGenerator(seed: Long) {
 
   def get(low: Double, high: Double): Double = random.nextDouble * (high - low) + low
 
+  def getPlusMinus: Double = {
+    val number = random.nextDouble()
+    if (random.nextBoolean) {
+      number
+    } else {
+      number * (-1.0)
+    }
+  }
+
   def coinToss: Boolean = random.nextBoolean()
 }
 
