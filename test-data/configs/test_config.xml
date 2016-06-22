@@ -1,23 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <simulationVariables>
     <inputFiles>
-        <flowFilePath>/Volumes/Silver Box/netCDF/BRAN2.1/2004</flowFilePath>
+        <flowFilePath>test-data/flow/large/2005</flowFilePath>
         <habitatFilePath>test-data/shape/ALLpatches.shp</habitatFilePath>
     </inputFiles>
     <spawn>
         <spawningLocation>
             <name>solitary</name>
-            <patchNumber>186</patchNumber>
+            <patchNumber>323</patchNumber>
             <site>
-                <longitude>153.283482</longitude>
-                <latitude>-30.199443</latitude>
+                <longitude>153.281</longitude>
+                <latitude>-29.951</latitude>
                 <depth>5</depth>
                 <flowId>1</flowId>
             </site>
-            <numberOfLarvae>10000</numberOfLarvae>
+            <numberOfLarvae>10</numberOfLarvae>
             <releasePeriod>
-                <start>2004-01-01T00:00:00</start>
-                <end>2004-01-02T00:00:00</end>
+                <start>2005-01-01T00:00:00</start>
+                <end>2005-07-01T00:00:00</end>
+            </releasePeriod>
+            <interval>5</interval>
+        </spawningLocation>
+        <spawningLocation>
+            <name>fraser</name>
+            <patchNumber>186</patchNumber>
+            <site>
+                <longitude>153.101</longitude>
+                <latitude>-24.55</latitude>
+                <depth>5</depth>
+                <flowId>1</flowId>
+            </site>
+            <numberOfLarvae>10</numberOfLarvae>
+            <releasePeriod>
+                <start>2005-01-01T00:00:00</start>
+                <end>2005-07-01T00:00:00</end>
             </releasePeriod>
             <interval>5</interval>
         </spawningLocation>
@@ -41,42 +57,42 @@
         <verticalMigrationProbabilities>
             <verticalMigrationProbability>
                 <depthStart>0</depthStart>
-                <depthFinish>10</depthFinish>
-                <hatching>0.60</hatching>
-                <preFlexion>0.8</preFlexion>
-                <flexion>0.4</flexion>
-                <postFlexion>0.2</postFlexion>
+                <depthFinish>5</depthFinish>
+                <hatching>0.4</hatching>
+                <preFlexion>0.35</preFlexion>
+                <flexion>0.38</flexion>
+                <postFlexion>0.23</postFlexion>
             </verticalMigrationProbability>
             <verticalMigrationProbability>
-                <depthStart>11</depthStart>
+                <depthStart>6</depthStart>
                 <depthFinish>50</depthFinish>
-                <hatching>0.3</hatching>
-                <preFlexion>0.2</preFlexion>
-                <flexion>0.4</flexion>
-                <postFlexion>0.55</postFlexion>
+                <hatching>0.4</hatching>
+                <preFlexion>0.52</preFlexion>
+                <flexion>0.46</flexion>
+                <postFlexion>0.49</postFlexion>
             </verticalMigrationProbability>
             <verticalMigrationProbability>
                 <depthStart>51</depthStart>
                 <depthFinish>100</depthFinish>
-                <hatching>0.1</hatching>
-                <preFlexion>0</preFlexion>
-                <flexion>0.2</flexion>
-                <postFlexion>0.25</postFlexion>
+                <hatching>0.2</hatching>
+                <preFlexion>0.12</preFlexion>
+                <flexion>0.17</flexion>
+                <postFlexion>0.28</postFlexion>
             </verticalMigrationProbability>
         </verticalMigrationProbabilities>
         <pelagicLarvalDuration>
-            <mean>20</mean>
-            <stdev>1.3</stdev>
+            <mean>32.2</mean>
+            <stdev>3.3</stdev>
             <distribution>Normal</distribution>
         </pelagicLarvalDuration>
         <isMortal>false</isMortal>
         <mortalityRate>0.26</mortalityRate>
-        <nonSettlementPeriod>80</nonSettlementPeriod>
+        <nonSettlementPeriod>85</nonSettlementPeriod>
     </fish>
     <flow>
         <period>
-            <start>2004-01-01T00:00:00</start>
-            <end>2004-10-01T00:00:00</end>
+            <start>2005-01-01T00:00:00</start>
+            <end>2005-10-01T00:00:00</end>
         </period>
         <timeStep>
             <unit>Hour</unit>
