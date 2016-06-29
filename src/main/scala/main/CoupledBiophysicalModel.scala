@@ -11,8 +11,6 @@ import physical.Turbulence
 import physical.flow.Flow
 import utilities.Timer
 
-import scala.compat.Platform
-
 /**
   *
   * Created by Steven Hawes on 27/01/2016.
@@ -21,8 +19,6 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
 
   val flow: Flow = config.flow
   val clock = new SimulationClock(flow.period, flow.timeStep)
-  val randomSeed: Long = Platform.currentTime
-  info("The random number seed for this simulation is :" + randomSeed)
 
   val turbulence: Turbulence = new Turbulence(config.turbulence.horizontalDiffusionCoefficient,
     config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds, RandomNumberGenerator)
