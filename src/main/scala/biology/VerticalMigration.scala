@@ -8,7 +8,7 @@ import scala.collection.mutable.ListBuffer
 
 class VerticalMigration(val probabilities: List[VerticalMigrationProbability]) {
 
-  def getDepth(ontogeny: OntogenyState, random: RandomNumberGenerator): Double = {
+  def getDepth(ontogeny: OntogenyState): Double = {
     val list: ListBuffer[(ContinuousRange, Double)] = ListBuffer.empty[(ContinuousRange, Double)]
     probabilities.foreach(vmp => {
       list append getProbability(vmp, ontogeny)
@@ -16,7 +16,7 @@ class VerticalMigration(val probabilities: List[VerticalMigrationProbability]) {
 
 
     var cumulativeProb = 0.0
-    val number = random.get
+    val number = RandomNumberGenerator.get
 
     val iterator = list.iterator
     var currentDepth: (ContinuousRange, Double) = new Tuple2(new ContinuousRange(), 0)
@@ -27,7 +27,7 @@ class VerticalMigration(val probabilities: List[VerticalMigrationProbability]) {
       cumulativeProb += currentDepth._2
     }
 
-    calculateDepthInRange(currentDepth._1, random)
+    calculateDepthInRange(currentDepth._1)
   }
 
   private def getProbability(prob: VerticalMigrationProbability, ontogeny: OntogenyState): (ContinuousRange, Double) = ontogeny match {
@@ -37,7 +37,7 @@ class VerticalMigration(val probabilities: List[VerticalMigrationProbability]) {
     case _ => new Tuple2(prob.depth, prob.postFlexion)
   }
 
-  private def calculateDepthInRange(depthRange: ContinuousRange, random: RandomNumberGenerator): Double = {
-    random.get(depthRange.start, depthRange.end)
+  private def calculateDepthInRange(depthRange: ContinuousRange): Double = {
+    RandomNumberGenerator.get(depthRange.start, depthRange.end)
   }
 }

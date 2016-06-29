@@ -4,7 +4,6 @@ import grizzled.slf4j.Logging
 import locals.OntogenyState.OntogenyState
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.{Constants, HabitatType, OntogenyState, PelagicLarvaeState}
-import maths.RandomNumberGenerator
 import org.joda.time.DateTime
 import physical.GeoCoordinate
 import physical.habitat.{GeometryAdaptor, HabitatPolygon}
@@ -45,20 +44,6 @@ class ReefFish(val id: Int,
 
   def updatePosition(newPos: GeoCoordinate): Unit = reefFishPosition = newPos
 
-  def growOlder(seconds: Int): Unit = reefFishAge += seconds
-
-  def settle(settlementReef: HabitatPolygon, date: DateTime): Unit = {
-    updateHabitat(settlementReef)
-    reefFishSettlementDate = date
-    changeState(PelagicLarvaeState.Settled)
-  }
-
-  def updateHabitat(newHabitat: HabitatPolygon): Unit = reefFishPolygon = newHabitat
-
-  def kill(): Unit = {
-    changeState(PelagicLarvaeState.Dead)
-  }
-
   private def changeState(newState: PelagicLarvaeState): Unit = {
     reefFishState = newState
     saveState()
@@ -80,8 +65,22 @@ class ReefFish(val id: Int,
 
   override def ontogeny: Ontogeny = reefFishOntogeny
 
-  override def getOntogeneticVerticalMigrationDepth(random: RandomNumberGenerator): Double = {
-    verticalMigration.getDepth(getOntogeny, random)
+  def growOlder(seconds: Int): Unit = reefFishAge += seconds
+
+  def settle(settlementReef: HabitatPolygon, date: DateTime): Unit = {
+    updateHabitat(settlementReef)
+    reefFishSettlementDate = date
+    changeState(PelagicLarvaeState.Settled)
+  }
+
+  def updateHabitat(newHabitat: HabitatPolygon): Unit = reefFishPolygon = newHabitat
+
+  def kill(): Unit = {
+    changeState(PelagicLarvaeState.Dead)
+  }
+
+  override def getOntogeneticVerticalMigrationDepth: Double = {
+    verticalMigration.getDepth(getOntogeny)
   }
 
   override def toString: String =

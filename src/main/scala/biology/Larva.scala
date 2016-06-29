@@ -5,7 +5,6 @@ import com.github.nscala_time.time.Imports._
 import locals.OntogenyState._
 import locals.PelagicLarvaeState
 import locals.PelagicLarvaeState.PelagicLarvaeState
-import maths.RandomNumberGenerator
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
 
@@ -53,9 +52,9 @@ trait Larva {
 
   def updateHabitat(newHabitat: HabitatPolygon)
 
-  def kill()
+  def kill
 
-  def getOntogeneticVerticalMigrationDepth(random: RandomNumberGenerator): Double
+  def getOntogeneticVerticalMigrationDepth: Double
 
   def inCompetencyWindow: Boolean
 

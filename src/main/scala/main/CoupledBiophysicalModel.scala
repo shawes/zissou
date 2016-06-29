@@ -23,14 +23,14 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
   val clock = new SimulationClock(flow.period, flow.timeStep)
   val randomSeed: Long = Platform.currentTime
   info("The random number seed for this simulation is :" + randomSeed)
-  val randomNumbers = new RandomNumberGenerator(randomSeed)
+
   val turbulence: Turbulence = new Turbulence(config.turbulence.horizontalDiffusionCoefficient,
-    config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds, randomNumbers)
-  val ocean = new PhysicalModel(config, randomNumbers)
-  val biology = new BiologicalModel(config, clock, randomNumbers)
+    config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds, RandomNumberGenerator)
+  val ocean = new PhysicalModel(config)
+  val biology = new BiologicalModel(config, clock)
   val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)
   val ovm = config.fish.verticalMigrationPattern == VerticalMigrationPattern.Ontogenetic.toString
-  val larvaeDisperser = new ParticleDisperser(integrator, randomNumbers, ovm)
+  val larvaeDisperser = new ParticleDisperser(integrator, ovm)
 
   def run(): Unit = {
     val simulationTimer = new Timer()
@@ -51,7 +51,7 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
         info("Day iteration " + iteration / 12 + " has been completed in " + stepTimer.stop() + " secs")
       }
 
-      iteration = iteration + 1
+      iteration += 1
     }
 
     val resultsWriter = new ResultsWriter(biology.fishLarvae.toList, config.output)

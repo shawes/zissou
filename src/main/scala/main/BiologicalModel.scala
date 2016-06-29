@@ -18,9 +18,9 @@ import scala.collection.mutable.ListBuffer
   *
   * Created by Steven Hawes on 27/01/2016.
   */
-class BiologicalModel(val config: Configuration, clock: SimulationClock, randomNumbers: RandomNumberGenerator) extends Logging {
+class BiologicalModel(val config: Configuration, clock: SimulationClock) extends Logging {
 
-  val fishFactory = new ReefFishFactory(config.fish, false, randomNumbers)
+  val fishFactory = new ReefFishFactory(config.fish, false)
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val fish: Fish = config.fish
   val spawn = new Spawn(config.spawn)
@@ -38,15 +38,16 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
 
     val swimmingLarvae: List[ReefFish] = larvae.view.filter(fish => fish.isPelagic).force
     debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
+    swimmingLarvae.foreach(reefFish => apply(reefFish, disperser))
 
-    for (larva <- swimmingLarvae) {
-      move(disperser, larva)
-      ageLarvae(larva)
-      settle(larva)
-      lifespanCheck(larva)
-      mortalityCheck(larva)
-      //updateActiveLarvaeCount(larva)
-    }
+  }
+
+  private def apply(larva: ReefFish, disperser: ParticleDisperser): Unit = {
+    move(disperser, larva)
+    ageLarvae(larva)
+    settle(larva)
+    lifespanCheck(larva)
+    mortalityCheck(larva)
   }
 
   private def move(disperser: ParticleDisperser, larva: ReefFish): Unit = {
@@ -62,7 +63,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
   }
 
   private def mortalityCheck(larva: ReefFish): Unit = {
-    if (fish.isMortal && randomNumbers.get < mortality.getRate) {
+    if (fish.isMortal && RandomNumberGenerator.get < mortality.getRate) {
       larva.kill()
       pelagicLarvaeCount -= 1
     }
@@ -116,9 +117,11 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, randomN
     val freshLarvae = fishFactory.createReefFish(sites.toList, clock.now)
     pelagicLarvaeCount += freshLarvae.flatten.size
     freshLarvae.foreach(x => fishLarvae :: x)
-    for (spawned <- freshLarvae) {
-      fishLarvae += spawned.asInstanceOf[List[ReefFish]]
-    }
+    updateLarvaeCount(freshLarvae)
+  }
+
+  private def updateLarvaeCount(larvae: List[List[ReefFish]]) = {
+    larvae.foreach(x => fishLarvae :+ x)
   }
 
   def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvaeCount > 0

@@ -12,7 +12,7 @@ import utilities.Timer
 import scala.collection.mutable
 
 
-class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) extends Logging {
+class FlowController(var flow: Flow) extends Logging {
 
   val SizeOfQueue = 2
   val flowDataQueue = mutable.Queue.empty[Array[FlowPolygon]]
@@ -90,8 +90,22 @@ class FlowController(var flow: Flow, val randomNumbers: RandomNumberGenerator) e
   }
 
   def bumpCoordinate(coordinate: GeoCoordinate): GeoCoordinate = {
-    val longitude = if (randomNumbers.coinToss) coordinate.longitude + Constants.MaxLongitudeShift else coordinate.longitude - Constants.MaxLongitudeShift
-    val latitude = if (randomNumbers.coinToss) coordinate.latitude + Constants.MaxLatitudeShift else coordinate.latitude - Constants.MaxLatitudeShift
+    val longitude = {
+      if (RandomNumberGenerator.coinToss) {
+        coordinate.longitude + Constants.MaxLongitudeShift
+      }
+      else {
+        coordinate.longitude - Constants.MaxLongitudeShift
+      }
+    }
+    val latitude = {
+      if (RandomNumberGenerator.coinToss) {
+        coordinate.latitude + Constants.MaxLatitudeShift
+      } else {
+        coordinate.latitude - Constants.MaxLatitudeShift
+      }
+    }
+
     new GeoCoordinate(latitude, longitude, coordinate.depth)
   }
 

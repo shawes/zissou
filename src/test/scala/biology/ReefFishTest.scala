@@ -2,7 +2,7 @@ package biology
 
 import com.github.nscala_time.time.Imports._
 import locals.{HabitatType, PelagicLarvaeState}
-import maths.{ContinuousRange, RandomNumberGenerator}
+import maths.ContinuousRange
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
@@ -123,9 +123,8 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     val mockVertical = mock[VerticalMigration]
     val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, mockVertical)
-    val random = new RandomNumberGenerator(100)
-    fish.getOntogeneticVerticalMigrationDepth(random)
-    verify(mockVertical).getDepth(fish.getOntogeny, random)
+    fish.getOntogeneticVerticalMigrationDepth
+    verify(mockVertical).getDepth(fish.getOntogeny)
   }
 
 

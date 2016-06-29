@@ -11,7 +11,7 @@ import physical.GeoCoordinate
 
 import scala.collection.mutable.ListBuffer
 
-class ReefFishFactory(fish: FishConfig, save: Boolean, random: RandomNumberGenerator) extends Logging {
+class ReefFishFactory(fish: FishConfig, save: Boolean) extends Logging {
   val pldDistribution = new NormalDistribution(fish.pelagicLarvalDuration.mean, fish.pelagicLarvalDuration.stdev)
   val preflexionDistribution = new NormalDistribution(fish.ontogeny.preFlexion, Constants.SecondsInDay * 0.5)
   val flexionDistribution = new NormalDistribution(fish.ontogeny.flexion, Constants.SecondsInDay * 0.75)
@@ -28,8 +28,8 @@ class ReefFishFactory(fish: FishConfig, save: Boolean, random: RandomNumberGener
         larvaeCount += 1
         val pld: Double = pldDistribution.sample
 
-        val birthLoc = new GeoCoordinate(site.location.latitude + random.getPlusMinus * Constants.MaxLatitudeShift,
-          site.location.longitude + random.getPlusMinus * Constants.MaxLongitudeShift)
+        val birthLoc = new GeoCoordinate(site.location.latitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLatitudeShift,
+          site.location.longitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift)
         debug("The pld is " + pld)
         larvaeAtSite append LarvaFactory.apply(LarvaType.ReefFish, larvaeCount,
           Time.convertDaysToSeconds(pld),

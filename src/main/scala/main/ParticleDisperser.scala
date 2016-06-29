@@ -2,12 +2,11 @@ package main
 
 import biology._
 import grizzled.slf4j._
-import maths.RandomNumberGenerator
 import maths.integration.RungeKuttaIntegration
 import physical.GeoCoordinate
 import physical.habitat.HabitatManager
 
-class ParticleDisperser(integrator: RungeKuttaIntegration, randomNumbers: RandomNumberGenerator, ovm: Boolean) extends Logging {
+class ParticleDisperser(integrator: RungeKuttaIntegration, ovm: Boolean) extends Logging {
 
   def updatePosition(larva: ReefFish, clock: SimulationClock, habitats: HabitatManager): Unit = {
     updatePosition(larva, clock, 0, habitats)
@@ -48,7 +47,7 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, randomNumbers: Random
   }
 
   private def applyVerticalMigration(larva: ReefFish): GeoCoordinate = {
-    val depth = larva.getOntogeneticVerticalMigrationDepth(randomNumbers)
+    val depth = larva.getOntogeneticVerticalMigrationDepth
     new GeoCoordinate(larva.position.latitude, larva.position.longitude, depth)
   }
 
