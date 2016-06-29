@@ -55,4 +55,9 @@ object OntogenyState extends Enumeration {
   val Hatching, Preflexion, Flexion, Postflexion = Value
 }
 
+object LarvaType extends Enumeration {
+  type LarvaType = Value
+  val ReefFish = Value
+}
+
 

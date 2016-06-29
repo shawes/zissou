@@ -52,7 +52,7 @@ object ConfigMappings {
   implicit def pelagicLarvalDurationMap(pld: PelagicLarvalDurationConfig): PelagicLarvalDuration =
     new PelagicLarvalDuration(new NormalDistribution(pld.mean, pld.stdev), DistributionType.Normal)
 
-  implicit def ontogenyConfigMap(o: OntogenyConfig): Ontogeny = new Ontogeny(Time.convertDaysToSeconds(o.preFlexion),
+  implicit def ontogenyConfigMap(o: OntogenyConfig): ReefFishOntogeny = new ReefFishOntogeny(Time.convertDaysToSeconds(o.preFlexion),
     Time.convertDaysToSeconds(o.flexion), Time.convertDaysToSeconds(o.postFlexion))
 
   implicit def verticalMigrationConfigMap(vm: VerticalMigrationConfig): VerticalMigration =

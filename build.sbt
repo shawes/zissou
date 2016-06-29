@@ -2,7 +2,7 @@ name := "zissou"
 
 version := "1.0"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 crossScalaVersions := Seq("2.11.1", "2.10.3")
 
@@ -67,7 +67,7 @@ libraryDependencies ++= Seq(
 libraryDependencies := {
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, scalaMajor)) if scalaMajor >= 11 =>
-      libraryDependencies.value :+ "org.scala-lang.modules" %% "scala-xml" % "1.0.2"
+      libraryDependencies.value :+ "org.scala-lang.modules" %% "scala-xml" % "1.0.3"
     case _ =>
       libraryDependencies.value
   }

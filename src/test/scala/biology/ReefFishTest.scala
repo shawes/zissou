@@ -13,7 +13,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   val pld: Int = 30
   val id: Int = 1
   val maximumLifespan = 50
-  val ontogeny = new Ontogeny(10, 15, 20)
+  val ontogeny = new ReefFishOntogeny(10, 15, 20)
   val birthplace = new Birthplace("Adelaide", new GeoCoordinate(10, 150, 15))
   val pelagicState = PelagicLarvaeState.Pelagic
   val verticalMigration: List[VerticalMigrationProbability] =

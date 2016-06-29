@@ -5,7 +5,7 @@ import locals.VerticalMigrationPattern.VerticalMigrationPattern
 import locals._
 
 class Fish(val pld: PelagicLarvalDuration,
-           val ontogeny: Ontogeny,
+           val ontogeny: ReefFishOntogeny,
            val name: String,
            val savePositions: Boolean,
            val swimmingAbility: SwimmingAbility,

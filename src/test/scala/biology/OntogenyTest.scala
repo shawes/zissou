@@ -9,7 +9,7 @@ class OntogenyTest extends FlatSpec {
   val flexion = 2000
   val postflexion = 3000
 
-  val ontogeny = new Ontogeny(preflexion, flexion, postflexion)
+  val ontogeny = new ReefFishOntogeny(preflexion, flexion, postflexion)
 
   "An ontogeny object" should "not be null upon construction" in {
     assert(ontogeny != null)
