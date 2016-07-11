@@ -27,7 +27,6 @@
     <orderEntry type="library" name="SBT: javax.media:jai_core:1.1.3:jar" level="project" />
     <orderEntry type="library" name="SBT: jgridshift:jgridshift:1.0:jar" level="project" />
     <orderEntry type="library" name="SBT: net.java.dev.jsr-275:jsr-275:1.0-beta-2:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.jdom:jdom:1.1.3:jar" level="project" />
     <orderEntry type="library" name="SBT: org.joda:joda-convert:1.2:jar" level="project" />
     <orderEntry type="library" name="SBT: org.scala-lang.modules:scala-swing_2.11:1.0.1:jar" level="project" />
     <orderEntry type="library" name="SBT: org.clapper:grizzled-slf4j_2.11:1.0.2:jar" level="project" />
@@ -51,28 +50,29 @@
     <orderEntry type="library" name="SBT: org.scala-lang.modules:scala-xml_2.11:1.0.3:jar" level="project" />
     <orderEntry type="library" name="SBT: org.scalactic:scalactic_2.11:2.2.6:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.scalatest:scalatest_2.11:2.2.6:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.slf4j:slf4j-api:1.7.14:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.slf4j:slf4j-simple:1.7.14:jar" level="project" />
     <orderEntry type="library" name="SBT: org.scala-lang:scala-library:2.11.8:jar" level="project" />
-    <orderEntry type="library" name="SBT: net.jcip:jcip-annotations:1.0:jar" level="project" />
     <orderEntry type="library" name="SBT: c3p0:c3p0:0.9.1.1:jar" level="project" />
-    <orderEntry type="library" name="SBT: com.beust:jcommander:1.35:jar" level="project" />
-    <orderEntry type="library" name="SBT: com.google.guava:guava:18.0:jar" level="project" />
     <orderEntry type="library" name="SBT: com.google.protobuf:protobuf-java:2.5.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: net.jcip:jcip-annotations:1.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.jdom:jdom2:2.0.4:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.beust:jcommander:1.35:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.quartz-scheduler:quartz:2.2.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.jdom:jdom:1.1.3:jar" level="project" />
+    <orderEntry type="library" name="SBT: net.java.dev.jna:jna:4.1.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.slf4j:slf4j-api:1.7.21:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.google.guava:guava:17.0:jar" level="project" />
     <orderEntry type="library" name="SBT: commons-codec:commons-codec:1.6:jar" level="project" />
-    <orderEntry type="library" name="SBT: edu.ucar:cdm:4.6.0:jar" level="project" />
-    <orderEntry type="library" name="SBT: edu.ucar:httpservices:4.6.0:jar" level="project" />
-    <orderEntry type="library" name="SBT: edu.ucar:udunits:4.6.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: commons-logging:commons-logging:1.1.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: edu.ucar:cdm:4.5.5:jar" level="project" />
+    <orderEntry type="library" name="SBT: edu.ucar:httpservices:4.5.5:jar" level="project" />
+    <orderEntry type="library" name="SBT: edu.ucar:netcdf4:4.5.5:jar" level="project" />
+    <orderEntry type="library" name="SBT: edu.ucar:udunits:4.5.5:jar" level="project" />
+    <orderEntry type="library" name="SBT: net.sf.ehcache:ehcache-core:2.6.2:jar" level="project" />
     <orderEntry type="library" name="SBT: org.apache.httpcomponents:httpclient:4.2.6:jar" level="project" />
     <orderEntry type="library" name="SBT: org.apache.httpcomponents:httpcore:4.2.5:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.httpcomponents:httpmime:4.2.6:jar" level="project" />
     <orderEntry type="library" name="SBT: org.itadaki:bzip2:0.9.1:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.jdom:jdom2:2.0.4:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.quartz-scheduler:quartz:2.2.0:jar" level="project" />
     <orderEntry type="library" name="SBT: org.slf4j:jcl-over-slf4j:1.7.7:jar" level="project" />
-    <orderEntry type="library" name="SBT: com.sleepycat:je:4.0.92:jar" level="project" />
-    <orderEntry type="library" name="SBT: com.sun.jna:jna:3.0.9:jar" level="project" />
-    <orderEntry type="library" name="SBT: commons-httpclient:commons-httpclient:3.1:jar" level="project" />
-    <orderEntry type="library" name="SBT: edu.ucar:netcdf:4.3.22:jar" level="project" />
-    <orderEntry type="library" name="SBT: net.sf.ehcache:ehcache-core:2.6.2:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.slf4j:slf4j-simple:1.7.21:jar" level="project" />
   </component>
 </module>

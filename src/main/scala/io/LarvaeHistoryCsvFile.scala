@@ -5,7 +5,7 @@ import java.io.{BufferedWriter, File}
 import biology.ReefFish
 import grizzled.slf4j.Logging
 
-class LarvaeFileWriter(larvae: List[List[ReefFish]], filepath: String) extends FileWriterTrait with Logging {
+class LarvaeHistoryCsvFile(larvae: List[List[ReefFish]], filepath: String) extends Logging {
 
   val columnHeaders = "id,born,age,stage,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
 

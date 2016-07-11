@@ -11,7 +11,7 @@ import scala.xml.pull.XMLEventReader
 class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   "The flow xml reader" should "parse the flow node of id = 1" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(flowXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
@@ -20,7 +20,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse multiple flow nodes" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(twoFlowNodesXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
@@ -28,7 +28,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse depth node in the properties" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
@@ -37,7 +37,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse latitude range node in the properties" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
@@ -46,7 +46,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse longitude range node in the properties" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
@@ -55,7 +55,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse cell range node in the properties" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     reader invokePrivate readFlowNodes(xml)
@@ -65,7 +65,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse the properties attributes" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(flowWithPropertiesXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
@@ -76,7 +76,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse the depth node" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(flowXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
@@ -84,7 +84,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse the salinity node" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(flowXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
@@ -92,7 +92,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse the temperature node" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(flowXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
@@ -100,7 +100,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse the velocity node" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(flowXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
@@ -110,7 +110,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "parse the locus node" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val xml = new XMLEventReader(Source.fromString(flowXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
     val elements = reader invokePrivate readFlowNodes(xml)
@@ -121,7 +121,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   it should "construct okawana grid from locus" in {
 
     val cell = new Cell(0.1, 0.1, 10.0)
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     reader.flowDimensions.cellSize.cell = cell
     val xml = new XMLEventReader(Source.fromString(flowXml))
     val readFlowNodes = PrivateMethod[Array[FlowPolygon]]('readXmlElements)
@@ -130,7 +130,7 @@ class FlowXmlReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTes
   }
 
   it should "construct okawana grid using half cell width" in {
-    val reader = new FlowXmlReader()
+    val reader = new FlowXmlFileHandler()
     val constructArakawaAGrid = PrivateMethod[Array[FlowPolygon]]('constructArakawaAGrid)
     var polygon = new FlowPolygon()
     reader invokePrivate constructArakawaAGrid(polygon, new GeoCoordinate(1.0, 2.0, 3.0), 0.5)

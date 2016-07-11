@@ -16,7 +16,7 @@ import scala.xml.pull._
   *
   * @constructor create a new flow file xml reader
   */
-class FlowXmlReader() extends FileReaderTrait with Logging {
+class FlowXmlFileHandler() extends Logging {
 
   var flowDimensions = new Dimensions(new ContinuousRange(), new ContinuousRange(), new ContinuousRange(), new Grid())
   /** Reads in the XML from a file

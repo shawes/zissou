@@ -24,10 +24,12 @@ libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "2.6.0",
   "org.apache.commons" % "commons-math3" % "3.6",
   "org.clapper" %% "grizzled-slf4j" % "1.0.2",
-  "org.slf4j" % "slf4j-api" % "1.7.14",
-  "org.slf4j" % "slf4j-simple" % "1.7.14",
-  "edu.ucar" % "cdm" % "4.6.0",
-  "edu.ucar" % "netcdf" % "4.3.22",
+  "org.slf4j" % "slf4j-api" % "latest.integration",
+  "org.slf4j" % "slf4j-simple" % "latest.integration",
+  //"org.slf4j" % "slf4j-jdk14" % "latest.integration",
+  "edu.ucar" % "netcdf4" % "latest.integration",
+  "edu.ucar" % "cdm" % "latest.integration",
+  //"edu.ucar" % "opendap" % "latest.integration",
   "org.geotools" % "gt-shapefile" % geotoolsVersion
 )
 
@@ -63,5 +65,5 @@ libraryDependencies := {
 resolvers ++= Seq(
   "OpenGeo Maven Repository" at "http://repo.opengeo.org",
   "Open Source Geospatial Foundation Repository" at "http://download.osgeo.org/webdav/geotools/",
-  "maven Repository" at "http://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/"
+  "Unidata Releases" at "https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/"
 )

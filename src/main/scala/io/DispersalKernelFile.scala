@@ -4,7 +4,7 @@ import java.io.{BufferedWriter, File}
 
 import biology.Larva
 
-class DispersalKernelFileWriter(larvae: List[Larva], csvFile: File) extends FileWriterTrait {
+class DispersalKernelFile(larvae: List[Larva], csvFile: File) {
 
   /**
    * Writes the dispersal kernel to a CSV file.

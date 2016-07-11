@@ -6,7 +6,7 @@ import org.scalatest.{FlatSpec, PrivateMethodTester}
 class DispersalKernelFileWriterTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   "The dispersal kernel file writer" should "initialise" in {
-    val dispersalKernelReader = new DispersalKernelFileWriter(null, null)
+    val dispersalKernelReader = new DispersalKernelFile(null, null)
     assert(dispersalKernelReader != null)
   }
   //
@@ -19,7 +19,7 @@ class DispersalKernelFileWriterTest extends FlatSpec with MockitoSugar with Priv
 
   it should "have the correct column headers for the csv file" in {
     val ColumnHeaders = "id,born,birth_place,age,recruited,reef_id,reef_type"
-    val dispersalKernelReader = new DispersalKernelFileWriter(null, null)
+    val dispersalKernelReader = new DispersalKernelFile(null, null)
     val columns = PrivateMethod[String]('columnHeaders)
     val headers = dispersalKernelReader invokePrivate columns()
     assert(headers == ColumnHeaders)

@@ -21,7 +21,7 @@ import physical.adaptors.GeometryToGeoCoordinateAdaptor
 
 import scala.collection.mutable.ListBuffer
 
-class ShapeFileWriter(larvae: List[Larva], shape: ShapeFileType, file: File) extends FileWriterTrait {
+class GisShapeFile(larvae: List[Larva], shape: ShapeFileType, file: File) {
 
   val ShapeFileName = "LarvaePaths.shp"
   val geometryFactory = JTSFactoryFinder.getGeometryFactory()

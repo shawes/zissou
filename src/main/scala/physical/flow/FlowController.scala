@@ -2,7 +2,7 @@ package physical.flow
 
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
-import io.FlowReader
+import io.FlowFile
 import locals.Constants
 import maths.RandomNumberGenerator
 import maths.interpolation.Interpolator
@@ -15,7 +15,7 @@ import scala.collection.mutable
 class FlowController(var flow: Flow) extends Logging {
 
   val SizeOfQueue = 2
-  val flowDataQueue = mutable.Queue.empty[Array[FlowPolygon]]
+  val flowDataQueue = mutable.Queue.empty[FlowGridWrapper]
   val interpolator = new Interpolator(flow.dimensions)
 
 
@@ -41,16 +41,16 @@ class FlowController(var flow: Flow) extends Logging {
 
     var velocity: Velocity = new Velocity(Double.NaN, Double.NaN)
 
-    val flowPolygons: Array[FlowPolygon] = if (isFuture) flowDataQueue.last else flowDataQueue.head
-    var index = getIndexOfPolygon(coordinate)
-    val velocityAtCentroid = flowPolygons(index).velocity
+    val flowPolygons: FlowGridWrapper = if (isFuture) flowDataQueue.last else flowDataQueue.head
+    var index = flowPolygons.getIndex(coordinate)
+    val velocityAtCentroid = flowPolygons.getVelocity(coordinate)
     if (!velocityAtCentroid.isUndefined) {
       trace("Index of flowpolygon is: " + index + ", with coord " + coordinate + ", and centroid velocity is " + velocityAtCentroid)
 
-      if (index == Constants.LightWeightException.CoordinateNotFoundException) {
+      if (index(0) == Constants.LightWeightException.CoordinateNotFoundException) {
         val bumpedCoordinate = bumpCoordinate(coordinate)
-        index = getIndexOfPolygon(bumpedCoordinate)
-        if (index != Constants.LightWeightException.CoordinateNotFoundException) {
+        index = flowPolygons.getIndex(bumpedCoordinate)
+        if (index(0) != Constants.LightWeightException.CoordinateNotFoundException) {
           velocity = interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
         }
       } else {
@@ -60,6 +60,26 @@ class FlowController(var flow: Flow) extends Logging {
       if (velocity.isUndefined) velocityAtCentroid else velocity
     }
     velocity
+  }
+
+  def bumpCoordinate(coordinate: GeoCoordinate): GeoCoordinate = {
+    val longitude = {
+      if (RandomNumberGenerator.coinToss) {
+        coordinate.longitude + Constants.MaxLongitudeShift
+      }
+      else {
+        coordinate.longitude - Constants.MaxLongitudeShift
+      }
+    }
+    val latitude = {
+      if (RandomNumberGenerator.coinToss) {
+        coordinate.latitude + Constants.MaxLatitudeShift
+      } else {
+        coordinate.latitude - Constants.MaxLatitudeShift
+      }
+    }
+
+    new GeoCoordinate(latitude, longitude, coordinate.depth)
   }
 
   def getIndexOfPolygon(coordinate: GeoCoordinate): Int = {
@@ -89,34 +109,14 @@ class FlowController(var flow: Flow) extends Logging {
     if (value < 0) 0 else if (value > flow.dimensions.cellSize.depth) flow.dimensions.cellSize.depth else value
   }
 
-  def bumpCoordinate(coordinate: GeoCoordinate): GeoCoordinate = {
-    val longitude = {
-      if (RandomNumberGenerator.coinToss) {
-        coordinate.longitude + Constants.MaxLongitudeShift
-      }
-      else {
-        coordinate.longitude - Constants.MaxLongitudeShift
-      }
-    }
-    val latitude = {
-      if (RandomNumberGenerator.coinToss) {
-        coordinate.latitude + Constants.MaxLatitudeShift
-      } else {
-        coordinate.latitude - Constants.MaxLatitudeShift
-      }
-    }
-
-    new GeoCoordinate(latitude, longitude, coordinate.depth)
-  }
-
-  def refresh(polygons: Array[FlowPolygon]) {
+  def refresh(polygons: FlowGridWrapper) {
     if (flowDataQueue.nonEmpty) {
       flowDataQueue.dequeue()
     }
     flowDataQueue += polygons
   }
 
-  def initialiseFlow(reader: FlowReader) {
+  def initialiseFlow(reader: FlowFile) {
     for (i <- 0 until SizeOfQueue) {
       val timer = new Timer()
       if (reader.hasNext) flowDataQueue += reader.next()

@@ -1,14 +1,12 @@
-package io
+package io.config
 
 import java.io.File
 import javax.xml.bind.{JAXBContext, JAXBException, UnmarshalException}
 
-import io.config.Configuration
-
 /**
   * Created by steve on 26/01/2016.
   */
-class ConfigurationFileReader extends FileReaderTrait {
+class ConfigurationFile {
 
   def read(file: File): Configuration = {
     try {
@@ -19,6 +17,15 @@ class ConfigurationFileReader extends FileReaderTrait {
         new Configuration()
       case ex: JAXBException => println("Un-marshalling configuration failed" + ex.printStackTrace())
         new Configuration()
+    }
+  }
+
+  def write(config: Configuration, file: File) {
+    try {
+      val context = JAXBContext.newInstance(classOf[Configuration])
+      context.createMarshaller.marshal(config, file)
+    } catch {
+      case ex: JAXBException => println("Marshalling configuration failed" + ex.printStackTrace())
     }
   }
 

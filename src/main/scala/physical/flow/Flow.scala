@@ -4,8 +4,7 @@ import com.github.nscala_time.time.Imports._
 import maths.ContinuousRange
 import physical.{Grid, TimeStep}
 
-class Flow(
-           var depth: Depth,
+class Flow(var depth: Depth,
            var period: Interval,
            var timeStep: TimeStep) {
   var dimensions = new Dimensions(new ContinuousRange(), new ContinuousRange(), new ContinuousRange(), new Grid())

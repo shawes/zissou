@@ -2,14 +2,13 @@ package io
 
 import java.io.File
 
-import org.geotools.data.{DataUtilities, FileDataStoreFinder}
 import org.geotools.data.simple.SimpleFeatureCollection
-import org.geotools.feature.FeatureCollection
+import org.geotools.data.{DataUtilities, FileDataStoreFinder}
 
 /**
   * Created by steve on 25/01/2016.
   */
-class HabitatFileReader() extends FileReaderTrait {
+class HabitatFile() {
 
   def read(file : File): SimpleFeatureCollection = {
     val store = FileDataStoreFinder.getDataStore(file)

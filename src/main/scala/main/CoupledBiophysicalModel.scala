@@ -1,7 +1,7 @@
 package main
 
 import grizzled.slf4j.Logging
-import io.ResultsWriter
+import io.ResultsIO
 import io.config.ConfigMappings._
 import io.config.Configuration
 import locals.VerticalMigrationPattern
@@ -50,7 +50,7 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
       iteration += 1
     }
 
-    val resultsWriter = new ResultsWriter(biology.fishLarvae.toList, config.output)
+    val resultsWriter = new ResultsIO(biology.fishLarvae.toList, config.output)
     resultsWriter.write()
     info("Simulation run completed in " + simulationTimer.stop() / 60 + " minutes")
   }

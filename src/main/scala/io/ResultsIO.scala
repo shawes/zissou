@@ -7,7 +7,7 @@ import biology.ReefFish
 /**
   * Created by steve on 26/01/2016.
   */
-class ResultsWriter(larvae: List[List[ReefFish]], output: OutputFiles) extends FileWriterTrait {
+class ResultsIO(larvae: List[List[ReefFish]], output: OutputFiles) {
 
   val shapeFile = new File(output.path + "//larvae_paths.shp")
   val kernelFile = new File(output.path + "//dispersal_kernel.csv")
@@ -21,18 +21,18 @@ class ResultsWriter(larvae: List[List[ReefFish]], output: OutputFiles) extends F
 
 
   private def writeLarvaeStateChangesToCsvFile() = {
-    val larvaeFileWriter = new LarvaeFileWriter(larvae, output.path)
+    val larvaeFileWriter = new LarvaeHistoryCsvFile(larvae, output.path)
     larvaeFileWriter.write()
     //larvaeFileWriter.writeExcelFile(fishLarvae.flatten, output.saveOutputFilePath)
   }
 
   private def writeDispersalKernel() = {
-    val dispersalKernelWriter = new DispersalKernelFileWriter(larvae.flatten, kernelFile)
+    val dispersalKernelWriter = new DispersalKernelFile(larvae.flatten, kernelFile)
     dispersalKernelWriter.write()
   }
 
   private def writeLarvaeMovementsToShapeFile() = {
-    val shapeFileWriter = new ShapeFileWriter(larvae.flatten, output.shapeType, shapeFile)
+    val shapeFileWriter = new GisShapeFile(larvae.flatten, output.shapeType, shapeFile)
     shapeFileWriter.write()
 
     //shapeFileWriter.writeShapes(larvae, output.SaveOutputFilePath, output.ShapeType);
