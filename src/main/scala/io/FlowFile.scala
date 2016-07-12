@@ -8,12 +8,10 @@ import ucar.ma2.Range
 import ucar.nc2.dt.grid.{GeoGrid, GridDataset}
 import ucar.unidata.geoloc.{LatLonPointImpl, LatLonRect}
 
-import scala.collection.mutable.ListBuffer
-
 class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   val NetcdfExtension = ".nc"
   val variables = List("u", "v", "w")
-  val datasets = ListBuffer.empty[GridDataset]
+  val datasets = List.empty[GridDataset]
   var currentFile: Int = 0
   var day = 0
   var days = 0
@@ -72,7 +70,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
     days = shape(0)
   }
 
-  def hasNext: Boolean = currentFile < numberOfFiles
+  def hasNext: Boolean = currentFile <= numberOfFiles
 
 
 
