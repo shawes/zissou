@@ -11,7 +11,6 @@ import locals.Constants
 import maths.RandomNumberGenerator
 import physical.habitat.HabitatManager
 
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -116,15 +115,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock) extends
     }
   }
 
-  private def spawnFish(sites: mutable.Buffer[SpawningLocation]) = {
-    val freshLarvae = fishFactory.createReefFish(sites.toList, clock.now)
+  private def spawnFish(sites: List[SpawningLocation]) = {
+    val freshLarvae = sites.map(site => fishFactory.createReefFish(site, clock.now))
     pelagicLarvaeCount += freshLarvae.flatten.size
-    freshLarvae.foreach(x => fishLarvae :: x)
-    updateLarvaeCount(freshLarvae)
-  }
-
-  private def updateLarvaeCount(larvae: List[List[ReefFish]]) = {
-    larvae.foreach(x => fishLarvae :+ x)
+    fishLarvae ++= freshLarvae
   }
 
   def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvaeCount > 0

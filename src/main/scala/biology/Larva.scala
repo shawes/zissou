@@ -52,7 +52,7 @@ trait Larva {
 
   def updateHabitat(newHabitat: HabitatPolygon)
 
-  def kill
+  def kill()
 
   def getOntogeneticVerticalMigrationDepth: Double
 
