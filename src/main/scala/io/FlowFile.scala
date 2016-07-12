@@ -5,26 +5,32 @@ import java.io.File
 import grizzled.slf4j._
 import physical.flow.{Flow, FlowGridWrapper}
 import ucar.ma2.Range
-import ucar.nc2.dt.grid.GeoGrid
+import ucar.nc2.dt.grid.{GeoGrid, GridDataset}
 import ucar.unidata.geoloc.{LatLonPointImpl, LatLonRect}
 
 class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   val NetcdfExtension = ".nc"
-  //val files: Array[String] = inputs.flowFiles
   var currentFile: Int = 0
   var day = 0
   var days = 0
-  var numberOfFiles = 0
+  var numberOfFiles = Int.MaxValue
+  var uDataset, vDataset, wDataset: GridDataset = null
 
   def next(): FlowGridWrapper = {
 
-    var uDataset, vDataset, wDataset: GeoGrid = null
+
     var filesMax = 0
     if (day == 0) {
+      if (uDataset != null) {
+        uDataset.close()
+        vDataset.close()
+        wDataset.close()
+      }
       uDataset = loadNextFile("u")
       vDataset = loadNextFile("v")
       wDataset = loadNextFile("w")
       currentFile += 1
+      updateDayCounters()
     }
 
     val latlonBounds = new LatLonRect(new LatLonPointImpl(-40.0, 142.0), new LatLonPointImpl(-10.0, 162.0))
@@ -38,72 +44,34 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
       day = 0
     }
 
-    new FlowGridWrapper(uDataset.getCoordinateSystem,
+    new FlowGridWrapper(uDataset.getGrids.get(0).asInstanceOf[GeoGrid].getCoordinateSystem,
       null,
-      uDataset.subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
-      vDataset.subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
-      wDataset.subset(timeRange, depthRange, latlonBounds, 0, 0, 0))
-
-
-
-    /*if(depth.averageOverAllDepths) {
-       polygons = averageDepthDimension(polygons)
-    }*/
-
+      uDataset.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
+      vDataset.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
+      wDataset.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0))
   }
 
-  private def loadNextFile(prefix: String): GeoGrid = {
+  private def loadNextFile(prefix: String): GridDataset = {
+    val path = netcdfFolder + "/" + prefix
     val netcdfFile = new NetcdfFileHandler
-    val files = new File(netcdfFolder + "/" + prefix).list().filter(p => p.endsWith(NetcdfExtension))
+    val files = new File(path).list().filter(p => p.endsWith(NetcdfExtension))
+    debug("list of file has " + files.length)
     numberOfFiles = files.length
     //val file = skipHiddenAndSystemFiles(files)
-    val grid = netcdfFile.openLocalFile(files(currentFile))
+    val dataset = netcdfFile.openLocalFile(path + "/" + files(currentFile))
+    dataset
+  }
+
+  private def updateDayCounters() {
+    val grid = uDataset.getGrids.get(0).asInstanceOf[GeoGrid]
     day = 0
     val shape = grid.getShape
     days = shape(0)
-    grid
   }
 
-  //private def updateFlowWithDimensions(properties)
-
-  /*  private def averageDepthDimension(polygons: FlowGridWrapper): FlowGridWrapper= {
-      val cellCount: Int = flow.dimensions.cellSize.width * flow.dimensions.cellSize.height
-      val averagedPolygons = ArrayBuffer.empty[FlowPolygon]
-      for (i <- 0 until cellCount) {
-        var sumU: Double = 0.0
-        var sumV: Double = 0.0
-        var sumSalt: Double = 0.0
-        var sumTemp: Double = 0.0
-        var count: Int = 0
-        var isLand = true
-
-        for (j <- 0 until flow.dimensions.cellSize.depth) {
-          val polygon = polygons(i + (j * cellCount))
-          if (!polygon.isLand) {
-            isLand = false
-            sumU += polygon.velocity.u
-            sumV += polygon.velocity.v
-            sumSalt += polygon.salinity
-            sumTemp += polygon.temperature
-            count += 1
-          }
-        }
-        val averagedPolygon = polygons(i)
-        averagedPolygon.isLand = isLand
-
-        if (!isLand) {
-          averagedPolygon.velocity.u = sumU / count
-          averagedPolygon.velocity.v = sumV / count
-          averagedPolygon.salinity = sumSalt / count
-          averagedPolygon.temperature = sumTemp / count
-
-        }
-        averagedPolygons += averagedPolygon
-      }
-      averagedPolygons.toArray
-    }*/
-
   def hasNext: Boolean = currentFile < numberOfFiles
+
+
 
 
 }

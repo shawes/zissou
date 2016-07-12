@@ -15,8 +15,8 @@ object Simulator extends App with Logging {
 
 
   private def readConfigurationFile: Configuration = {
-    val configFileReader = new ConfigurationFile()
+    val configurationFile = new ConfigurationFile()
     val testConfigPathDesktop = args(0)
-    configFileReader.read(new File(testConfigPathDesktop))
+    configurationFile.read(new File(testConfigPathDesktop))
   }
 }

@@ -11,17 +11,17 @@ import physical.flow.FlowController
   */
 class PhysicalModel(val config: Configuration) extends Logging {
 
-  debug("input files directory " + config.inputFiles.flowFilePath)
-  val flowDataReader = new FlowFile(config.inputFiles.flowFilePath, config.flow)
+  debug("Input files directory " + config.inputFiles.flowFilePath)
+  val flowFile = new FlowFile(config.inputFiles.flowFilePath, config.flow)
   val flowController = new FlowController(config.flow)
 
   def initialise(): Unit = {
-    flowController.initialiseFlow(flowDataReader)
+    flowController.initialiseFlow(flowFile)
   }
 
   def circulate(): Unit = {
-    if (flowDataReader.hasNext) {
-      flowController.refresh(flowDataReader.next())
+    if (flowFile.hasNext) {
+      flowController.refresh(flowFile.next())
     }
   }
 }

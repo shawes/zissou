@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <simulationVariables>
     <inputFiles>
         <flowFilePath>test-data/netcdf</flowFilePath>
@@ -16,8 +16,8 @@
             </site>
             <numberOfLarvae>10</numberOfLarvae>
             <releasePeriod>
-                <start>2005-01-01T00:00:00</start>
-                <end>2005-07-01T00:00:00</end>
+                <start>2011-12-01T00:00:00</start>
+                <end>2011-12-10T00:00:00</end>
             </releasePeriod>
             <interval>5</interval>
         </spawningLocation>
@@ -32,8 +32,8 @@
             </site>
             <numberOfLarvae>10</numberOfLarvae>
             <releasePeriod>
-                <start>2005-01-01T00:00:00</start>
-                <end>2005-07-01T00:00:00</end>
+                <start>2011-12-01T00:00:00</start>
+                <end>2011-12-10T00:00:00</end>
             </releasePeriod>
             <interval>5</interval>
         </spawningLocation>
@@ -91,8 +91,8 @@
     </fish>
     <flow>
         <period>
-            <start>2005-01-01T00:00:00</start>
-            <end>2005-10-01T00:00:00</end>
+            <start>2011-12-01T00:00:00</start>
+            <end>2011-12-10T00:00:00</end>
         </period>
         <timeStep>
             <unit>Hour</unit>
