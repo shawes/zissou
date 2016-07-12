@@ -8,27 +8,23 @@ import ucar.ma2.Range
 import ucar.nc2.dt.grid.{GeoGrid, GridDataset}
 import ucar.unidata.geoloc.{LatLonPointImpl, LatLonRect}
 
+import scala.collection.mutable.ListBuffer
+
 class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   val NetcdfExtension = ".nc"
+  val variables = List("u", "v", "w")
+  val datasets = ListBuffer.empty[GridDataset]
   var currentFile: Int = 0
   var day = 0
   var days = 0
   var numberOfFiles = Int.MaxValue
-  var uDataset, vDataset, wDataset: GridDataset = null
 
   def next(): FlowGridWrapper = {
     debug("Getting the next day")
 
-    var filesMax = 0
     if (day == 0) {
-      if (uDataset != null) {
-        uDataset.close()
-        vDataset.close()
-        wDataset.close()
-      }
-      uDataset = loadNextFile("u")
-      vDataset = loadNextFile("v")
-      wDataset = loadNextFile("w")
+      closeAllOpenDatasets()
+      variables.foreach(variable => datasets :+ loadNextFile(variable))
       currentFile += 1
       updateDayCounters()
     }
@@ -38,17 +34,27 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
     val depthRange: Range = new Range(0, 15)
 
 
+    incrementDayCounter()
+
+    new FlowGridWrapper(datasets.head.getGrids.get(0).asInstanceOf[GeoGrid].getCoordinateSystem,
+      null,
+      datasets.head.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
+      datasets(1).getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
+      datasets(2).getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0))
+  }
+
+  private def incrementDayCounter(): Unit = {
     if (day != days) {
       day += 1
     } else {
       day = 0
     }
+  }
 
-    new FlowGridWrapper(uDataset.getGrids.get(0).asInstanceOf[GeoGrid].getCoordinateSystem,
-      null,
-      uDataset.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
-      vDataset.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
-      wDataset.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0))
+  def closeAllOpenDatasets(): Unit = {
+    if (datasets.nonEmpty) {
+      datasets.foreach(dataset => dataset.close())
+    }
   }
 
   private def loadNextFile(prefix: String): GridDataset = {
@@ -61,7 +67,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   }
 
   private def updateDayCounters() {
-    val grid = uDataset.getGrids.get(0).asInstanceOf[GeoGrid]
+    val grid = datasets.head.getGrids.get(0).asInstanceOf[GeoGrid]
     val shape = grid.getShape
     days = shape(0)
   }
