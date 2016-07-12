@@ -13,7 +13,6 @@ import physical.habitat.Buffer
 import physical.{GeoCoordinate, TimeStep}
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable
 import scala.language.implicitConversions
 
 /**
@@ -41,8 +40,8 @@ object ConfigMappings {
   implicit def releasePeriodConfigMap(r: ReleasePeriodConfig): Interval =
     new Interval(new DateTime(r.start), new DateTime(r.end))
 
-  implicit def spawnConfigMap(s: SpawnConfig): mutable.Buffer[SpawningLocation] =
-    s.spawningLocation.map(x => spawningLocationConfigMap(x))
+  implicit def spawnConfigMap(s: SpawnConfig): List[SpawningLocation] =
+    s.spawningLocation.map(x => spawningLocationConfigMap(x)).toList
 
   implicit def spawningLocationConfigMap(s: SpawningLocationConfig): SpawningLocation =
     new SpawningLocation(s.name, s.numberOfLarvae, s.site, s.releasePeriod, s.interval)

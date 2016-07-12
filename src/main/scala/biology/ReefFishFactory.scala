@@ -19,19 +19,19 @@ class ReefFishFactory(fish: FishConfig, save: Boolean) extends Logging {
   var larvaeCount: Int = 0
 
 
-  def createReefFish(sites: List[SpawningLocation], time: DateTime): List[List[ReefFish]] = {
-    val larvae: ListBuffer[List[ReefFish]] = ListBuffer.empty
-    for (site <- sites) {
-      debug("Site found is " + site.toString)
-      val larvaeAtSite = new ListBuffer[ReefFish]
+  def createReefFish(site: SpawningLocation, time: DateTime): List[ReefFish] = {
+    val larvae: ListBuffer[ReefFish] = ListBuffer.empty
+    //for (site <- sites) {
+    // debug("Site found is " + site.toString)
+    // val larvaeAtSite = new ListBuffer[ReefFish]
       for (i <- 0 until site.numberOfLarvae) {
         larvaeCount += 1
         val pld: Double = pldDistribution.sample
 
         val birthLoc = new GeoCoordinate(site.location.latitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLatitudeShift,
           site.location.longitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift)
-        debug("The pld is " + pld)
-        larvaeAtSite append LarvaFactory.apply(LarvaType.ReefFish, larvaeCount,
+        //debug("The pld is " + pld)
+        larvae += LarvaFactory.apply(LarvaType.ReefFish, larvaeCount,
           Time.convertDaysToSeconds(pld),
           Time.convertDaysToSeconds(pld),
           new Birthplace(site.title, birthLoc),
@@ -39,9 +39,9 @@ class ReefFishFactory(fish: FishConfig, save: Boolean) extends Logging {
           new ReefFishOntogeny(preflexionDistribution.sample.toInt, flexionDistribution.sample().toInt, postFlexionDistribution.sample().toInt),
           fish.verticalMigrationProbabilities)
       }
-      larvae append larvaeAtSite.toList
-      debug("Larvae size is now: " + larvaeCount)
-    }
+    //larvae append larvaeAtSite.toList
+    //debug("Larvae size is now: " + larvaeCount)
+    //}
     larvae.toList
   }
 
