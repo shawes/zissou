@@ -65,5 +65,6 @@ libraryDependencies := {
 resolvers ++= Seq(
   "OpenGeo Maven Repository" at "http://repo.opengeo.org",
   "Open Source Geospatial Foundation Repository" at "http://download.osgeo.org/webdav/geotools/",
-  "Unidata Releases" at "https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/"
+  "Unidata Releases" at "https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/",
+  "Artima Maven Repository" at "http://repo.artima.com/releases"
 )

@@ -33,10 +33,6 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
     info("Simulation run started at " + simulationTimer.start)
     var iteration: Int = 1
     ocean.initialise()
-
-    //val coord= new GeoCoordinate(-30.54,152.99)
-    //val vel = ocean.flowController.getVelocityOfCoordinate(coord,false)
-    //info("Velocity is "+vel)
     val stepTimer = new Timer()
     while (clock.stillTime && biology.canDisperse(clock.now)) {
       if (clock.isMidnight) stepTimer.reset()

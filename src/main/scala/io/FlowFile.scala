@@ -17,7 +17,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   var uDataset, vDataset, wDataset: GridDataset = null
 
   def next(): FlowGridWrapper = {
-
+    debug("Getting the next day")
 
     var filesMax = 0
     if (day == 0) {
@@ -57,14 +57,11 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
     val files = new File(path).list().filter(p => p.endsWith(NetcdfExtension))
     debug("list of file has " + files.length)
     numberOfFiles = files.length
-    //val file = skipHiddenAndSystemFiles(files)
-    val dataset = netcdfFile.openLocalFile(path + "/" + files(currentFile))
-    dataset
+    netcdfFile.openLocalFile(path + "/" + files(currentFile))
   }
 
   private def updateDayCounters() {
     val grid = uDataset.getGrids.get(0).asInstanceOf[GeoGrid]
-    day = 0
     val shape = grid.getShape
     days = shape(0)
   }
