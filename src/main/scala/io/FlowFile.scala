@@ -12,6 +12,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   val NetcdfExtension = ".nc"
   val variables = List("u", "v", "w")
   val datasets = List.empty[GridDataset]
+  val depths = List(2.5, 7.5, 12.5, 17.5, 22.7, 28.2, 34.2, 41.0, 48.5, 56.7, 65.7, 75.2, 85.0, 95.0, 105.0)
   var currentFile: Int = 0
   var day = 0
   var days = 0
@@ -29,13 +30,14 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
 
     val latlonBounds = new LatLonRect(new LatLonPointImpl(-40.0, 142.0), new LatLonPointImpl(-10.0, 162.0))
     val timeRange: Range = new Range(day, day + 1)
-    val depthRange: Range = new Range(0, 15)
+    val depthRange: Range = new Range(0, 14)
+
 
 
     incrementDayCounter()
 
     new FlowGridWrapper(datasets.head.getGrids.get(0).asInstanceOf[GeoGrid].getCoordinateSystem,
-      null,
+      depths,
       datasets.head.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
       datasets(1).getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
       datasets(2).getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0))
