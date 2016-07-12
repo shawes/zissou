@@ -24,7 +24,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
 
     if (day == 0) {
       closeAllOpenDatasets()
-      variables.foreach(variable => datasets :+ loadNextFile(variable))
+      variables.foreach(variable => datasets += loadNextFile(variable))
       currentFile += 1
       updateDayCounters()
     }

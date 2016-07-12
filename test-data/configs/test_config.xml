@@ -14,7 +14,7 @@
                 <depth>5</depth>
                 <flowId>1</flowId>
             </site>
-            <numberOfLarvae>10</numberOfLarvae>
+            <numberOfLarvae>1</numberOfLarvae>
             <releasePeriod>
                 <start>2011-12-01T00:00:00</start>
                 <end>2011-12-10T00:00:00</end>
@@ -30,7 +30,7 @@
                 <depth>5</depth>
                 <flowId>1</flowId>
             </site>
-            <numberOfLarvae>10</numberOfLarvae>
+            <numberOfLarvae>1</numberOfLarvae>
             <releasePeriod>
                 <start>2011-12-01T00:00:00</start>
                 <end>2011-12-10T00:00:00</end>
@@ -81,7 +81,7 @@
             </verticalMigrationProbability>
         </verticalMigrationProbabilities>
         <pelagicLarvalDuration>
-            <mean>32.2</mean>
+            <mean>22.2</mean>
             <stdev>3.3</stdev>
             <distribution>Normal</distribution>
         </pelagicLarvalDuration>
@@ -92,7 +92,7 @@
     <flow>
         <period>
             <start>2011-12-01T00:00:00</start>
-            <end>2011-12-10T00:00:00</end>
+            <end>2011-12-31T00:00:00</end>
         </period>
         <timeStep>
             <unit>Hour</unit>

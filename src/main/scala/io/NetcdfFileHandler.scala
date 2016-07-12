@@ -10,10 +10,8 @@ class NetcdfFileHandler extends Logging {
   def openLocalFile(file: String): GridDataset = {
     var dataset: GridDataset = null
     try {
-      debug("Reading the file" + file)
-      GridDataset.open(file)
-
-      //gridFile
+      debug("Reading the file " + file)
+      dataset = GridDataset.open(file)
     } catch {
       case ioe: IOException => error("Error opening the " + file + ", getting exception: " + ioe.getMessage)
     }

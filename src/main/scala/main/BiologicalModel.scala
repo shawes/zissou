@@ -29,14 +29,15 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock) extends
   var pelagicLarvaeCount = 0
 
   def apply(iteration: Int, disperser: ParticleDisperser): Unit = {
+    debug("Applying biology")
     calculateMortalityRate(iteration)
     spawnLarvae()
-    fishLarvae.par.foreach(fish => processLarva(fish, disperser))
+    fishLarvae.foreach(fish => processLarva(fish, disperser))
   }
 
   private def processLarva(larvae: List[ReefFish], disperser: ParticleDisperser): Unit = {
-
-    val swimmingLarvae: List[ReefFish] = larvae.view.filter(fish => fish.isPelagic).force
+    debug("Processing the fish")
+    val swimmingLarvae: List[ReefFish] = larvae.filter(fish => fish.isPelagic)
     debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
     swimmingLarvae.foreach(reefFish => apply(reefFish, disperser))
 
@@ -51,11 +52,13 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock) extends
   }
 
   private def move(disperser: ParticleDisperser, larva: ReefFish): Unit = {
+    debug("Original position " + larva.position)
     if (fish.canSwim) {
       disperser.updatePosition(larva, clock, fish.swimmingSpeed, habitatManager)
     } else {
       disperser.updatePosition(larva, clock, habitatManager)
     }
+    debug("New position " + larva.position)
   }
 
   private def ageLarvae(larva: ReefFish): Unit = {
