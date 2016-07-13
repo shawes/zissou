@@ -8,10 +8,12 @@ import ucar.ma2.Range
 import ucar.nc2.dt.grid.{GeoGrid, GridDataset}
 import ucar.unidata.geoloc.{LatLonPointImpl, LatLonRect}
 
+import scala.collection.mutable.ListBuffer
+
 class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   val NetcdfExtension = ".nc"
   val variables = List("u", "v", "w")
-  val datasets = List.empty[GridDataset]
+  val datasets = ListBuffer.empty[GridDataset]
   val depths = List(2.5, 7.5, 12.5, 17.5, 22.7, 28.2, 34.2, 41.0, 48.5, 56.7, 65.7, 75.2, 85.0, 95.0, 105.0)
   var currentFile: Int = 0
   var day = 0
@@ -36,7 +38,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
 
     incrementDayCounter()
 
-    new FlowGridWrapper(datasets.head.getGrids.get(0).asInstanceOf[GeoGrid].getCoordinateSystem,
+    new FlowGridWrapper(datasets.head.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0).getCoordinateSystem,
       depths,
       datasets.head.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
       datasets(1).getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
@@ -44,7 +46,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   }
 
   private def incrementDayCounter(): Unit = {
-    if (day != days) {
+    if (day < days) {
       day += 1
     } else {
       day = 0
@@ -69,7 +71,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   private def updateDayCounters() {
     val grid = datasets.head.getGrids.get(0).asInstanceOf[GeoGrid]
     val shape = grid.getShape
-    days = shape(0)
+    days = shape(0) - 1
   }
 
   def hasNext: Boolean = currentFile <= numberOfFiles
