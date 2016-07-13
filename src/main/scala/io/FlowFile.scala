@@ -13,7 +13,7 @@ import scala.collection.mutable.ListBuffer
 class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   val NetcdfExtension = ".nc"
   val variables = List("u", "v", "w")
-  val datasets = ListBuffer.empty[GridDataset]
+  val datasets = ListBuffer.empty[(GridDataset, String)]
   val depths = List(2.5, 7.5, 12.5, 17.5, 22.7, 28.2, 34.2, 41.0, 48.5, 56.7, 65.7, 75.2, 85.0, 95.0, 105.0)
   var currentFile: Int = 0
   var day = 0
@@ -25,7 +25,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
 
     if (day == 0) {
       closeAllOpenDatasets()
-      variables.foreach(variable => datasets += loadNextFile(variable))
+      variables.foreach(variable => datasets += ((loadNextFile(variable), variable)))
       currentFile += 1
       updateDayCounters()
     }
@@ -42,7 +42,8 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   }
 
   private def getGeoGridsFromGridDatasets(latlonBounds: LatLonRect, timeRange: Range, depthRange: Range): List[GeoGrid] = {
-    datasets.map(dataset => dataset.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0)).toList
+    //val grids = variables.map( variable => datasets.find)
+    datasets.map(dataset => dataset._1.findGridByName(dataset._2).subset(timeRange, depthRange, latlonBounds, 0, 0, 0)).toList
   }
 
   private def incrementDayCounter(): Unit = {
@@ -55,7 +56,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
 
   def closeAllOpenDatasets(): Unit = {
     if (datasets.nonEmpty) {
-      datasets.foreach(dataset => dataset.close())
+      datasets.foreach(dataset => dataset._1.close())
     }
   }
 
@@ -69,7 +70,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   }
 
   private def updateDayCounters() {
-    val grid = datasets.head.getGrids.get(0).asInstanceOf[GeoGrid]
+    val grid = datasets.head._1.findGridByName(datasets.head._2)
     val shape = grid.getShape
     days = shape(0) - 1
   }
