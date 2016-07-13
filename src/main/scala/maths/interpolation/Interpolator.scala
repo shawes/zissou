@@ -34,10 +34,9 @@ class Interpolator(var dim: Dimensions) extends Logging {
     val bicubicInterpolator = new BicubicInterpolator
     val neighbourhood = ArrayBuffer.empty[ArrayBuffer[Velocity]]
     val neighbourhoodWidth = dim.cellSize.width
-
     for (j <- -1 to 2) {
       for (i <- -1 to 2) {
-        val neighbouringVelocity = polygons.getVelocity(Array(index(0) + i, index(1) + j))
+        val neighbouringVelocity = polygons.getVelocity(Array(index(0) + i, index(1) + j, index(2)))
         if (neighbouringVelocity.isUndefined) return new Tuple2(false, neighbouringVelocity)
         neighbourhood :+ neighbouringVelocity
       }
@@ -54,7 +53,7 @@ class Interpolator(var dim: Dimensions) extends Logging {
 
     for (j <- 0 to 1) {
       for (i <- 0 to 1) {
-        val neighbouringVelocity = polygons.getVelocity(Array(index(0) + i, index(1) + j))
+        val neighbouringVelocity = polygons.getVelocity(Array(index(0) + i, index(1) + j, index(2)))
         if (neighbouringVelocity.isUndefined) return new Tuple2(false, neighbouringVelocity)
         neighbourhood :+ neighbouringVelocity
       }

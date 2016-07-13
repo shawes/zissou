@@ -9,14 +9,16 @@ import maths.interpolation.Interpolator
 import physical.{GeoCoordinate, Velocity}
 import utilities.Timer
 
-import scala.collection.mutable
+//mport scala.collection.mutable.Stack
+//import scala.collection.parallel.immutable
 
 
 class FlowController(var flow: Flow) extends Logging {
 
-  val SizeOfQueue = 2
-  val flowDataQueue = mutable.Queue.empty[FlowGridWrapper]
+  //val SizeOfQueue = 2
+  //val flowDataQueue = mutable.Queue.empty[FlowGridWrapper]
   val interpolator = new Interpolator(flow.dimensions)
+  var flowPolygons: List[FlowGridWrapper] = Nil
 
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Velocity = {
@@ -41,20 +43,24 @@ class FlowController(var flow: Flow) extends Logging {
 
     var velocity: Velocity = new Velocity(Double.NaN, Double.NaN)
 
-    val flowPolygons: FlowGridWrapper = if (isFuture) flowDataQueue.last else flowDataQueue.head
-    var index = flowPolygons.getIndex(coordinate)
-    val velocityAtCentroid = flowPolygons.getVelocity(coordinate)
+
+    var index = flowPolygons.head.getIndex(coordinate)
+    if (isFuture) {
+      index(3) = 1
+    }
+
+    val velocityAtCentroid = flowPolygons.head.getVelocity(coordinate)
     if (!velocityAtCentroid.isUndefined) {
       trace("Index of flowpolygon is: " + index + ", with coord " + coordinate + ", and centroid velocity is " + velocityAtCentroid)
 
       if (index(0) == Constants.LightWeightException.CoordinateNotFoundException) {
         val bumpedCoordinate = bumpCoordinate(coordinate)
-        index = flowPolygons.getIndex(bumpedCoordinate)
+        index = flowPolygons.head.getIndex(bumpedCoordinate)
         if (index(0) != Constants.LightWeightException.CoordinateNotFoundException) {
-          velocity = interpolator.interpolate(bumpedCoordinate, flowPolygons, index)
+          velocity = interpolator.interpolate(bumpedCoordinate, flowPolygons.head, index)
         }
       } else {
-        velocity = interpolator.interpolate(coordinate, flowPolygons, index)
+        velocity = interpolator.interpolate(coordinate, flowPolygons.head, index)
       }
       trace("The interpolated velocity is " + velocity)
       if (velocity.isUndefined) velocityAtCentroid else velocity
@@ -110,18 +116,18 @@ class FlowController(var flow: Flow) extends Logging {
   }
 
   def refresh(polygons: FlowGridWrapper) {
-    if (flowDataQueue.nonEmpty) {
-      flowDataQueue.dequeue()
+    if (flowPolygons.nonEmpty) {
+      flowPolygons = flowPolygons.tail
     }
-    flowDataQueue += polygons
+    flowPolygons = polygons :: flowPolygons
   }
 
   def initialiseFlow(reader: FlowFile) {
-    for (i <- 0 until SizeOfQueue) {
+    // for (i <- 0 until SizeOfQueue) {
       val timer = new Timer()
-      if (reader.hasNext) flowDataQueue += reader.next()
+    if (reader.hasNext) flowPolygons = reader.next() :: flowPolygons
       debug("Finished reading the next flow data in " + timer.stop() + " seconds")
-    }
+    //}
     flow.dimensions = reader.flow.dimensions
     interpolator.dim = reader.flow.dimensions
   }
