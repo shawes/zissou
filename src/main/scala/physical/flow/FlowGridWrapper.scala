@@ -1,12 +1,11 @@
 package physical.flow
 
-import grizzled.slf4j.Logging
 import physical.adaptors.LatLonPointToGeoCoordinateAdaptor
 import physical.{GeoCoordinate, Velocity}
 import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.GeoGrid
 
-class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val uDataset: GeoGrid, val vDataset: GeoGrid, val wDataset: GeoGrid) extends Logging {
+class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val datasets: List[GeoGrid]) {
 
   val X = 0
   val Y = 1
@@ -15,11 +14,8 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val uD
   def getVelocity(coordinate: GeoCoordinate): Velocity = {
     val gridIndex = gcs.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
     val depthIndex = getClosestDepthIndex(coordinate.depth)
-    debug("depthIndex = " + depthIndex + " and gridIndex_Y = " + gridIndex(Y) + " gridIdex_X =" + gridIndex(X))
-    val u = uDataset.readDataSlice(0, 0, gridIndex(Y), gridIndex(X)).getFloat(0)
-    val v = vDataset.readDataSlice(0, 0, gridIndex(Y), gridIndex(X)).getFloat(0)
-    val w = wDataset.readDataSlice(0, 0, gridIndex(Y), gridIndex(X)).getFloat(0)
-    new Velocity(u, v, w)
+    val data = datasets.map(dataset => dataset.readDataSlice(0, depthIndex, gridIndex(Y), gridIndex(X)).getFloat(0))
+    new Velocity(data.head, data(1), data(2))
   }
 
   private def getClosestDepthIndex(depth: Double): Int = depths match {
@@ -28,10 +24,8 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val uD
   }
 
   def getVelocity(index: Array[Int]): Velocity = {
-    val u = uDataset.readDataSlice(0, 0, index(Y), index(X)).getFloat(0)
-    val v = vDataset.readDataSlice(0, 0, index(Y), index(X)).getFloat(0)
-    val w = wDataset.readDataSlice(0, 0, index(Y), index(X)).getFloat(0)
-    new Velocity(u, v, w)
+    val data = datasets.map(dataset => dataset.readDataSlice(0, index(Z), index(Y), index(X)).getFloat(0))
+    new Velocity(data.head, data(1), data(2))
   }
 
   def getIndex(coordinate: GeoCoordinate): Array[Int] = {

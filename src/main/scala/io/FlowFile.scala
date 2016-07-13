@@ -32,17 +32,17 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
 
     val latlonBounds = new LatLonRect(new LatLonPointImpl(-40.0, 142.0), new LatLonPointImpl(-10.0, 162.0))
     val timeRange: Range = new Range(day, day + 1)
+    //TODO: Add in a check for when you reach the next day
     val depthRange: Range = new Range(0, 14)
-
-
 
     incrementDayCounter()
 
-    new FlowGridWrapper(datasets.head.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0).getCoordinateSystem,
-      depths,
-      datasets.head.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
-      datasets(1).getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0),
-      datasets(2).getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0))
+    val datasetsSubset = getGeoGridsFromGridDatasets(latlonBounds, timeRange, depthRange)
+    new FlowGridWrapper(datasetsSubset.head.getCoordinateSystem, depths, datasetsSubset)
+  }
+
+  private def getGeoGridsFromGridDatasets(latlonBounds: LatLonRect, timeRange: Range, depthRange: Range): List[GeoGrid] = {
+    datasets.map(dataset => dataset.getGrids.get(0).asInstanceOf[GeoGrid].subset(timeRange, depthRange, latlonBounds, 0, 0, 0)).toList
   }
 
   private def incrementDayCounter(): Unit = {
@@ -75,9 +75,5 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
   }
 
   def hasNext: Boolean = currentFile <= numberOfFiles
-
-
-
-
 }
 
