@@ -32,8 +32,8 @@ class ResultsIO(larvae: List[List[ReefFish]], output: OutputFiles) {
   }
 
   private def writeLarvaeMovementsToShapeFile() = {
-    val shapeFileWriter = new GisShapeFile(larvae.flatten, output.shapeType, shapeFile)
-    shapeFileWriter.write()
+    val shapeFileWriter = new GisShapeFile()
+    shapeFileWriter.write(larvae.flatten, output.shapeType, shapeFile)
 
     //shapeFileWriter.writeShapes(larvae, output.SaveOutputFilePath, output.ShapeType);
   }

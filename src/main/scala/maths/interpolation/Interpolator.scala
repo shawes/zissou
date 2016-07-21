@@ -18,14 +18,15 @@ class Interpolator(var dim: Dimensions) extends Logging {
     val longitudeDisplacement = (coordinate.longitude - centroid.longitude) * (1.0 / dim.cellSize.cell.width) + 1.0
     //debug("Latitude displacement = " + latitudeDisplacement + ", longitude displacement = " + longitudeDisplacement)
 
-    var result = bicubicInterpolation(polygons, index, longitudeDisplacement, latitudeDisplacement)
+    val result = bicubicInterpolation(polygons, index, longitudeDisplacement, latitudeDisplacement)
     //debug("Bi-cubic interpolation = " + result._2)
 
     if (!result._1) {
-      result = bilinearInterpolation(polygons, index, longitudeDisplacement, latitudeDisplacement)
+      bilinearInterpolation(polygons, index, longitudeDisplacement, latitudeDisplacement)._2
       //debug("Bi-linear interpolation = " + result._2)
+    } else {
+      result._2
     }
-    result._2
 
   }
 

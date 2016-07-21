@@ -3,7 +3,7 @@ package physical.habitat
 import java.io.File
 
 import grizzled.slf4j.Logging
-import io.HabitatFile
+import io.GisShapeFile
 import locals.{Constants, HabitatType}
 import maths.Geometry
 import org.geotools.data.simple.SimpleFeatureCollection
@@ -14,7 +14,7 @@ import scala.collection.mutable.ListBuffer
 
 class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]) extends Logging {
 
-  private val habitatReader = new HabitatFile()
+  private val habitatReader = new GisShapeFile()
   //val habitats: SimpleFeatureCollection = habitatReader.read(file)
   private val habitatPolygons: List[GeometryAdaptor] = defineAllPolygons(habitatReader.read(file))
   private val reefHabitatPolygons: List[GeometryAdaptor] = habitatPolygons.view.filter(x => x.habitat == HabitatType.Reef || x.habitat == HabitatType.Other).force

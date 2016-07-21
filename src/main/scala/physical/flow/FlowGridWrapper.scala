@@ -1,6 +1,10 @@
 package physical.flow
 
+import exceptions.{InterpolationNotImplementedException, NotEnoughNeighbouringCellsException}
 import grizzled.slf4j.Logging
+import locals.Interpolation.Interpolation
+import locals.Quadrant.Quadrant
+import locals.{Constants, Interpolation, Quadrant}
 import physical.adaptors.LatLonPointToGeoCoordinateAdaptor
 import physical.{GeoCoordinate, Velocity}
 import ucar.nc2.dt.GridCoordSystem
@@ -27,11 +31,14 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
     case list => list.indexOf(list.minBy(v => math.abs(v - depth)))
   }
 
-  def getVelocity(index: Array[Int]): Velocity = {
-    debug("Length is " + index.length)
-    val data = datasets.map(dataset => dataset.readDataSlice(0, index(Z), index(Y), index(X)).getFloat(0))
-    debug(data.foreach(x => x.toString))
-    new Velocity(data.head, data(1), data(2))
+  def getCentroid(index: Array[Int]): GeoCoordinate = {
+    LatLonPointToGeoCoordinateAdaptor.toGeoCoordinate(gcs.getLatLon(index(X), index(Y)))
+  }
+
+  def getInterpolationValues(coordinate: GeoCoordinate): Array[Array[Velocity]] = {
+    val quadrat = findQuadratCoordinateIsIn(coordinate)
+    val position = getQuadrantPosition(quadrat)
+    getNeighbours(4, getIndex(coordinate), position._1, position._2)
   }
 
   def getIndex(coordinate: GeoCoordinate): Array[Int] = {
@@ -40,8 +47,63 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
     Array(indexXY(0), indexXY(1), indexZ, 0)
   }
 
-  def getCentroid(index: Array[Int]): GeoCoordinate = {
-    LatLonPointToGeoCoordinateAdaptor.toGeoCoordinate(gcs.getLatLon(index(X), index(Y)))
+  def getNeighbours(number: Int, gridIndex: Array[Int], startIndexLat: Int, startIndexLon: Int): Array[Array[Velocity]] = {
+    val neighbourhood = Array.ofDim[Velocity](number, number)
+    for (j <- startIndexLat to (startIndexLat + number)) {
+      for (i <- startIndexLon to startIndexLon + number) {
+        val velocity = getVelocity(Array(gridIndex(X) + i, gridIndex(Y) + j, gridIndex(Z), 0))
+        if (velocity.isDefined) {
+          neighbourhood(i - startIndexLon)(j - startIndexLat) = velocity
+        } else {
+          throw new NotEnoughNeighbouringCellsException()
+        }
+      }
+    }
+    neighbourhood
   }
+
+  def getVelocity(index: Array[Int]): Velocity = {
+    debug("Length is " + index.length)
+    val data = datasets.map(dataset => dataset.readDataSlice(0, index(Z), index(Y), index(X)).getFloat(0))
+    debug(data.foreach(x => x.toString))
+    new Velocity(data.head, data(1), data(2))
+  }
+
+  private def findQuadratCoordinateIsIn(coordinate: GeoCoordinate): Quadrant = {
+    val index = gcs.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
+    val centroid = gcs.getLatLon(index(X), index(Y))
+
+    if (coordinate.latitude > centroid.getLatitude) {
+      if (coordinate.longitude < centroid.getLongitude) {
+        Quadrant.TopLeft
+      } else {
+        Quadrant.TopRight
+      }
+    } else {
+      if (coordinate.longitude < centroid.getLongitude) {
+        Quadrant.BottomLeft
+      } else {
+        Quadrant.BottomRight
+      }
+    }
+  }
+
+  def getQuadrantPosition(quadrant: Quadrant): (Int, Int) = quadrant match {
+    case Quadrant.TopLeft => (-2, -2)
+    case Quadrant.TopRight => (-1, -2)
+    case Quadrant.BottomLeft => (-2, -1)
+    case Quadrant.BottomRight => (-1, -1)
+  }
+
+  def getNeighbourhoodSize(interpolation: Interpolation): Int = interpolation match {
+    case Interpolation.Cubic => math.sqrt(Constants.Interpolation.CubicPoints).toInt
+    case Interpolation.Bicubic => math.sqrt(Constants.Interpolation.BicubicPoints).toInt
+    case Interpolation.Tricubic => math.sqrt(Constants.Interpolation.TricubicPoints).toInt
+    case _ => throw new InterpolationNotImplementedException()
+
+  }
+
+
+
 
 }

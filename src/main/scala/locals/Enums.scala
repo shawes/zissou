@@ -60,4 +60,14 @@ object LarvaType extends Enumeration {
   val ReefFish = Value
 }
 
+object Quadrant extends Enumeration {
+  type Quadrant = Value
+  val TopLeft, TopRight, BottomLeft, BottomRight = Value
+}
+
+object Interpolation extends Enumeration {
+  type Interpolation = Value
+  val Cubic, Bicubic, Tricubic = Value
+}
+
 

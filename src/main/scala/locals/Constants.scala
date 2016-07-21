@@ -33,5 +33,11 @@ object Constants {
     val CoordinateNotFoundException = -400
   }
 
+  object Interpolation {
+    val CubicPoints = 4
+    val BicubicPoints = 16
+    val TricubicPoints = 64
+  }
+
 
 }

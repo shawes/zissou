@@ -7,12 +7,12 @@ import biology.{Larva, TimeCapsule}
 import com.vividsolutions.jts.geom.{Coordinate, LineString, MultiLineString, Point}
 import locals.ShapeFileType._
 import locals.{OntogenyState, ShapeFileType}
-import org.geotools.data.{DataStore, DefaultTransaction, FileDataStoreFactorySpi}
+import org.geotools.data._
 
 //import org.geotools.data.{DataStore, DefaultTransaction}
 import org.geotools.data.collection.ListFeatureCollection
 import org.geotools.data.shapefile.ShapefileDataStoreFactory
-import org.geotools.data.simple.SimpleFeatureStore
+import org.geotools.data.simple.{SimpleFeatureCollection, SimpleFeatureStore}
 import org.geotools.feature.simple.{SimpleFeatureBuilder, SimpleFeatureTypeBuilder}
 import org.geotools.geometry.jts.JTSFactoryFinder
 import org.geotools.referencing.crs.DefaultGeographicCRS
@@ -21,18 +21,28 @@ import physical.adaptors.GeometryToGeoCoordinateAdaptor
 
 import scala.collection.mutable.ListBuffer
 
-class GisShapeFile(larvae: List[Larva], shape: ShapeFileType, file: File) {
+class GisShapeFile() {
 
   val ShapeFileName = "LarvaePaths.shp"
   val geometryFactory = JTSFactoryFinder.getGeometryFactory()
 
-  def write(): Unit = shape match {
-    case ShapeFileType.Line => writeLineShapeFile(file)
-    case ShapeFileType.Point => writePointShapeFile(file)
+  def read(file: File): SimpleFeatureCollection = {
+    val store = FileDataStoreFinder.getDataStore(file)
+    try {
+      val features = store.getFeatureSource.getFeatures
+      DataUtilities.collection(features)
+    } finally {
+      store.dispose()
+    }
+  }
+
+  def write(larvae: List[Larva], shape: ShapeFileType, file: File): Unit = shape match {
+    case ShapeFileType.Line => writeLineShapeFile(larvae, file)
+    case ShapeFileType.Point => writePointShapeFile(larvae, file)
     case _ => throw new scala.IllegalArgumentException()
   }
 
-  private def writeLineShapeFile(file: File) = {
+  private def writeLineShapeFile(larvae: List[Larva], file: File) = {
 
     val features = new java.util.ArrayList[SimpleFeature]
     val featureBuilder = new SimpleFeatureBuilder(createLineSchema())
@@ -104,7 +114,7 @@ class GisShapeFile(larvae: List[Larva], shape: ShapeFileType, file: File) {
     schema.buildFeatureType()
   }
 
-  private def writePointShapeFile(file: File) = {
+  private def writePointShapeFile(larvae: List[Larva], file: File) = {
     val features = new java.util.ArrayList[SimpleFeature]
     val featureBuilder = new SimpleFeatureBuilder(createPointSchema())
     larvae.foreach(l => l.history.foreach(hist => addPointFeature(featureBuilder, l.id, hist)))
