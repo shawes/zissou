@@ -3,17 +3,15 @@ package main
 import java.io.File
 
 import grizzled.slf4j.Logging
-import io.NetcdfFileHandler
 import io.config.{Configuration, ConfigurationFile}
-import ucar.ma2.Range
-import ucar.unidata.geoloc.{LatLonPointImpl, LatLonRect}
 
 
 object Simulator extends App with Logging {
 
-  //val model = new CoupledBiophysicalModel(readConfigurationFile)
-  //model.run()
+  val model = new CoupledBiophysicalModel(readConfigurationFile)
+  model.run()
 
+  /*
   val netcdfReader = new NetcdfFileHandler()
       val datasetU = netcdfReader.openLocalFile("test-data/netcdf/u/ocean_u_2011_12.nc").findGridByName("u")
       val datasetV = netcdfReader.openLocalFile("test-data/netcdf/v/ocean_v_2011_12.nc").findGridByName("v")
@@ -33,6 +31,7 @@ object Simulator extends App with Logging {
     val yAxis = gcs.getYHorizAxis
     val zAxis = gcs.getVerticalAxis// may be null
 
+  println("Axes are: "+xAxis + " y: "+yAxis)
     if (gcs.hasTimeAxis1D) {
       val tAxis1D = gcs.getTimeAxis1D
       val dates = tAxis1D.getCalendarDates
@@ -80,6 +79,7 @@ object Simulator extends App with Logging {
     }
     println()
   }
+  */
 
 
 

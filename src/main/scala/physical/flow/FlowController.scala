@@ -43,6 +43,7 @@ class FlowController(var flow: Flow) extends Logging {
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, isFuture: Boolean): Velocity = {
 
+    //TODO: Tidy up this logic
     var velocity: Velocity = new Velocity(Double.NaN, Double.NaN)
 
 
@@ -70,7 +71,7 @@ class FlowController(var flow: Flow) extends Logging {
     velocity
   }
 
-  def bumpCoordinate(coordinate: GeoCoordinate): GeoCoordinate = {
+  private def bumpCoordinate(coordinate: GeoCoordinate): GeoCoordinate = {
     val bumpedLongitude = coordinate.longitude + shiftAmount(RandomNumberGenerator.coinToss, Constants.MaxLongitudeShift)
     val bumpedLatitude = coordinate.latitude + shiftAmount(RandomNumberGenerator.coinToss, Constants.MaxLatitudeShift)
     new GeoCoordinate(bumpedLatitude, bumpedLongitude, coordinate.depth)
@@ -82,11 +83,9 @@ class FlowController(var flow: Flow) extends Logging {
   }
 
   def initialise(reader: FlowFile) {
-    // for (i <- 0 until SizeOfQueue) {
     val timer = new Timer()
     if (reader.hasNext) refresh(reader.next())
     debug("Finished reading the next flow data in " + timer.stop() + " seconds")
-    //}
     flow.dimensions = reader.flow.dimensions
   }
 
