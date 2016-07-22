@@ -16,7 +16,7 @@ class PhysicalModel(val config: Configuration) extends Logging {
   val flowController = new FlowController(config.flow)
 
   def initialise(): Unit = {
-    flowController.initialiseFlow(flowFile)
+    flowController.initialise(flowFile)
   }
 
   def circulate(): Unit = {

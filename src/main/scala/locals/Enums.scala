@@ -67,7 +67,7 @@ object Quadrant extends Enumeration {
 
 object Interpolation extends Enumeration {
   type Interpolation = Value
-  val Cubic, Bicubic, Tricubic = Value
+  val Bilinear, TriLinear, Bicubic, Tricubic = Value
 }
 
 

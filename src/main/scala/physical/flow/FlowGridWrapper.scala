@@ -37,8 +37,9 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
 
   def getInterpolationValues(coordinate: GeoCoordinate, interpolation: Interpolation): Array[Array[Velocity]] = {
     val quadrat = findQuadratCoordinateIsIn(coordinate)
-    val position = quadrantPosition(quadrat)
     val numberOfNeighbours = neighbourhoodSize(interpolation)
+    val position = quadrantPosition(quadrat, numberOfNeighbours)
+
     try {
       neighbourhood(numberOfNeighbours, getIndex(coordinate), position._1, position._2)
     } catch {
@@ -93,23 +94,23 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
     }
   }
 
-  private def quadrantPosition(quadrant: Quadrant): (Int, Int) = quadrant match {
-    case Quadrant.TopLeft => (-2, -2)
-    case Quadrant.TopRight => (-1, -2)
-    case Quadrant.BottomLeft => (-2, -1)
-    case Quadrant.BottomRight => (-1, -1)
+  private def quadrantPosition(quadrant: Quadrant, size: Int): (Int, Int) = quadrant match {
+    case Quadrant.TopLeft => (-1 * size / 2, -1 * size / 2)
+    case Quadrant.TopRight => ((-1 * size / 2) + 1, -1 * size / 2)
+    case Quadrant.BottomLeft => (-1 * size / 2, (-1 * size / 2) + 1)
+    case Quadrant.BottomRight => ((-1 * size / 2) + 1, (-1 * size / 2) + 1)
   }
 
   private def neighbourhoodSize(interpolation: Interpolation): Int = interpolation match {
-    case Interpolation.Cubic => math.sqrt(Constants.Interpolation.CubicPoints).toInt
+    case Interpolation.Bilinear => math.sqrt(Constants.Interpolation.CubicPoints).toInt
     case Interpolation.Bicubic => math.sqrt(Constants.Interpolation.BicubicPoints).toInt
     case Interpolation.Tricubic => math.sqrt(Constants.Interpolation.TricubicPoints).toInt
     case _ => throw new InterpolationNotImplementedException()
   }
 
   private def nextInterpolationStep(interpolation: Interpolation): Interpolation = interpolation match {
-    case Interpolation.Bicubic => Interpolation.Cubic
-    case Interpolation.Tricubic => Interpolation.Bicubic
+    case Interpolation.Bicubic => Interpolation.Bilinear
+    case Interpolation.Tricubic => Interpolation.TriLinear
     case _ => throw new UndefinedVelocityException()
   }
 

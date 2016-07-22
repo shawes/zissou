@@ -4,13 +4,13 @@ import physical.Velocity
 
 import scala.collection.mutable.ArrayBuffer
 
-class BilinearInterpolator extends LinearInterpolator {
+class BilinearInterpolation extends LinearInterpolation {
 
   val partialResult: ArrayBuffer[Velocity] = ArrayBuffer.empty[Velocity]
 
-  def interpolate(v: ArrayBuffer[ArrayBuffer[Velocity]], x: Double, y: Double): Velocity = {
+  def interpolate(v: Array[Array[Velocity]], x: Double, y: Double): Velocity = {
     partialResult += interpolate(v(0), y)
     partialResult += interpolate(v(1), y)
-    interpolate(partialResult, x)
+    interpolate(partialResult.toArray, x)
   }
 }
