@@ -39,5 +39,12 @@ object Constants {
     val TricubicPoints = 64
   }
 
+  object NetcdfIndex {
+    val X = 0
+    val Y = 1
+    val Z = 2
+    val Time = 3
+  }
+
 
 }

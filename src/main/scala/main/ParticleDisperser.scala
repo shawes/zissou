@@ -15,11 +15,7 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, ovm: Boolean) extends
   def updatePosition(larva: ReefFish, clock: SimulationClock, swimmingSpeed: Double, habitats: HabitatManager): Unit = {
     //debug("The old position is " + larva.position)
 
-    val migratedPositionVertically: GeoCoordinate = if (ovm) {
-      applyVerticalMigration(larva)
-    } else {
-      larva.position
-    }
+    val migratedPositionVertically: GeoCoordinate = if (ovm) applyVerticalMigration(larva) else larva.position
 
     val position = integrator.integrate(migratedPositionVertically, clock.now, swimmingSpeed)
     //var count = 0

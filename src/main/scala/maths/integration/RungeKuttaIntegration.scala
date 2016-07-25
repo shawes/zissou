@@ -2,6 +2,7 @@ package maths.integration
 
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
+import locals.Day._
 import maths.Geometry
 import physical.flow.FlowController
 import physical.{GeoCoordinate, Turbulence, Velocity}
@@ -12,7 +13,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
 
   def integrate(coordinate: GeoCoordinate, time: DateTime, speed: Double): GeoCoordinate = {
 
-    val coordinateVelocity = flow.getVelocityOfCoordinate(coordinate, isFuture = false)
+    val coordinateVelocity = flow.getVelocityOfCoordinate(coordinate, Today)
     debug("Starting an RK4 integration on coord " + coordinate + "with velocity " + coordinateVelocity)
     val velocity = turbulence.apply(coordinateVelocity)
 

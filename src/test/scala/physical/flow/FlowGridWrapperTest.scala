@@ -1,6 +1,5 @@
 package physical.flow
 
-import exceptions.UndefinedVelocityException
 import locals.{InterpolationType, QuadrantType}
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
@@ -125,28 +124,29 @@ class FlowGridWrapperTest extends FlatSpec with MockitoSugar with PrivateMethodT
     val result = flowGridWrapper invokePrivate neighbourhoodSize(InterpolationType.Bilinear)
     assert(result == 2)
   }
-
-  it should "get the correct next interpolation step for for bicubic integration" in {
-    val flowGridWrapper = new FlowGridWrapper(mockGcs, depths, datasets)
-    val nextInterpolationStep = PrivateMethod[InterpolationType.InterpolationType]('nextInterpolationStep)
-    val result = flowGridWrapper invokePrivate nextInterpolationStep(InterpolationType.Bicubic)
-    assert(result == InterpolationType.Bilinear)
-  }
-
-  it should "get the correct next interpolation step for for tricubic integration" in {
-    val flowGridWrapper = new FlowGridWrapper(mockGcs, depths, datasets)
-    val nextInterpolationStep = PrivateMethod[InterpolationType.InterpolationType]('nextInterpolationStep)
-    val result = flowGridWrapper invokePrivate nextInterpolationStep(InterpolationType.Tricubic)
-    assert(result == InterpolationType.TriLinear)
-  }
-
-  it should "throw an UndefinedVelocity exception calling next interpolation step for bilinear integration" in {
-    val flowGridWrapper = new FlowGridWrapper(mockGcs, depths, datasets)
-    val nextInterpolationStep = PrivateMethod[InterpolationType.InterpolationType]('nextInterpolationStep)
-    intercept[UndefinedVelocityException] {
-      val result = flowGridWrapper invokePrivate nextInterpolationStep(InterpolationType.Bilinear)
+  /*
+    it should "get the correct next interpolation step for for bicubic integration" in {
+      val flowGridWrapper = new FlowGridWrapper(mockGcs, depths, datasets)
+      val nextInterpolationStep = PrivateMethod[InterpolationType.InterpolationType]('nextInterpolationStep)
+      val result = flowGridWrapper invokePrivate nextInterpolationStep(InterpolationType.Bicubic)
+      assert(result == InterpolationType.Bilinear)
     }
-  }
+
+    it should "get the correct next interpolation step for for tricubic integration" in {
+      val flowGridWrapper = new FlowGridWrapper(mockGcs, depths, datasets)
+      val nextInterpolationStep = PrivateMethod[InterpolationType.InterpolationType]('nextInterpolationStep)
+      val result = flowGridWrapper invokePrivate nextInterpolationStep(InterpolationType.Tricubic)
+      assert(result == InterpolationType.TriLinear)
+    }
+
+    it should "throw an UndefinedVelocity exception calling next interpolation step for bilinear integration" in {
+      val flowGridWrapper = new FlowGridWrapper(mockGcs, depths, datasets)
+      val nextInterpolationStep = PrivateMethod[InterpolationType.InterpolationType]('nextInterpolationStep)
+      intercept[UndefinedVelocityException] {
+        val result = flowGridWrapper invokePrivate nextInterpolationStep(InterpolationType.Bilinear)
+      }
+    }
+    */
 
 
 }

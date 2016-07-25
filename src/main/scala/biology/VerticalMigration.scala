@@ -14,7 +14,6 @@ class VerticalMigration(val probabilities: List[VerticalMigrationProbability]) {
       list append getProbability(vmp, ontogeny)
     })
 
-
     var cumulativeProb = 0.0
     val number = RandomNumberGenerator.get
 

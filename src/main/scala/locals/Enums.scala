@@ -70,4 +70,9 @@ object InterpolationType extends Enumeration {
   val Bilinear, TriLinear, Bicubic, Tricubic = Value
 }
 
+object Day extends Enumeration {
+  type Day = Value
+  val Today, Tomorrow = Value
+}
+
 

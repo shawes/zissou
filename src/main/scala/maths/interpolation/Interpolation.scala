@@ -19,20 +19,25 @@ class Interpolation extends Logging {
     val longitudeDisplacement = (coordinate.longitude - centroid.longitude) * (1.0 / 0.1) + 1.0
     //debug("Latitude displacement = " + latitudeDisplacement + ", longitude displacement = " + longitudeDisplacement)
 
-    val bicubicInterpolation = new BicubicInterpolation()
+    //val bicubicInterpolation = new BicubicInterpolation()
+    //val bilinearInterpolation = new BilinearInterpolation()
 
     val neighbourhood = grid.getInterpolationValues(coordinate, Bicubic)
     if (neighbourhood.nonEmpty) {
-      bicubicInterpolation(neighbourhood, longitudeDisplacement, latitudeDisplacement)
+      interpolate(Bicubic, neighbourhood, longitudeDisplacement, latitudeDisplacement)
     } else {
-      val bilinearInterpolation = new BilinearInterpolation()
       val neighbourhood = grid.getInterpolationValues(coordinate, Bilinear)
       if (neighbourhood.nonEmpty) {
-        bilinearInterpolation(neighbourhood, longitudeDisplacement, latitudeDisplacement)
+        interpolate(Bilinear, neighbourhood, longitudeDisplacement, latitudeDisplacement)
       } else {
         grid.getVelocity(index)
       }
     }
+  }
+
+  private def interpolate(interpolation: InterpolationType, neighbourhood: Array[Array[Velocity]], long: Double, lat: Double): Velocity = interpolation match {
+    case Bicubic => new BicubicInterpolation().apply(neighbourhood, long, lat)
+    case _ => new BilinearInterpolation().apply(neighbourhood, long, lat)
   }
 
   private def nextInterpolationStep(interpolation: Interpolation): InterpolationType = interpolation match {

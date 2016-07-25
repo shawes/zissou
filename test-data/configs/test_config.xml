@@ -14,7 +14,7 @@
                 <depth>5</depth>
                 <flowId>1</flowId>
             </site>
-            <numberOfLarvae>1</numberOfLarvae>
+            <numberOfLarvae>10</numberOfLarvae>
             <releasePeriod>
                 <start>2011-12-01T00:00:00</start>
                 <end>2011-12-10T00:00:00</end>
@@ -30,7 +30,7 @@
                 <depth>5</depth>
                 <flowId>1</flowId>
             </site>
-            <numberOfLarvae>1</numberOfLarvae>
+            <numberOfLarvae>10</numberOfLarvae>
             <releasePeriod>
                 <start>2011-12-01T00:00:00</start>
                 <end>2011-12-10T00:00:00</end>
