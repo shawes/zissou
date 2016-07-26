@@ -10,7 +10,7 @@ import maths.RandomNumberGenerator
 import maths.interpolation.Interpolation
 import org.joda.time.Duration
 import physical.{GeoCoordinate, Velocity}
-import utilities.Timer
+import utilities.SimpleTimer
 
 import scala.collection.mutable
 
@@ -61,7 +61,7 @@ class FlowController(var flow: Flow) extends Logging {
   }
 
   def initialise(reader: FlowFile) {
-    val timer = new Timer()
+    val timer = new SimpleTimer()
     if (reader.hasNext) refresh(reader.next())
     debug("Finished reading the next flow data in " + timer.stop() + " seconds")
     flow.dimensions = reader.flow.dimensions

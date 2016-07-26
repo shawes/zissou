@@ -10,7 +10,7 @@ import org.scalatest.{FlatSpec, PrivateMethodTester}
 class HabitatFileReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   "The habitat file writer" should "initialise" in {
-    val habitatFileReader = new HabitatFile()
+    val habitatFileReader = new GisShapeFile()
     habitatFileReader should not be null
   }
 

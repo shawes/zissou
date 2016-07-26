@@ -9,7 +9,7 @@ import maths.RandomNumberGenerator
 import maths.integration.RungeKuttaIntegration
 import physical.Turbulence
 import physical.flow.Flow
-import utilities.Timer
+import utilities.SimpleTimer
 
 /**
   *
@@ -29,25 +29,27 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
   val larvaeDisperser = new ParticleDisperser(integrator, ovm)
 
   def run(): Unit = {
-    val simulationTimer = new Timer()
-    info("Simulation run started at " + simulationTimer.start)
+    val simulationTimer = new SimpleTimer()
+    info("Simulation run started at " + simulationTimer.start())
     var iteration: Int = 1
     ocean.initialise()
-    val stepTimer = new Timer()
+    val stepTimer = new SimpleTimer()
+    stepTimer.start()
     while (clock.stillTime && biology.canDisperse(clock.now)) {
-      if (clock.isMidnight) stepTimer.reset()
-      biology.apply(iteration, larvaeDisperser)
+      biology(iteration, larvaeDisperser)
       clock.tick()
       if (clock.isMidnight) {
         ocean.circulate()
-        info("Day iteration " + iteration / 12 + " has been completed in " + stepTimer.stop() + " secs")
+        stepTimer.stop()
+        info("Day iteration " + iteration / 12 + " has been completed in " + stepTimer.result + " secs")
+        stepTimer.start()
       }
-
       iteration += 1
     }
 
     val resultsWriter = new ResultsIO(biology.fishLarvae.toList, config.output)
     resultsWriter.write()
-    info("Simulation run completed in " + simulationTimer.stop() / 60 + " minutes")
+    simulationTimer.stop()
+    info("Simulation run completed in " + simulationTimer.result / 60 + " minutes")
   }
 }
