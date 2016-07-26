@@ -32,21 +32,21 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
     val simulationTimer = new SimpleTimer()
     info("Simulation run started at " + simulationTimer.start())
     //var iteration: Int = 1
-    val counter = new SimpleCounter(0)
+    val iteration = new SimpleCounter(0)
     ocean.initialise()
     val stepTimer = new SimpleTimer()
     stepTimer.start()
     while (clock.stillTime && biology.canDisperse(clock.now)) {
-      biology(counter.count, larvaeDisperser)
+      biology(iteration.count, larvaeDisperser)
       clock.tick()
       if (clock.isMidnight) {
         ocean.circulate()
         stepTimer.stop()
-        info("Day iteration " + counter.count / 12 + " has been completed in " + stepTimer.result + " secs")
+        info("Day iteration " + iteration.count / 12 + " has been completed in " + stepTimer.result + " secs")
         stepTimer.start()
       }
       //iteration += 1
-      counter.increment
+      iteration.increment()
     }
 
     val resultsWriter = new ResultsIO(biology.fishLarvae.toList, config.output)

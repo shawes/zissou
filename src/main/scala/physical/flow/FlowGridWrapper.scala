@@ -14,20 +14,26 @@ import ucar.nc2.dt.grid.GeoGrid
 
 class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val datasets: List[GeoGrid]) extends Logging {
 
-  def getVelocity(coordinate: GeoCoordinate): Velocity = {
+  def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
     val gridIndex = gcs.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
     val depthIndex = closestDepthIndex(coordinate.depth)
     //debug("Reading depth" + depthIndex + " gridY " + gridIndex(NetcdfIndex.Y) + "gridx" + gridIndex(NetcdfIndex.X))
     val data = datasets.map(dataset => dataset.readDataSlice(0, depthIndex, gridIndex(NetcdfIndex.Y), gridIndex(NetcdfIndex.X)).getDouble(0))
     //debug(data.foreach(x => x.toString))
-    new Velocity(data.head, data(1), data(2))
+    val velocity = new Velocity(data.head, data(1), data(2))
+    if (velocity.isDefined) Some(velocity) else None
+  }
+
+  private def closestDepthIndex(depth: Double): Int = depths match {
+    case Nil => Int.MaxValue
+    case list => list.indexOf(list.minBy(v => math.abs(v - depth)))
   }
 
   def getCentroid(index: Array[Int]): GeoCoordinate = {
     LatLonPointToGeoCoordinateAdaptor.toGeoCoordinate(gcs.getLatLon(index(NetcdfIndex.X), index(NetcdfIndex.Y)))
   }
 
-  def getInterpolationValues(coordinate: GeoCoordinate, interpolation: InterpolationType): Array[Array[Velocity]] = {
+  def getInterpolationValues(coordinate: GeoCoordinate, interpolation: InterpolationType): Option[Array[Array[Velocity]]] = {
     val quadrat = findQuadratCoordinateIsIn(coordinate)
     val numberOfNeighbours = neighbourhoodSize(interpolation)
     val position = quadrantPosition(quadrat, numberOfNeighbours)
@@ -45,43 +51,41 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
     Array(indexXY(0), indexXY(1), indexZ, indexT)
   }
 
-  private def closestDepthIndex(depth: Double): Int = depths match {
-    case Nil => Int.MaxValue
-    case list => list.indexOf(list.minBy(v => math.abs(v - depth)))
-  }
-
   private def timeIndex(day: Day): Int = day match {
     case Today => 0
     case Tomorrow => 1
     case _ => throw new RuntimeException("Day not implemented")
   }
 
-  private def neighbourhood(number: Int, gridIndex: Array[Int], startIndexLat: Int, startIndexLon: Int): Array[Array[Velocity]] = {
+  private def neighbourhood(number: Int, gridIndex: Array[Int], startIndexLat: Int, startIndexLon: Int): Option[Array[Array[Velocity]]] = {
     //debug("number=" + number + ", startLA=" + startIndexLat + ", startLO=" + startIndexLon)
     val neighbourhood = Array.ofDim[Velocity](number, number)
     try {
       for (j <- startIndexLat until (startIndexLat + number)) {
         for (i <- startIndexLon until (startIndexLon + number)) {
           //debug("i,j: " + i + "," + j)
-          neighbourhood(i - startIndexLon)(j - startIndexLat) = getVelocity(Array(gridIndex(NetcdfIndex.X) + i, gridIndex(NetcdfIndex.Y) + j, gridIndex(NetcdfIndex.Z), 0))
+          neighbourhood(i - startIndexLon)(j - startIndexLat) =
+            getVelocity(Array(gridIndex(NetcdfIndex.X) + i, gridIndex(NetcdfIndex.Y) + j, gridIndex(NetcdfIndex.Z), 0)).getOrElse(new Velocity(Double.NaN, Double.NaN))
         }
       }
+      if (neighbourhood.flatten.exists(v => v.isUndefined)) {
+        None
+      } else {
+        Some(neighbourhood)
+      }
     } catch {
-      case ex: IndexOutOfBoundsException => neighbourhood.update(0, Array(new Velocity(Double.NaN, Double.NaN)))
+      case ex: IndexOutOfBoundsException => None
     }
 
-    if (neighbourhood.flatten.exists(v => v.isUndefined)) {
-      Array()
-    } else {
-      neighbourhood
-    }
+
   }
 
-  def getVelocity(index: Array[Int]): Velocity = {
+  def getVelocity(index: Array[Int]): Option[Velocity] = {
     //debug("Length is " + index.length)
     val data = datasets.map(dataset => dataset.readDataSlice(0, index(NetcdfIndex.Z), index(NetcdfIndex.Y), index(NetcdfIndex.X)).getFloat(0))
     //debug(data.foreach(x => x.toString))
-    new Velocity(data.head, data(1), data(2))
+    val velocity = new Velocity(data.head, data(1), data(2))
+    if (velocity.isDefined) Some(velocity) else None
   }
 
   private def findQuadratCoordinateIsIn(coordinate: GeoCoordinate): QuadrantType = {

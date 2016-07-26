@@ -57,7 +57,7 @@ class FlowController(var flow: Flow) extends Logging {
     while (flowGrids.head.getVelocity(index).isUndefined && index(NetcdfIndex.Z) > 0) {
       index(NetcdfIndex.Z) -= 1
     }
-    interpolation(coordinate, flowGrids.head, index)
+    interpolation(coordinate, flowGrids.head, index).get
   }
 
   def initialise(reader: FlowFile) {

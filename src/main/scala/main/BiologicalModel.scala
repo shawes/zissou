@@ -7,7 +7,6 @@ import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
 import io.config.ConfigMappings._
 import io.config.Configuration
-import locals.Constants
 import maths.RandomNumberGenerator
 import physical.habitat.HabitatManager
 
@@ -78,9 +77,9 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock) extends
         debug("Searching buffered reefs")
         val reefIndex = habitatManager.isCoordinateOverBufferLazy(larva.position)
         // = habitatManager.getIndexOfNearestReef(larva.position)
-        if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
+        if (reefIndex.isDefined) {
           debug("Larva is within reef buffer")
-          larva.settle(habitatManager.getReef(reefIndex), clock.now)
+          larva.settle(habitatManager.getReef(reefIndex.get), clock.now)
           pelagicLarvaeCount -= 1
         } else {
           val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
@@ -90,8 +89,8 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock) extends
       }
       else {
         val reefIndex = habitatManager.isCoordinateOverReef(larva.position)
-        if (reefIndex != Constants.LightWeightException.NoReefFoundException) {
-          larva.settle(habitatManager.getReef(reefIndex), clock.now)
+        if (reefIndex.isDefined) {
+          larva.settle(habitatManager.getReef(reefIndex.get), clock.now)
           pelagicLarvaeCount -= 1
         }
       }
