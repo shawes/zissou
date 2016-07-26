@@ -15,12 +15,12 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, ovm: Boolean) extends
   def updatePosition(larva: ReefFish, clock: SimulationClock, swimmingSpeed: Double, habitats: HabitatManager): Unit = {
     //debug("The old position is " + larva.position)
 
-    val migratedPositionVertically: GeoCoordinate = if (ovm) applyVerticalMigration(larva) else larva.position
+    val migratedPositionVertically: GeoCoordinate = if (ovm) migrateLarvaVertically(larva) else larva.position
 
     val position = integrator.integrate(migratedPositionVertically, clock.now, swimmingSpeed)
     //var count = 0
     //while (position.isUndefined && count < 3) {
-    //position = integrator.integrate(applyVerticalMigration(larva), clock.now, swimmingSpeed)
+    //position = integrator.integrate(migrateLarvaVertically(larva), clock.now, swimmingSpeed)
     //count += 1
     //}
 
@@ -29,7 +29,7 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, ovm: Boolean) extends
     } else {
       // Stay in the same place and try next time
       debug("Couldn't move to position " + position + ", so staying at " + larva.position)
-      larva.move(migratedPositionVertically) //, habitats.getHabitatOfCoordinate(position))
+      //larva.move(migratedPositionVertically) //, habitats.getHabitatOfCoordinate(position))
     }
 
     //if (position.isValid && habitats.isOcean(position)) {
@@ -42,9 +42,8 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, ovm: Boolean) extends
     //debug("The new position is " + position)
   }
 
-  private def applyVerticalMigration(larva: ReefFish): GeoCoordinate = {
-    val depth = larva.getOntogeneticVerticalMigrationDepth
-    new GeoCoordinate(larva.position.latitude, larva.position.longitude, depth)
-  }
+  private def migrateLarvaVertically(larva: ReefFish): GeoCoordinate =
+    new GeoCoordinate(larva.position.latitude, larva.position.longitude, larva.getOntogeneticVerticalMigrationDepth)
+
 
 }
