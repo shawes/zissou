@@ -35,6 +35,8 @@ trait Larva {
 
   def ontogeny: Ontogeny
 
+  def horizontalSwimmingSpeed: Double
+
   def isTooOld: Boolean = age > maximumLifeSpan
   def isPelagic: Boolean = state == PelagicLarvaeState.Pelagic
   def isDead: Boolean = state == PelagicLarvaeState.Dead

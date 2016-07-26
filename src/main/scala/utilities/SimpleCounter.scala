@@ -1,8 +1,8 @@
 package utilities
 
 case class SimpleCounter(count: Int) {
-  def increment = copy(count = count + 1)
+  def increment(): Unit = copy(count = count + 1)
 
-  //def dec = copy(count = count - 1)
+  def increment(amount: Int): Unit = copy(count = count + amount)
 }
 
