@@ -29,7 +29,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
       //currentFile += 1
       updateDayCounters()
     } else {
-      if (endOfMonth && currentFile < numberOfFiles) {
+      if (endOfMonth) {
         currentFile += 1
         val nextday = ListBuffer.empty[(GridDataset, String)]
         variables.foreach(variable => nextday += ((loadNextFile(variable), variable)))
@@ -39,8 +39,6 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
 
     val latlonBounds = new LatLonRect(new LatLonPointImpl(-40.0, 142.0), new LatLonPointImpl(-10.0, 162.0))
     val depthRange: Range = new Range(0, 14)
-
-
 
     val datasetsSubset = if (endOfMonth) {
       getGeoGridsFromGridDatasets(latlonBounds, depthRange)
@@ -103,6 +101,6 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
     days = shape(0) - 1
   }
 
-  def hasNext: Boolean = currentFile <= numberOfFiles
+  def hasNext: Boolean = currentFile < numberOfFiles
 }
 
