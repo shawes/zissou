@@ -29,7 +29,7 @@ class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
       //currentFile += 1
       updateDayCounters()
     } else {
-      if (endOfMonth) {
+      if (endOfMonth && currentFile < numberOfFiles) {
         currentFile += 1
         val nextday = ListBuffer.empty[(GridDataset, String)]
         variables.foreach(variable => nextday += ((loadNextFile(variable), variable)))
