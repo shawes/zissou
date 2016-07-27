@@ -24,11 +24,11 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, ovm: Boolean) extends
     //count += 1
     //}
 
-    if (position.isValid) {
-      larva.move(position) //, habitats.getHabitatOfCoordinate(position))
+    if (position.isDefined) {
+      larva.move(position.get) //, habitats.getHabitatOfCoordinate(position))
     } else {
       // Stay in the same place and try next time
-      debug("Couldn't move to position " + position + ", so staying at " + larva.position)
+      debug("Couldn't move to position, so staying at " + larva.position)
       //larva.move(migratedPositionVertically) //, habitats.getHabitatOfCoordinate(position))
     }
 

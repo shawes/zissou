@@ -69,7 +69,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     fish.growOlder(1) // equals max
     assert(!fish.isTooOld)
     fish.growOlder(1) // greater than max
-    assert(fish.isTooOld)
+    assert(fish.isTooOld, "age is " + fish.age)
   }
 
   it should "know when it was born" in {
@@ -158,7 +158,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
     val settleTime = DateTime.now
     fish.settle(reef, settleTime)
-    assert(fish.polygon == reef)
+    assert(fish.polygon.get == reef)
     assert(fish.settlementDate == settleTime)
     assert(fish.isSettled)
   }

@@ -38,8 +38,8 @@ class DispersalKernelFile(larvae: List[Larva], csvFile: File) {
     sb ++= larva.birthplace.name + ","
     sb ++= larva.age + ","
     sb ++= larva.settlementDate + ","
-    sb ++= larva.polygon.id + ","
-    sb ++= larva.polygon.habitat.toString + ",\n"
+    sb ++= larva.polygon.get.id + ","
+    sb ++= larva.polygon.get.habitat.toString + ",\n"
     sb.toString()
   }
 

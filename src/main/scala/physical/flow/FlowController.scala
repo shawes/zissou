@@ -25,7 +25,7 @@ class FlowController(var flow: Flow) extends Logging {
   val interpolation = new Interpolation()
   var flowGrids = mutable.Stack[FlowGridWrapper]()
 
-  def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Velocity = {
+  def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Option[Velocity] = {
     require(future >= now && future <= now.plusSeconds(timeStep), "Time step is not loaded into memory")
 
     if (future == now) {
@@ -37,27 +37,33 @@ class FlowController(var flow: Flow) extends Logging {
     }
   }
 
-  private def derivePartialTimeStepVelocity(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Velocity = {
+  private def derivePartialTimeStepVelocity(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Option[Velocity] = {
     val velocityNow = getVelocityOfCoordinate(coordinate, Today)
     val velocityFuture = getVelocityOfCoordinate(coordinate, Tomorrow)
 
-    val divisor = 1 / timeStep.toDouble
-    val period: Duration = new Duration(future, now)
+    if (velocityNow.isDefined && velocityFuture.isDefined) {
+      val divisor = 1 / timeStep.toDouble
+      val period: Duration = new Duration(future, now)
 
-    val ratioA = period.toStandardSeconds.getSeconds
-    val ratioB = timeStep - ratioA
+      val ratioA = period.toStandardSeconds.getSeconds
+      val ratioB = timeStep - ratioA
 
-    velocityNow * (ratioA * divisor) + velocityFuture * (ratioB * divisor)
+      Some(velocityNow.get * (ratioA * divisor) + velocityFuture.get * (ratioB * divisor))
+    }
+    else {
+      None
+    }
+
   }
 
 
-  def getVelocityOfCoordinate(coordinate: GeoCoordinate, day: Day): Velocity = {
+  def getVelocityOfCoordinate(coordinate: GeoCoordinate, day: Day): Option[Velocity] = {
     val index = flowGrids.head.getIndex(coordinate, day)
     // Move the particle upwards if there is no velocity found at the depth (assuming its not that deep)
-    while (flowGrids.head.getVelocity(index).isUndefined && index(NetcdfIndex.Z) > 0) {
+    while (flowGrids.head.getVelocity(index).isDefined && index(NetcdfIndex.Z) > 0) {
       index(NetcdfIndex.Z) -= 1
     }
-    interpolation(coordinate, flowGrids.head, index).get
+    interpolation(coordinate, flowGrids.head, index)
   }
 
   def initialise(reader: FlowFile) {

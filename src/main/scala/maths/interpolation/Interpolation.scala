@@ -13,7 +13,7 @@ class Interpolation extends Logging {
   val bicubicInterpolation = new BicubicInterpolation()
   val bilinearInterpolation = new BilinearInterpolation()
   //TODO: Get dimensions from flow grid
-  def apply(coordinate: GeoCoordinate, grid: FlowGridWrapper, index: Array[Int]): Velocity = {
+  def apply(coordinate: GeoCoordinate, grid: FlowGridWrapper, index: Array[Int]): Option[Velocity] = {
     //debug("Interpolating the coordinate " + coordinate)
     val centroid = grid.getCentroid(index)
     //debug("Retrieved the polygon " + polygon.id)
@@ -26,11 +26,11 @@ class Interpolation extends Logging {
 
     val neighbourhood = grid.getInterpolationValues(coordinate, Bicubic)
     if (neighbourhood.isDefined) {
-      interpolate(Bicubic, neighbourhood.get, longitudeDisplacement, latitudeDisplacement)
+      Some(interpolate(Bicubic, neighbourhood.get, longitudeDisplacement, latitudeDisplacement))
     } else {
       val neighbourhood = grid.getInterpolationValues(coordinate, Bilinear)
       if (neighbourhood.isDefined) {
-        interpolate(Bilinear, neighbourhood.get, longitudeDisplacement, latitudeDisplacement)
+        Some(interpolate(Bilinear, neighbourhood.get, longitudeDisplacement, latitudeDisplacement))
       } else {
         grid.getVelocity(index)
       }

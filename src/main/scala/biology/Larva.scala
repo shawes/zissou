@@ -25,7 +25,7 @@ trait Larva {
 
   def settlementDate: DateTime
 
-  def polygon: physical.habitat.HabitatPolygon
+  def polygon: Option[physical.habitat.HabitatPolygon]
 
   def history: ListBuffer[TimeCapsule]
 

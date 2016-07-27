@@ -7,7 +7,6 @@ import locals.{Constants, OntogenyState, PelagicLarvaeState}
 import org.joda.time.DateTime
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
-import utilities.SimpleCounter
 
 import scala.collection.mutable.ListBuffer
 
@@ -20,9 +19,9 @@ class ReefFish(val id: Int,
                val verticalMigration: VerticalMigration)
   extends Larva with Logging {
 
-  val reefFishState = new State(PelagicLarvaeState.Pelagic)
-  val reefFishAge = new SimpleCounter(0)
   val reefFishHistory = ListBuffer.empty[TimeCapsule]
+  var reefFishState = PelagicLarvaeState.Pelagic
+  var reefFishAge = 0
   var reefFishSettlementDate: Option[DateTime] = None
   var reefFishPosition = birthplace.location
   var reefFishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
@@ -32,6 +31,12 @@ class ReefFish(val id: Int,
   override def settlementDate: DateTime = reefFishSettlementDate.get
 
   def inCompetencyWindow: Boolean = age < pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion //TODO: Need to code in a better competency window
+
+  def getOntogeny: OntogenyState = ontogeny.getState(age)
+
+  override def ontogeny: Ontogeny = reefFishOntogeny
+
+  override def age: Int = reefFishAge
 
   def move(newPosition: GeoCoordinate): Unit = {
     if (newPosition.isValid) {
@@ -45,30 +50,9 @@ class ReefFish(val id: Int,
 
   def updatePosition(newPos: GeoCoordinate): Unit = reefFishPosition = newPos
 
-  private def changeState(newState: PelagicLarvaeState): Unit = {
-    reefFishState.change(newState)
-    saveState()
-  }
-
-  private def saveState() = history append new TimeCapsule(age, getOntogeny, state, polygon, position)
-
-  override def history: ListBuffer[TimeCapsule] = reefFishHistory
-
-  override def position: GeoCoordinate = reefFishPosition
-
-  override def polygon: HabitatPolygon = reefFishPolygon.get
-
-  override def state: PelagicLarvaeState = reefFishState.state
-
-  def getOntogeny: OntogenyState = ontogeny.getState(age)
-
-  override def age: Int = reefFishAge.count
-
-  override def ontogeny: Ontogeny = reefFishOntogeny
-
   def horizontalSwimmingSpeed: Double = 0.0 //TODO: Implement the swimming speed
 
-  def growOlder(seconds: Int): Unit = reefFishAge.increment(seconds)
+  def growOlder(seconds: Int): Unit = reefFishAge += seconds
 
   def settle(settlementReef: HabitatPolygon, date: DateTime): Unit = {
     updateHabitat(settlementReef)
@@ -82,6 +66,17 @@ class ReefFish(val id: Int,
     changeState(PelagicLarvaeState.Dead)
   }
 
+  private def changeState(newState: PelagicLarvaeState): Unit = {
+    reefFishState = newState
+    saveState()
+  }
+
+  private def saveState() = history append new TimeCapsule(age, getOntogeny, state, polygon.orNull, position)
+
+  override def position: GeoCoordinate = reefFishPosition
+
+  override def polygon: Option[HabitatPolygon] = reefFishPolygon
+
   override def getOntogeneticVerticalMigrationDepth: Double = {
     verticalMigration.getDepth(getOntogeny)
   }
@@ -89,23 +84,19 @@ class ReefFish(val id: Int,
   override def toString: String =
     "id:" + id + "," +
       "birthday:" + birthday + "," +
-      "age:" + age / Constants.SecondsInDay + ","
+      "age:" + age / Constants.SecondsInDay + "," +
+      "pld:" + pelagicLarvalDuration / Constants.SecondsInDay + "," +
+      "birthplace:" + birthplace.name + "," +
+      "state:" + state + "," +
+      "history:" + history.size
+
+  override def history: ListBuffer[TimeCapsule] = reefFishHistory
+
+  override def state: PelagicLarvaeState = reefFishState
 
   override def birthday: DateTime = spawned
 
-  "pld:" + pelagicLarvalDuration / Constants.SecondsInDay + "," +
-    "birthplace:" + birthplace.name + "," +
-    "state:" + state + "," +
-    "history:" + history.size
 
 
 
-}
-
-case class State(state: PelagicLarvaeState) {
-  def change(newState: PelagicLarvaeState): Unit = copy(state = newState)
-}
-
-case class Date(date: DateTime) {
-  def change(newDate: DateTime): Unit = copy(date = newDate)
 }
