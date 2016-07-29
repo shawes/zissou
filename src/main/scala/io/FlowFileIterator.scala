@@ -10,7 +10,7 @@ import ucar.unidata.geoloc.{LatLonPointImpl, LatLonRect}
 
 import scala.collection.mutable.ListBuffer
 
-class FlowFile(val netcdfFolder: String, val flow: Flow) extends Logging {
+class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging {
   val NetcdfExtension = ".nc"
   val variables = List("u", "v", "w")
   val datasets = ListBuffer(ListBuffer.empty[(GridDataset, String)])

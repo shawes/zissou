@@ -2,7 +2,7 @@ package physical.flow
 
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
-import io.FlowFile
+import io.FlowFileIterator
 import locals.Constants
 import locals.Constants.NetcdfIndex
 import locals.Day._
@@ -66,7 +66,7 @@ class FlowController(var flow: Flow) extends Logging {
     interpolation(coordinate, flowGrids.head, index)
   }
 
-  def initialise(reader: FlowFile) {
+  def initialise(reader: FlowFileIterator) {
     val timer = new SimpleTimer()
     if (reader.hasNext) refresh(reader.next())
     debug("Finished reading the next flow data in " + timer.stop() + " seconds")
