@@ -81,6 +81,10 @@ class ReefFish(val id: Int,
     verticalMigration.getDepth(getOntogeny)
   }
 
+  override def getDielVerticalMigrationDepth(time : DateTime) : Double = {
+    0.0
+  }
+
   override def toString: String =
     "id:" + id + "," +
       "birthday:" + birthday + "," +

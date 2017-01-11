@@ -58,6 +58,8 @@ trait Larva {
 
   def getOntogeneticVerticalMigrationDepth: Double
 
+  def getDielVerticalMigrationDepth(time : DateTime) : Double
+
   def inCompetencyWindow: Boolean
 
 }
