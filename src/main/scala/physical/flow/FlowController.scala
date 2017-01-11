@@ -23,7 +23,7 @@ class FlowController(var flow: Flow) extends Logging {
   //val SizeOfQueue = 2
   //val flowDataQueue = mutable.Queue.empty[FlowGridWrapper]
   val interpolation = new Interpolation()
-  var flowGrids = mutable.Stack[FlowGridWrapper]()
+  private val flowGrids = mutable.Stack[FlowGridWrapper]()
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Velocity = {
     require(future >= now && future <= now.plusSeconds(timeStep), "Time step is not loaded into memory")
@@ -54,10 +54,10 @@ class FlowController(var flow: Flow) extends Logging {
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, day: Day): Velocity = {
     val index = flowGrids.head.getIndex(coordinate, day)
     // Move the particle upwards if there is no velocity found at the depth (assuming its not that deep)
-    while (flowGrids.head.getVelocity(index).isUndefined && index(NetcdfIndex.Z) > 0) {
+    while (flowGrids.head.getVelocity(index).get.isUndefined && index(NetcdfIndex.Z) > 0) {
       index(NetcdfIndex.Z) -= 1
     }
-    interpolation(coordinate, flowGrids.head, index).get
+    interpolation(coordinate, flowGrids.head, index)
   }
 
   def initialise(reader: FlowFile) {
@@ -78,9 +78,10 @@ class FlowController(var flow: Flow) extends Logging {
     new GeoCoordinate(bumpedLatitude, bumpedLongitude, coordinate.depth)
   }
 
-  private def shiftAmount(toss: Boolean, maxShiftAmount: Double): Double = toss match {
-    case true => RandomNumberGenerator.get * maxShiftAmount
-    case false => RandomNumberGenerator.get * maxShiftAmount * (-1)
+  private def shiftAmount(toss: Boolean, maxShiftAmount: Double): Double = {
+    if (toss) RandomNumberGenerator.get * maxShiftAmount else {
+      RandomNumberGenerator.get * maxShiftAmount * (-1)
+    }
   }
 
   private def correctNegativeCoordinate(value: Double): Double = {

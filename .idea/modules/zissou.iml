@@ -77,5 +77,6 @@
     <orderEntry type="library" name="SBT: org.itadaki:bzip2:0.9.1:jar" level="project" />
     <orderEntry type="library" name="SBT: org.slf4j:jcl-over-slf4j:1.7.7:jar" level="project" />
     <orderEntry type="library" name="SBT: org.slf4j:slf4j-simple:1.7.21:jar" level="project" />
+    <orderEntry type="library" name="scala-sdk-2.12.0" level="application" />
   </component>
 </module>
