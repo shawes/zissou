@@ -1,7 +1,7 @@
 package main
 
 import grizzled.slf4j.Logging
-import io.FlowFile
+import io.FlowFileIterator
 import io.config.ConfigMappings._
 import io.config.Configuration
 import physical.flow.FlowController
@@ -12,7 +12,7 @@ import physical.flow.FlowController
 class PhysicalModel(val config: Configuration) extends Logging {
 
   debug("Input files directory " + config.inputFiles.flowFilePath)
-  val flowFile = new FlowFile(config.inputFiles.flowFilePath, config.flow)
+  val flowFile = new FlowFileIterator(config.inputFiles.flowFilePath, config.flow)
   val flowController = new FlowController(config.flow)
 
   def initialise(): Unit = {

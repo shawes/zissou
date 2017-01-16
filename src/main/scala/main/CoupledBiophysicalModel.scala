@@ -9,7 +9,7 @@ import maths.RandomNumberGenerator
 import maths.integration.RungeKuttaIntegration
 import physical.Turbulence
 import physical.flow.Flow
-import utilities.{SimpleCounter, SimpleTimer}
+import utilities.SimpleTimer
 
 /**
   *
@@ -32,21 +32,21 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
     val simulationTimer = new SimpleTimer()
     info("Simulation run started at " + simulationTimer.start())
     //var iteration: Int = 1
-    val iteration = new SimpleCounter(0)
+    var iteration = 1
     ocean.initialise()
     val stepTimer = new SimpleTimer()
     stepTimer.start()
     while (clock.stillTime && biology.canDisperse(clock.now)) {
-      biology(iteration.count, larvaeDisperser)
+      biology(iteration, larvaeDisperser)
       clock.tick()
       if (clock.isMidnight) {
         ocean.circulate()
         stepTimer.stop()
-        info("Day iteration " + iteration.count / 12 + " has been completed in " + stepTimer.result + " secs")
+        info("Day iteration " + iteration / 12 + " has been completed in " + stepTimer.result + " secs")
         stepTimer.start()
       }
       //iteration += 1
-      iteration.increment()
+      iteration += 1
     }
 
     val resultsWriter = new ResultsIO(biology.fishLarvae.toList, config.output)

@@ -63,13 +63,13 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   it should "know when it has reached max life span" in {
     val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
-    assert(!fish.isTooOld, "Fish is born")
-    fish.growOlder(maximumLifespan - 1) // below max
-    assert(!fish.isTooOld, "Fish is one less than max, fish age=" + fish.age)
+    assert(!fish.isTooOld)
+    fish.growOlder(49) // below max
+    assert(!fish.isTooOld)
     fish.growOlder(1) // equals max
-    assert(!fish.isTooOld, "Fish is maximum age, fish age=" + fish.age)
+    assert(!fish.isTooOld)
     fish.growOlder(1) // greater than max
-    assert(fish.isTooOld, "Fish is too old now, fish age=" + fish.age)
+    assert(fish.isTooOld, "age is " + fish.age)
   }
 
   it should "know when it was born" in {
@@ -158,7 +158,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
     val settleTime = DateTime.now
     fish.settle(reef, settleTime)
-    assert(fish.polygon == reef)
+    assert(fish.polygon.get == reef)
     assert(fish.settlementDate == settleTime)
     assert(fish.isSettled)
   }

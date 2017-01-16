@@ -25,7 +25,7 @@ trait Larva {
 
   def settlementDate: DateTime
 
-  def polygon: physical.habitat.HabitatPolygon
+  def polygon: Option[physical.habitat.HabitatPolygon]
 
   def history: ListBuffer[TimeCapsule]
 
@@ -57,6 +57,8 @@ trait Larva {
   def kill()
 
   def getOntogeneticVerticalMigrationDepth: Double
+
+  def getDielVerticalMigrationDepth(time : DateTime) : Double
 
   def inCompetencyWindow: Boolean
 

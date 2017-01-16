@@ -53,7 +53,7 @@
         </ontogeny>
         <meanSwimmingSpeed>0.102</meanSwimmingSpeed>
         <standDeviationSwimmingSpeed>0.019</standDeviationSwimmingSpeed>
-        <verticalMigrationPattern>Ontogenetic</verticalMigrationPattern>
+        <verticalMigrationPattern>None</verticalMigrationPattern>
         <verticalMigrationProbabilities>
             <verticalMigrationProbability>
                 <depthStart>0</depthStart>
