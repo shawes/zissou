@@ -7,7 +7,6 @@ import locals.{Constants, OntogenyState, PelagicLarvaeState}
 import org.joda.time.DateTime
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
-import utilities.SimpleCounter
 
 import scala.collection.mutable.ListBuffer
 
@@ -20,9 +19,10 @@ class ReefFish(val id: Int,
                val verticalMigration: VerticalMigration)
   extends Larva with Logging {
 
-  val reefFishState = State(PelagicLarvaeState.Pelagic)
-  val reefFishAge = SimpleCounter(0)
   val reefFishHistory: ListBuffer[TimeCapsule] = ListBuffer.empty[TimeCapsule]
+  var reefFishState = PelagicLarvaeState.Pelagic
+  var reefFishAge = 0
+  //SimpleCounter(0)
   var reefFishSettlementDate: Option[DateTime] = None
   var reefFishPosition: GeoCoordinate = birthplace.location
   var reefFishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
@@ -47,7 +47,7 @@ class ReefFish(val id: Int,
 
   def horizontalSwimmingSpeed: Double = 0.0 //TODO: Implement the swimming speed
 
-  def growOlder(seconds: Int): Unit = reefFishAge.increment(seconds)
+  def growOlder(seconds: Int): Unit = reefFishAge += seconds
 
   def settle(settlementReef: HabitatPolygon, date: DateTime): Unit = {
     updateHabitat(settlementReef)
@@ -62,7 +62,7 @@ class ReefFish(val id: Int,
   }
 
   private def changeState(newState: PelagicLarvaeState): Unit = {
-    reefFishState.change(newState)
+    reefFishState = newState
     saveState()
   }
 
@@ -76,11 +76,9 @@ class ReefFish(val id: Int,
 
   override def position: GeoCoordinate = reefFishPosition
 
-  override def polygon: HabitatPolygon = reefFishPolygon.get
+  override def polygon: HabitatPolygon = reefFishPolygon.orNull
 
-  override def state: PelagicLarvaeState = reefFishState.state
-
-  override def age: Int = reefFishAge.count
+  override def state: PelagicLarvaeState = reefFishState
 
   override def getOntogeneticVerticalMigrationDepth: Double = {
     verticalMigration.getDepth(getOntogeny)
@@ -90,6 +88,8 @@ class ReefFish(val id: Int,
     "id:" + id + "," +
       "birthday:" + birthday + "," +
       "age:" + age / Constants.SecondsInDay + ","
+
+  override def age: Int = reefFishAge
 
   override def birthday: DateTime = spawned
 
@@ -102,6 +102,7 @@ class ReefFish(val id: Int,
 
 }
 
+/*
 case class State(state: PelagicLarvaeState) {
   def change(newState: PelagicLarvaeState): Unit = copy(state = newState)
 }
@@ -109,3 +110,4 @@ case class State(state: PelagicLarvaeState) {
 case class Date(date: DateTime) {
   def change(newDate: DateTime): Unit = copy(date = newDate)
 }
+*/

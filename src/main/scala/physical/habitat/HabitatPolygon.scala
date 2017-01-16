@@ -31,6 +31,7 @@ class GeometryAdaptor(val g: Geometry, val id: Int, val habitat: HabitatType) ex
   def intersects(coordinate: GeoCoordinate): Boolean = g.intersects(GeometryToGeoCoordinateAdaptor.toPoint(coordinate))
   def isWithinDistance(coordinate: GeoCoordinate, distance: Double): Boolean =
     g.isWithinDistance(GeometryToGeoCoordinateAdaptor.toPoint(coordinate), distance)
+
 }
 
 
