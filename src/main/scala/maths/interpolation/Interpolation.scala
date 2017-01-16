@@ -32,7 +32,7 @@ class Interpolation extends Logging {
       if (neighbourhood.isDefined) {
         Some(interpolate(Bilinear, neighbourhood.get, longitudeDisplacement, latitudeDisplacement))
       } else {
-        grid.getVelocity(index).get
+        grid.getVelocity(index)
       }
     }
   }
