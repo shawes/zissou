@@ -1,6 +1,6 @@
 package io
 
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 import physical.flow.FlowPolygon
 import physical.{Cell, GeoCoordinate}

@@ -3,7 +3,7 @@ package physical
 import maths.Random
 import org.mockito.Mockito._
 import org.scalatest.Matchers._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 
 class TurbulenceTest extends FlatSpec with MockitoSugar with PrivateMethodTester {

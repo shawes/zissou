@@ -12,7 +12,7 @@ import physical.flow.{Depth, Flow}
 import physical.habitat.Buffer
 import physical.{GeoCoordinate, TimeStep}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 
 /**
@@ -41,7 +41,7 @@ object ConfigMappings {
     new Interval(new DateTime(r.start), new DateTime(r.end))
 
   implicit def spawnConfigMap(s: SpawnConfig): List[SpawningLocation] =
-    s.spawningLocation.map(x => spawningLocationConfigMap(x)).toList
+    s.spawningLocation.asScala.map(x => spawningLocationConfigMap(x)).toList
 
   implicit def spawningLocationConfigMap(s: SpawningLocationConfig): SpawningLocation =
     new SpawningLocation(s.name, s.numberOfLarvae, s.site, s.releasePeriod, s.interval)
@@ -55,7 +55,7 @@ object ConfigMappings {
     Time.convertDaysToSeconds(o.flexion), Time.convertDaysToSeconds(o.postFlexion))
 
   implicit def verticalMigrationConfigMap(vm: VerticalMigrationConfig): VerticalMigration =
-    new VerticalMigration(vm.verticalMigrationProbability.map(x => verticalMigrationProbabilityConfigMap(x)).toList)
+    new VerticalMigration(vm.verticalMigrationProbability.asScala.map(x => verticalMigrationProbabilityConfigMap(x)).toList)
 
   implicit def verticalMigrationProbabilityConfigMap(prob: VerticalMigrationProbabilityConfig) : VerticalMigrationProbability =
     new VerticalMigrationProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)

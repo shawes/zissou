@@ -5,11 +5,11 @@ import java.util.{ArrayList => JArrayList}
 import javax.xml.bind.JAXBContext
 
 import org.scalatest.FlatSpec
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 
 class ConfigurationTest extends FlatSpec with MockitoSugar {
 
-  val context = JAXBContext.newInstance(classOf[Configuration])
+  private val context = JAXBContext.newInstance(classOf[Configuration])
 
   "The configuration case class" should "parse the input files xml node" in {
     val configXml = "<simulationVariables><inputFiles><flowFilePath>flow</flowFilePath><habitatFilePath>habitat</habitatFilePath></inputFiles></simulationVariables>"

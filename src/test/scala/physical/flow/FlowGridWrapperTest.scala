@@ -1,19 +1,18 @@
 package physical.flow
 
 import locals.{InterpolationType, QuadrantType}
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.GeoGrid
 
 class FlowGridWrapperTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
-  val mockGcs = mock[GridCoordSystem]
-  val mockDatasetU = mock[GeoGrid]
-  val mockDatasetV = mock[GeoGrid]
-  val mockDatasetW = mock[GeoGrid]
   val depths = List(5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0)
-
   val datasets = List(mockDatasetU, mockDatasetV, mockDatasetW)
+  private val mockGcs = mock[GridCoordSystem]
+  private val mockDatasetU = mock[GeoGrid]
+  private val mockDatasetV = mock[GeoGrid]
+  private val mockDatasetW = mock[GeoGrid]
 
   "The flow grid wrapper" should "intialise" in {
     val flowGridWrapper = new FlowGridWrapper(mockGcs, depths, datasets)
