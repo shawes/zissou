@@ -72,3 +72,6 @@ fabric.properties
 
 test-data/
 
+catalog.xml
+logs/
+project/project/

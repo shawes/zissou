@@ -9,7 +9,7 @@
       <option name="deprecationWarnings" value="true" />
       <option name="featureWarnings" value="true" />
       <plugins>
-        <plugin path="$USER_HOME$/.ivy2/cache/com.artima.supersafe/supersafe_2.11.8/jars/supersafe_2.11.8-1.1.0-RC6.jar" />
+        <plugin path="$USER_HOME$/.ivy2/cache/com.artima.supersafe/supersafe_2.12.1/jars/supersafe_2.12.1-1.1.2.jar" />
       </plugins>
     </profile>
   </component>

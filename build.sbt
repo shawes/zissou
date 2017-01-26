@@ -2,9 +2,9 @@ name := "zissou"
 
 version := "1.0"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.1"
 
-crossScalaVersions := Seq("2.11.1", "2.10.3")
+crossScalaVersions := Seq("2.11.8", "2.11.1", "2.10.3")
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:implicitConversions")
 
@@ -14,16 +14,16 @@ assemblyJarName in assembly := "zissou.jar"
 
 
 // geoTools
-val geotoolsVersion = "13.2"
+val geotoolsVersion = "15.1"
 
 libraryDependencies ++= Seq(
-  "org.scalactic" %% "scalactic" % "2.2.6",
-  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+  "org.scalactic" %% "scalactic" % "3.2.0-SNAP1",
+  "org.scalatest" %% "scalatest" % "3.2.0-SNAP1" % "test",
   "junit" % "junit" % "4.12" % "test",
-  "org.mockito" % "mockito-core" % "2.0.40-beta",
-  "com.github.nscala-time" %% "nscala-time" % "2.6.0",
+  "org.mockito" % "mockito-core" % "2.6.8",
+  "com.github.nscala-time" %% "nscala-time" % "2.16.0",
   "org.apache.commons" % "commons-math3" % "3.6",
-  "org.clapper" %% "grizzled-slf4j" % "1.0.2",
+  "org.clapper" %% "grizzled-slf4j" % "1.3.0",
   "org.slf4j" % "slf4j-api" % "latest.integration",
   "org.slf4j" % "slf4j-simple" % "latest.integration",
   //"org.slf4j" % "slf4j-jdk14" % "latest.integration",
@@ -38,27 +38,20 @@ libraryDependencies ++= Seq(
 // taken from: http://github.com/scala/scala-module-dependency-sample
 libraryDependencies := {
   CrossVersion.partialVersion(scalaVersion.value) match {
-    // if scala 2.11+ is used, add dependency on scala-xml module
+    // if Scala 2.12+ is used, use scala-swing 2.x
+    case Some((2, scalaMajor)) if scalaMajor >= 12 =>
+      libraryDependencies.value ++ Seq(
+        "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+        "org.scala-lang.modules" %% "scala-swing" % "2.0.0-M2")
     case Some((2, scalaMajor)) if scalaMajor >= 11 =>
       libraryDependencies.value ++ Seq(
-        "org.scala-lang.modules" %% "scala-xml" % "1.0.3",
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.3",
-        "org.scala-lang.modules" %% "scala-swing" % "1.0.1")
+        "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+        "org.scala-lang.modules" %% "scala-swing" % "1.0.2")
     case _ =>
       // or just libraryDependencies.value if you don't depend on scala-swing
       libraryDependencies.value :+ "org.scala-lang" % "scala-swing" % scalaVersion.value
-  }
-}
-
-// add scala-xml dependency when needed (for Scala 2.11 and newer)
-// this mechanism supports cross-version publishing
-
-libraryDependencies := {
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, scalaMajor)) if scalaMajor >= 11 =>
-      libraryDependencies.value :+ "org.scala-lang.modules" %% "scala-xml" % "1.0.3"
-    case _ =>
-      libraryDependencies.value
   }
 }
 
