@@ -2,9 +2,9 @@ name := "zissou"
 
 version := "1.0"
 
-scalaVersion := "2.12.1"
-
 crossScalaVersions := Seq("2.11.8", "2.11.1", "2.10.3")
+
+scalaVersion := "2.12.1"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:implicitConversions")
 
@@ -12,25 +12,21 @@ scalacOptions ++= Seq("-deprecation", "-feature", "-language:implicitConversions
 resolvers += Resolver.sonatypeRepo("public")
 assemblyJarName in assembly := "zissou.jar"
 
-
-// geoTools
-val geotoolsVersion = "15.1"
-
 libraryDependencies ++= Seq(
-  "org.scalactic" %% "scalactic" % "3.2.0-SNAP1",
-  "org.scalatest" %% "scalatest" % "3.2.0-SNAP1" % "test",
+  "org.scalactic" %% "scalactic" % "3.0.1",
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "junit" % "junit" % "4.12" % "test",
-  "org.mockito" % "mockito-core" % "2.6.8",
+  "org.mockito" % "mockito-core" % "2.7.17",
   "com.github.nscala-time" %% "nscala-time" % "2.16.0",
   "org.apache.commons" % "commons-math3" % "3.6",
   "org.clapper" %% "grizzled-slf4j" % "1.3.0",
   "org.slf4j" % "slf4j-api" % "latest.integration",
   "org.slf4j" % "slf4j-simple" % "latest.integration",
   //"org.slf4j" % "slf4j-jdk14" % "latest.integration",
-  "edu.ucar" % "netcdf4" % "latest.integration",
-  "edu.ucar" % "cdm" % "latest.integration",
+  "edu.ucar" % "netcdf4" % "4.6.8",
+  "edu.ucar" % "cdm" % "4.6.8",
   //"edu.ucar" % "opendap" % "latest.integration",
-  "org.geotools" % "gt-shapefile" % geotoolsVersion
+  "org.geotools" % "gt-shapefile" % "17-RC1"
 )
 
 // add scala-xml dependency when needed (for Scala 2.11 and newer) in a robust way
