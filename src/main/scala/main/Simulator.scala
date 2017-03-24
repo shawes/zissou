@@ -8,8 +8,14 @@ import io.config.{Configuration, ConfigurationFile}
 
 object Simulator extends App with Logging {
 
-  val model = new CoupledBiophysicalModel(readConfigurationFile)
-  model.run()
+  val configFile = readConfigurationFile
+  if(configFile == null)
+    println("Please supply a configuration file.")
+  else {
+    val model = new CoupledBiophysicalModel(readConfigurationFile)
+    model.run()
+  }
+
 
   /*
   val netcdfReader = new NetcdfFileHandler()
@@ -81,11 +87,12 @@ object Simulator extends App with Logging {
   }
   */
 
-
-
   private def readConfigurationFile: Configuration = {
     val configurationFile = new ConfigurationFile()
-    val testConfigPathDesktop = args(0)
-    configurationFile.read(new File(testConfigPathDesktop))
+    if(args.nonEmpty) {
+      val testConfigPathDesktop = args(0)
+      configurationFile.read(new File(testConfigPathDesktop))
+    }
+    return null
   }
 }
