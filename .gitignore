@@ -70,8 +70,13 @@ fabric.properties
 # *.iml
 # modules.xml
 
-test-data/
+### Test data ###
+data/
 
 catalog.xml
 logs/
 project/project/
+
+### Ensime ###
+.ensime
+.ensime_cache/
