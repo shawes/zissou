@@ -26,7 +26,10 @@ libraryDependencies ++= Seq(
   "edu.ucar" % "netcdf4" % "4.6.8",
   "edu.ucar" % "cdm" % "4.6.8",
   //"edu.ucar" % "opendap" % "latest.integration",
-  "org.geotools" % "gt-shapefile" % "17-RC1"
+  "org.geotools" % "gt-shapefile" % "17-RC1",
+  "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
+  "javax.media" % "jai_codec" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
+  "javax.media" % "jai_imageio" % "1.1" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar"
 )
 
 
@@ -53,8 +56,8 @@ libraryDependencies := {
 }
 
 resolvers ++= Seq(
-  "OpenGeo Maven Repository" at "http://repo.opengeo.org",
   "Open Source Geospatial Foundation Repository" at "http://download.osgeo.org/webdav/geotools/",
+  "OpenGeo Maven Repository" at "http://repo.opengeo.org",
   "Unidata Releases" at "https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/",
   "Artima Maven Repository" at "http://repo.artima.com/releases"
 )
