@@ -1,3 +1,4 @@
+sudo: false
 
 language: scala
 
@@ -9,7 +10,6 @@ branches:
     - dev
 
 jdk:
-  - oraclejdk7
   - oraclejdk8
 
 cache:
