@@ -1,0 +1,9 @@
+language: scala
+scala:
+   - 2.12.1
+branches:
+  only:
+    - dev
+jdk:
+  - oraclejdk7
+  - oraclejdk8
