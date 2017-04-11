@@ -1,9 +1,22 @@
+sudo: false
+
 language: scala
+
 scala:
    - 2.12.1
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot/
+
 branches:
   only:
     - dev
+
 jdk:
   - oraclejdk7
   - oraclejdk8
+
+script:
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
