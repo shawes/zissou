@@ -5,7 +5,10 @@ import org.scalatest.{FlatSpec, PrivateMethodTester}
 
 class ContinuousRangeTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
-  val rangeParams = new ContinuousRange(1, 10, true)
+  val start = 1.0
+  val end = 10.0
+  val rangeParams = new ContinuousRange(start, end, true)
+  val rangeNotInclusive = new ContinuousRange(start, end, false)
   val rangeNoParams = new ContinuousRange()
 
   "A continous range with params" should "not be null " in {
@@ -40,5 +43,31 @@ class ContinuousRangeTest extends FlatSpec with MockitoSugar with PrivateMethodT
     assert(!rangeNoParams.isInclusive)
   }
 
+  it should "contain a number in the range" in {
+    assert(rangeParams.contains(end/2))
+  }
 
+  it should "not contain a number before the range start" in {
+    assert(rangeParams.contains(start-1) == false)
+  }
+
+  it should "not contain a number after the range end" in {
+    assert(rangeParams.contains(end+1) == false)
+  }
+
+  it should "contain the start in the range if inclusive" in {
+    assert(rangeParams.contains(start))
+  }
+
+  it should "contain the end in the range if inclusive" in {
+    assert(rangeParams.contains(end))
+  }
+
+  it should "not contain the start in the range if not inclusive" in {
+    assert(rangeNotInclusive.contains(start) == false)
+  }
+
+  it should "not contain the end in the range if not inclusive" in {
+    assert(rangeNotInclusive.contains(end) == false)
+  }
 }
