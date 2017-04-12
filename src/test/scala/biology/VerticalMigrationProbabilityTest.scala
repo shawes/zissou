@@ -13,7 +13,7 @@ class VerticalMigrationProbabilityTest extends FlatSpec {
     assert(result.postFlexion == 400)
     assert(result.depth.start == 50)
     assert(result.depth.end == 100)
-    assert(result.depth.inclusive)
+    assert(result.depth.isInclusive)
   }
 
 }
