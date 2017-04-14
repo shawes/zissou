@@ -11,7 +11,7 @@ class ContinuousRangeTest extends FlatSpec with MockitoSugar with PrivateMethodT
   val rangeNotInclusive = new ContinuousRange(start, end, false)
   val rangeNoParams = new ContinuousRange()
 
-  "A continous range with params" should "not be null " in {
+  "A continous range" should "not be null " in {
     assert(rangeParams != null)
   }
 
