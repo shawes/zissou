@@ -93,7 +93,7 @@ class FlowXmlFileHandler() extends Logging {
     new GeoCoordinate(latitude, longitude)
   }
 
-  private def constructArakawaAGrid(polygon: FlowPolygon, locus: GeoCoordinate, halfLength: Double) {
+  private def constructArakawaAGrid(polygon: FlowPolygon, locus: GeoCoordinate, halfLength: Double) : Unit = {
     polygon.vertices += new GeoCoordinate(locus.latitude - halfLength, locus.longitude - halfLength)
     polygon.vertices += new GeoCoordinate(locus.latitude - halfLength, locus.longitude + halfLength)
     polygon.vertices += new GeoCoordinate(locus.latitude + halfLength, locus.longitude + halfLength)
@@ -101,5 +101,3 @@ class FlowXmlFileHandler() extends Logging {
   }
 
 }
-
-

@@ -8,11 +8,11 @@ import physical.habitat.HabitatManager
 
 class ParticleDisperser(integrator: RungeKuttaIntegration, ovm: Boolean) extends Logging {
 
-  def updatePosition(larva: ReefFish, clock: SimulationClock, habitats: HabitatManager): Unit = {
+  def updatePosition(larva: Larva, clock: SimulationClock, habitats: HabitatManager): Unit = {
     updatePosition(larva, clock, 0, habitats)
   }
 
-  def updatePosition(larva: ReefFish, clock: SimulationClock, swimmingSpeed: Double, habitats: HabitatManager): Unit = {
+  def updatePosition(larva: Larva, clock: SimulationClock, swimmingSpeed: Double, habitats: HabitatManager): Unit = {
     //debug("The old position is " + larva.position)
 
     val migratedPositionVertically: GeoCoordinate = if (ovm) migrateLarvaVertically(larva) else larva.position
@@ -42,7 +42,7 @@ class ParticleDisperser(integrator: RungeKuttaIntegration, ovm: Boolean) extends
     //debug("The new position is " + position)
   }
 
-  private def migrateLarvaVertically(larva: ReefFish): GeoCoordinate =
+  private def migrateLarvaVertically(larva: Larva): GeoCoordinate =
     new GeoCoordinate(larva.position.latitude, larva.position.longitude, larva.getOntogeneticVerticalMigrationDepth)
 
 

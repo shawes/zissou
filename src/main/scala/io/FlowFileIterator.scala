@@ -95,7 +95,7 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
     netcdfFile.openLocalFile(path + "/" + files(currentFile))
   }
 
-  private def updateDayCounters() {
+  private def updateDayCounters() : Unit = {
     val grid = datasets.head.head._1.findGridByName(datasets.head.head._2)
     val shape = grid.getShape
     days = shape(0) - 1
@@ -103,4 +103,3 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
 
   def hasNext: Boolean = currentFile < numberOfFiles
 }
-

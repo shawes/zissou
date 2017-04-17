@@ -1,14 +1,14 @@
 package biology
 
 
+import scala.collection.mutable.ListBuffer
+
 import com.github.nscala_time.time.Imports._
 import locals.OntogenyState._
 import locals.PelagicLarvaeState
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
-
-import scala.collection.mutable.ListBuffer
 
 
 trait Larva {
@@ -22,6 +22,8 @@ trait Larva {
   def maximumLifeSpan: Int
 
   def birthplace: Birthplace
+
+  def pelagicLarvalDuration: Int
 
   def settlementDate: DateTime
 
@@ -37,29 +39,32 @@ trait Larva {
 
   def horizontalSwimmingSpeed: Double
 
-  def isTooOld: Boolean = age > maximumLifeSpan
-  def isPelagic: Boolean = state == PelagicLarvaeState.Pelagic
-  def isDead: Boolean = state == PelagicLarvaeState.Dead
-  def isSettled: Boolean = state == PelagicLarvaeState.Settled
+  def move(newPosition: GeoCoordinate) : Unit
 
-  def move(newPosition: GeoCoordinate)
+  def updatePosition(newPos: GeoCoordinate) : Unit
 
-  def updatePosition(newPos: GeoCoordinate)
+  def growOlder(seconds: Int) : Unit
 
-  def growOlder(seconds: Int)
-
-  def settle(settlementReef: HabitatPolygon, date: DateTime)
+  def settle(settlementReef: HabitatPolygon, date: DateTime) : Unit
 
   def getOntogeny: OntogenyState
 
-  def updateHabitat(newHabitat: HabitatPolygon)
+  def updateHabitat(newHabitat: HabitatPolygon) : Unit
 
-  def kill()
+  def kill() : Unit
 
   def getOntogeneticVerticalMigrationDepth: Double
 
   def getDielVerticalMigrationDepth(time : DateTime) : Double
 
   def inCompetencyWindow: Boolean
+
+  def isTooOld: Boolean = age > maximumLifeSpan
+
+  def isPelagic: Boolean = state == PelagicLarvaeState.Pelagic
+
+  def isDead: Boolean = state == PelagicLarvaeState.Dead
+
+  def isSettled: Boolean = state == PelagicLarvaeState.Settled
 
 }

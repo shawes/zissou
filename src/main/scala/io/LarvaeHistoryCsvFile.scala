@@ -2,10 +2,10 @@ package io
 
 import java.io.{BufferedWriter, File}
 
-import biology.ReefFish
+import biology.Larva
 import grizzled.slf4j.Logging
 
-class LarvaeHistoryCsvFile(larvae: List[List[ReefFish]], filepath: String) extends Logging {
+class LarvaeHistoryCsvFile(larvae: List[List[Larva]], filepath: String) extends Logging {
 
   val columnHeaders = "id,born,age,stage,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
 
@@ -22,7 +22,7 @@ class LarvaeHistoryCsvFile(larvae: List[List[ReefFish]], filepath: String) exten
     }
   }
 
-  private def writeCsvRow(larva: ReefFish): String = {
+  private def writeCsvRow(larva: Larva): String = {
     debug(larva.toString)
     var distance = 0
     val sb = new StringBuilder()

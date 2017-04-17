@@ -1,4 +1,4 @@
-package biology
+package biology.fish
 
 import com.github.nscala_time.time.Imports._
 import locals.{HabitatType, PelagicLarvaeState}
@@ -8,12 +8,14 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 import physical.GeoCoordinate
 import physical.habitat.GeometryAdaptor
+import biology._
 
-class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+
+class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   val pld: Int = 30
   val id: Int = 1
   val maximumLifespan = 50
-  val ontogeny = new ReefFishOntogeny(10, 15, 20)
+  val ontogeny = new FishOntogeny(10, 15, 20)
   val birthplace = new Birthplace("Adelaide", new GeoCoordinate(10, 150, 15))
   val pelagicState = PelagicLarvaeState.Pelagic
   val verticalMigration: List[VerticalMigrationProbability] =
@@ -25,19 +27,19 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     )
 
   "A fish" should "start at age zero" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     assert(fish.age == 0)
   }
 
   it should "have a pelagic larval duration" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     assert(fish.pelagicLarvalDuration == pld)
   }
 
   /*  it should "know when it has attained pelagic larval duration" in {
-      val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+      val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
         ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
       assert(!fish.hasBeenPelagicTooLong)
       fish.growOlder(29) // below PLD
@@ -49,7 +51,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     }*/
 
   /*  it should "know when it is in the competency window" in {
-      val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+      val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
         ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
       assert(fish.inCompetencyWindow)
       fish.growOlder(29) // below PLD
@@ -61,7 +63,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     }*/
 
   it should "know when it has reached max life span" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     assert(!fish.isTooOld)
     fish.growOlder(49) // below max
@@ -73,7 +75,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   }
 
   it should "know when it was born" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     val now = DateTime.now
     assert(fish.birthday.dayOfMonth() == now.dayOfMonth())
@@ -82,19 +84,19 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   }
 
   it should "be pelagic when it is born" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     assert(fish.isPelagic)
   }
 
   it should "have no history when its born" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     assert(fish.history.isEmpty)
   }
 
   it should "not move when there is an invalid position" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     val invalidPoint = new GeoCoordinate(Double.NaN, Double.NaN, 0)
     fish.move(invalidPoint)
@@ -102,7 +104,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   }
 
   it should "move when there is an valid position" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     val validPoint = new GeoCoordinate(2, 2, 2)
     fish.move(validPoint)
@@ -111,7 +113,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   }
 
   it should "have saved state once its moved" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     val validPoint = new GeoCoordinate(2, 2, 2)
     fish.move(validPoint)
@@ -121,7 +123,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   it should "calls vertical migration appropriately" in {
     val mockVertical = mock[VerticalMigration]
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, mockVertical)
     fish.getOntogeneticVerticalMigrationDepth
     verify(mockVertical).getDepth(fish.getOntogeny)
@@ -129,7 +131,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
 
   it should "grow older" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     val expected = fish.age + 3000
     fish.growOlder(3000)
@@ -137,7 +139,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   }
 
   it should "know when it's pelagic" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     assert(fish.isPelagic)
     fish.kill()
@@ -145,7 +147,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   }
 
   it should "know when it's dead" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     assert(!fish.isDead)
     fish.kill()
@@ -153,7 +155,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   }
 
   it should "settle when asked" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
     val settleTime = DateTime.now
@@ -164,7 +166,7 @@ class ReefFishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   }
 
   it should "know when it's settled" in {
-    val fish = new ReefFish(id, pld, maximumLifespan, birthplace, DateTime.now,
+    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
     val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
     val settleTime = DateTime.now

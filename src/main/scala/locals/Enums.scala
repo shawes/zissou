@@ -22,7 +22,7 @@ object TimeStepType extends Enumeration {
 
 object OntogeneticVerticalMigrationType extends Enumeration {
   type OntogeneticVerticalMigrationType = Value
-  val Shallow, Deep = Value
+  val Random, Restricted, StageBased = Value
 }
 
 object DistributionType extends Enumeration {
@@ -32,7 +32,7 @@ object DistributionType extends Enumeration {
 
 object VerticalMigrationPattern extends Enumeration {
   type VerticalMigrationPattern = Value
-  val None, Dial, Ontogenetic = Value
+  val None, Diel, Ontogenetic, Both = Value
 }
 
 object SwimmingAbility extends Enumeration {
@@ -57,7 +57,7 @@ object OntogenyState extends Enumeration {
 
 object LarvaType extends Enumeration {
   type LarvaType = Value
-  val ReefFish = Value
+  val Fish = Value
 }
 
 object QuadrantType extends Enumeration {
@@ -74,5 +74,3 @@ object Day extends Enumeration {
   type Day = Value
   val Today, Tomorrow = Value
 }
-
-

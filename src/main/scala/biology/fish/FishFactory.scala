@@ -1,4 +1,4 @@
-package biology
+package biology.fish
 
 import grizzled.slf4j._
 import io.config.ConfigMappings._
@@ -8,19 +8,20 @@ import maths.{RandomNumberGenerator, Time}
 import org.apache.commons.math3.distribution.NormalDistribution
 import org.joda.time.DateTime
 import physical.GeoCoordinate
+import biology._
 
 import scala.collection.mutable.ListBuffer
 
-class ReefFishFactory(fish: FishConfig, save: Boolean) extends Logging {
+class FishFactory(fish: FishConfig, save: Boolean) extends LarvaFactory with Logging {
   val pldDistribution = new NormalDistribution(fish.pelagicLarvalDuration.mean, fish.pelagicLarvalDuration.stdev)
-  val preflexionDistribution = new NormalDistribution(fish.ontogeny.preFlexion, Constants.SecondsInDay * 0.5)
+  val preflexionDistribution = new NormalDistribution(fish.ontogeny.preFlexion, Constants.SecondsInDay *0.5)
   val flexionDistribution = new NormalDistribution(fish.ontogeny.flexion, Constants.SecondsInDay * 0.75)
   val postFlexionDistribution = new NormalDistribution(fish.ontogeny.postFlexion, Constants.SecondsInDay * 1.0)
   var larvaeCount: Int = 0
 
 
-  def createReefFish(site: SpawningLocation, time: DateTime): List[ReefFish] = {
-    val larvae: ListBuffer[ReefFish] = ListBuffer.empty
+  override def create(site: SpawningLocation, time: DateTime): List[Fish] = {
+    val larvae: ListBuffer[Fish] = ListBuffer.empty
     //for (site <- sites) {
     // debug("Site found is " + site.toString)
     // val larvaeAtSite = new ListBuffer[ReefFish]
@@ -31,12 +32,12 @@ class ReefFishFactory(fish: FishConfig, save: Boolean) extends Logging {
         val birthLoc = new GeoCoordinate(site.location.latitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLatitudeShift,
           site.location.longitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift)
         //debug("The pld is " + pld)
-        larvae += LarvaFactory.apply(LarvaType.ReefFish, larvaeCount,
+        larvae += new Fish(larvaeCount,
           Time.convertDaysToSeconds(pld),
           Time.convertDaysToSeconds(pld),
           new Birthplace(site.title, birthLoc),
           time,
-          new ReefFishOntogeny(preflexionDistribution.sample.toInt, flexionDistribution.sample().toInt, postFlexionDistribution.sample().toInt),
+          new FishOntogeny(preflexionDistribution.sample.toInt, flexionDistribution.sample().toInt, postFlexionDistribution.sample().toInt),
           fish.verticalMigrationProbabilities)
       }
     //larvae append larvaeAtSite.toList

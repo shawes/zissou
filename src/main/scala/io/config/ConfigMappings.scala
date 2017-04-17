@@ -3,6 +3,7 @@ package io.config
 import java.io.File
 
 import biology._
+import biology.fish._
 import com.github.nscala_time.time.Imports._
 import io.{InputFiles, OutputFiles}
 import locals._
@@ -51,7 +52,7 @@ object ConfigMappings {
   implicit def pelagicLarvalDurationMap(pld: PelagicLarvalDurationConfig): PelagicLarvalDuration =
     new PelagicLarvalDuration(new NormalDistribution(pld.mean, pld.stdev), DistributionType.Normal)
 
-  implicit def ontogenyConfigMap(o: OntogenyConfig): ReefFishOntogeny = new ReefFishOntogeny(Time.convertDaysToSeconds(o.preFlexion),
+  implicit def ontogenyConfigMap(o: OntogenyConfig): FishOntogeny = new FishOntogeny(Time.convertDaysToSeconds(o.preFlexion),
     Time.convertDaysToSeconds(o.flexion), Time.convertDaysToSeconds(o.postFlexion))
 
   implicit def verticalMigrationConfigMap(vm: VerticalMigrationConfig): VerticalMigration =
@@ -60,6 +61,6 @@ object ConfigMappings {
   implicit def verticalMigrationProbabilityConfigMap(prob: VerticalMigrationProbabilityConfig) : VerticalMigrationProbability =
     new VerticalMigrationProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)
 
-  implicit def fishConfigMap(f: FishConfig): Fish = new Fish(f.pelagicLarvalDuration, f.ontogeny, "name", true, SwimmingAbility.withName(f.swimmingAbility), f.meanSwimmingSpeed,
+  implicit def fishConfigMap(f: FishConfig): FishParameters = new FishParameters(f.pelagicLarvalDuration, f.ontogeny, "name", true, SwimmingAbility.withName(f.swimmingAbility), f.meanSwimmingSpeed,
     VerticalMigrationPattern.withName(f.verticalMigrationPattern), f.verticalMigrationProbabilities, f.isMortal, f.mortalityRate)
 }

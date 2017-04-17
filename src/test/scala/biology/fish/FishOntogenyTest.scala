@@ -1,15 +1,15 @@
-package biology
+package biology.fish
 
 import locals.OntogenyState
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 
-class OntogenyTest extends FlatSpec {
+class FishOntogenyTest extends FlatSpec {
   val preflexion = 1000
   val flexion = 2000
   val postflexion = 3000
 
-  val ontogeny = new ReefFishOntogeny(preflexion, flexion, postflexion)
+  val ontogeny = new FishOntogeny(preflexion, flexion, postflexion)
 
   "An ontogeny object" should "not be null upon construction" in {
     assert(ontogeny != null)

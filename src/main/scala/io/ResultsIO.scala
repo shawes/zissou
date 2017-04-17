@@ -2,12 +2,12 @@ package io
 
 import java.io.File
 
-import biology.ReefFish
+import biology.Larva
 
 /**
   * Created by steve on 26/01/2016.
   */
-class ResultsIO(larvae: List[List[ReefFish]], output: OutputFiles) {
+class ResultsIO(larvae: List[List[Larva]], output: OutputFiles) {
 
   val shapeFile = new File(output.path + "//larvae_paths.shp")
   val kernelFile = new File(output.path + "//dispersal_kernel.csv")

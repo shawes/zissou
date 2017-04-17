@@ -1,11 +1,12 @@
-package biology
+package biology.fish
 
 import locals.OntogenyState
 import locals.OntogenyState.OntogenyState
+import biology.Ontogeny
 
-class ReefFishOntogeny(val preFlexion: Int, val flexion: Int, val postFlexion: Int) extends Ontogeny {
+class FishOntogeny(val preFlexion: Int, val flexion: Int, val postFlexion: Int) extends Ontogeny {
 
-  def getState(age: Double): OntogenyState = {
+  def getState(age: Int): OntogenyState = {
 
     var state: OntogenyState = OntogenyState.Postflexion
 

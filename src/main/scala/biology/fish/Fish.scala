@@ -1,4 +1,4 @@
-package biology
+package biology.fish
 
 import grizzled.slf4j.Logging
 import locals.OntogenyState.OntogenyState
@@ -7,36 +7,39 @@ import locals.{Constants, OntogenyState, PelagicLarvaeState}
 import org.joda.time.DateTime
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
+import maths.RandomNumberGenerator
+import biology._
 
 import scala.collection.mutable.ListBuffer
 
-class ReefFish(val id: Int,
+class Fish(val id: Int,
                val pelagicLarvalDuration: Int,
                val maximumLifeSpan: Int,
                val birthplace: Birthplace,
                val spawned: DateTime,
-               val reefFishOntogeny: ReefFishOntogeny,
+               val fishOntogeny: FishOntogeny,
                val verticalMigration: VerticalMigration)
   extends Larva with Logging {
 
-  val reefFishHistory = ListBuffer.empty[TimeCapsule]
-  var reefFishState = PelagicLarvaeState.Pelagic
-  var reefFishAge = 0
-  var reefFishSettlementDate: Option[DateTime] = None
-  var reefFishPosition = birthplace.location
-  var reefFishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
+  val fishHistory = ListBuffer.empty[TimeCapsule]
+  var fishState = PelagicLarvaeState.Pelagic
+  var fishAge = 0
+  var fishSettlementDate: Option[DateTime] = None
+  var fishPosition = birthplace.location
+  var fishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
+  var orientation : Double = RandomNumberGenerator.get(0, 359)
 
   def this() = this(0, 0, 0, null, DateTime.now(), null, null)
 
-  override def settlementDate: DateTime = reefFishSettlementDate.get
+  override def settlementDate: DateTime = fishSettlementDate.get
 
   def inCompetencyWindow: Boolean = age < pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion //TODO: Need to code in a better competency window
 
   def getOntogeny: OntogenyState = ontogeny.getState(age)
 
-  override def ontogeny: Ontogeny = reefFishOntogeny
+  override def ontogeny: Ontogeny = fishOntogeny
 
-  override def age: Int = reefFishAge
+  override def age: Int = fishAge
 
   def move(newPosition: GeoCoordinate): Unit = {
     if (newPosition.isValid) {
@@ -48,34 +51,39 @@ class ReefFish(val id: Int,
     }
   }
 
-  def updatePosition(newPos: GeoCoordinate): Unit = reefFishPosition = newPos
+  def updatePosition(newPos: GeoCoordinate): Unit = fishPosition = newPos
 
   def horizontalSwimmingSpeed: Double = 0.0 //TODO: Implement the swimming speed
 
-  def growOlder(seconds: Int): Unit = reefFishAge += seconds
+  def growOlder(seconds: Int): Unit = fishAge += seconds
 
   def settle(settlementReef: HabitatPolygon, date: DateTime): Unit = {
     updateHabitat(settlementReef)
-    reefFishSettlementDate = Some(date)
+    fishSettlementDate = Some(date)
     changeState(PelagicLarvaeState.Settled)
   }
 
-  def updateHabitat(newHabitat: HabitatPolygon): Unit = reefFishPolygon = Some(newHabitat)
+  def orientate(): Unit = {
+      //TODO: Needs to find the nearest fishPolygon
+      //TODO: From there is the distance is below a scent threshold, swim towards it
+  }
+
+  def updateHabitat(newHabitat: HabitatPolygon): Unit = fishPolygon = Some(newHabitat)
 
   def kill(): Unit = {
     changeState(PelagicLarvaeState.Dead)
   }
 
   private def changeState(newState: PelagicLarvaeState): Unit = {
-    reefFishState = newState
+    fishState = newState
     saveState()
   }
 
   private def saveState() = history append new TimeCapsule(age, getOntogeny, state, polygon.orNull, position)
 
-  override def position: GeoCoordinate = reefFishPosition
+  override def position: GeoCoordinate = fishPosition
 
-  override def polygon: Option[HabitatPolygon] = reefFishPolygon
+  override def polygon: Option[HabitatPolygon] = fishPolygon
 
   override def getOntogeneticVerticalMigrationDepth: Double = {
     verticalMigration.getDepth(getOntogeny)
@@ -87,16 +95,16 @@ class ReefFish(val id: Int,
 
   override def toString: String =
     "id:" + id + "," +
-      "birthday:" + birthday + "," +
-      "age:" + age / Constants.SecondsInDay + "," +
-      "pld:" + pelagicLarvalDuration / Constants.SecondsInDay + "," +
-      "birthplace:" + birthplace.name + "," +
-      "state:" + state + "," +
-      "history:" + history.size
+    "birthday:" + birthday + "," +
+    "age:" + age / Constants.SecondsInDay + "," +
+    "pld:" + pelagicLarvalDuration / Constants.SecondsInDay + "," +
+    "birthplace:" + birthplace.name + "," +
+    "state:" + state + "," +
+    "history:" + history.size
 
-  override def history: ListBuffer[TimeCapsule] = reefFishHistory
+  override def history: ListBuffer[TimeCapsule] = fishHistory
 
-  override def state: PelagicLarvaeState = reefFishState
+  override def state: PelagicLarvaeState = fishState
 
   override def birthday: DateTime = spawned
 

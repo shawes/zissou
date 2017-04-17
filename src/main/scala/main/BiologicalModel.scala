@@ -2,28 +2,26 @@ package main
 
 import java.io.File
 
+import scala.collection.mutable.ListBuffer
+
 import biology._
+import biology.fish._
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
 import io.config.ConfigMappings._
 import io.config.Configuration
 import maths.RandomNumberGenerator
 import physical.habitat.HabitatManager
+import locals.LarvaType
 
-import scala.collection.mutable.ListBuffer
-
-/**
-  *
-  * Created by Steven Hawes on 27/01/2016.
-  */
 class BiologicalModel(val config: Configuration, clock: SimulationClock) extends Logging {
 
-  val fishFactory = new ReefFishFactory(config.fish, false)
+  val factory = LarvaFactory.apply(LarvaType.Fish, config.fish)
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
-  val fish: Fish = config.fish
+  val fish: FishParameters = config.fish
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
-  var fishLarvae: ListBuffer[List[ReefFish]] = ListBuffer.empty
+  var fishLarvae: ListBuffer[List[Larva]] = ListBuffer.empty
   var pelagicLarvaeCount = 0
 
   def apply(iteration: Int, disperser: ParticleDisperser): Unit = {
@@ -33,15 +31,15 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock) extends
     fishLarvae.foreach(fish => processLarva(fish, disperser))
   }
 
-  private def processLarva(larvae: List[ReefFish], disperser: ParticleDisperser): Unit = {
+  private def processLarva(larvae: List[Larva], disperser: ParticleDisperser): Unit = {
     debug("Processing the fish")
-    val swimmingLarvae: List[ReefFish] = larvae.filter(fish => fish.isPelagic)
+    val swimmingLarvae: List[Larva] = larvae.filter(fish => fish.isPelagic)
     debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
     swimmingLarvae.foreach(reefFish => apply(reefFish, disperser))
 
   }
 
-  private def apply(larva: ReefFish, disperser: ParticleDisperser): Unit = {
+  private def apply(larva: Larva, disperser: ParticleDisperser): Unit = {
     move(disperser, larva)
     ageLarvae(larva)
     settle(larva)
@@ -49,7 +47,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock) extends
     mortalityCheck(larva)
   }
 
-  private def move(disperser: ParticleDisperser, larva: ReefFish): Unit = {
+  private def move(disperser: ParticleDisperser, larva: Larva): Unit = {
     debug("Original position " + larva.position)
     if (fish.canSwim) {
       disperser.updatePosition(larva, clock, fish.swimmingSpeed, habitatManager)
@@ -59,18 +57,18 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock) extends
     debug("New position " + larva.position)
   }
 
-  private def ageLarvae(larva: ReefFish): Unit = {
+  private def ageLarvae(larva: Larva): Unit = {
     larva growOlder clock.step.totalSeconds
   }
 
-  private def mortalityCheck(larva: ReefFish): Unit = {
+  private def mortalityCheck(larva: Larva): Unit = {
     if (fish.isMortal && RandomNumberGenerator.get < mortality.getRate) {
       larva.kill()
       pelagicLarvaeCount -= 1
     }
   }
 
-  private def settle(larva: ReefFish): Unit = {
+  private def settle(larva: Larva): Unit = {
     if (larva.inCompetencyWindow) {
       debug("Larva " + larva.id + " is in the competency window now")
       if (habitatManager.isBuffered) {
@@ -97,7 +95,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock) extends
     }
   }
 
-  private def lifespanCheck(larva: ReefFish): Unit = {
+  private def lifespanCheck(larva: Larva): Unit = {
     if (larva.isTooOld) {
       larva.kill()
       pelagicLarvaeCount -= 1
@@ -115,14 +113,14 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock) extends
   }
 
   private def spawnFish(sites: List[SpawningLocation]) = {
-    val freshLarvae = sites.map(site => fishFactory.createReefFish(site, clock.now))
+    val freshLarvae = sites.map(site => factory.create(site, clock.now))
     pelagicLarvaeCount += freshLarvae.flatten.size
     fishLarvae ++= freshLarvae
   }
 
   def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvaeCount > 0
 
-  private def updateActiveLarvaeCount(larva: ReefFish): Unit = {
+  private def updateActiveLarvaeCount(larva: Larva): Unit = {
     if (!larva.isPelagic) {
       pelagicLarvaeCount -= 1
     }

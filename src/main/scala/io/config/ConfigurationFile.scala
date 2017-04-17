@@ -22,7 +22,7 @@ class ConfigurationFile extends Logging {
     }
   }
 
-  def write(config: Configuration, file: File) {
+  def write(config: Configuration, file: File) : Unit = {
     try {
       val context = JAXBContext.newInstance(classOf[Configuration])
       context.createMarshaller.marshal(config, file)

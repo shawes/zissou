@@ -1,11 +1,12 @@
-package biology
+package biology.fish
 
 import locals.SwimmingAbility.SwimmingAbility
 import locals.VerticalMigrationPattern.VerticalMigrationPattern
 import locals._
+import biology._
 
-class Fish(val pld: PelagicLarvalDuration,
-           val ontogeny: ReefFishOntogeny,
+class FishParameters(val pld: PelagicLarvalDuration,
+           val ontogeny: FishOntogeny,
            val name: String,
            val savePositions: Boolean,
            val swimmingAbility: SwimmingAbility,
@@ -19,4 +20,3 @@ class Fish(val pld: PelagicLarvalDuration,
 
   def canSwim : Boolean = swimmingAbility != SwimmingAbility.Passive
 }
-

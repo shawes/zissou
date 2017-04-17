@@ -4,6 +4,6 @@ import locals.OntogenyState.OntogenyState
 
 abstract class Ontogeny {
 
-  def getState(age: Double): OntogenyState
+  def getState(age: Int): OntogenyState
 
 }
