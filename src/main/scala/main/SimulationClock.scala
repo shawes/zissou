@@ -9,8 +9,8 @@ import physical.TimeStep
   */
 class SimulationClock(interval: Interval, val step: TimeStep) {
 
-  val start = interval.start
-  val end = interval.end
+  val start = interval.getStart
+  val end = interval.getEnd
   val totalDays: Int = Days.daysBetween(start, end).getDays
   var now: DateTime = start
 
@@ -18,7 +18,8 @@ class SimulationClock(interval: Interval, val step: TimeStep) {
     now = now.plusSeconds(step.totalSeconds)
   }
 
-  def stillTime: Boolean = now < end
-
+  def stillTime: Boolean = now.isBefore(end)
   def isMidnight: Boolean = now.getHourOfDay == 0
+
+
 }

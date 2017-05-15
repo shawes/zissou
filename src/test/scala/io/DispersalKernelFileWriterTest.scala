@@ -1,7 +1,8 @@
 package io
 
-import org.scalatest.mockito.MockitoSugar
+import org.scalatest.mock.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
+
 
 class DispersalKernelFileWriterTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 

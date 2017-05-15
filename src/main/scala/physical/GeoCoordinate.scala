@@ -1,7 +1,5 @@
 package physical
 
-import scala.math.abs
-
 class GeoCoordinate(val latitude: Double, val longitude: Double, val depth: Double) extends Ordered[GeoCoordinate] {
 
   def this(lat: Double, lon: Double) = this(lat, lon, 0)

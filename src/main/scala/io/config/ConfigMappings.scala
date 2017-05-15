@@ -56,7 +56,7 @@ object ConfigMappings {
     Time.convertDaysToSeconds(o.flexion), Time.convertDaysToSeconds(o.postFlexion))
 
   implicit def verticalMigrationConfigMap(vm: VerticalMigrationConfig): VerticalMigration =
-    new VerticalMigration(vm.verticalMigrationProbability.asScala.map(x => verticalMigrationProbabilityConfigMap(x)).toList)
+    new VerticalMigration(vm.verticalMigrationProbability.asScala.map(x => verticalMigrationProbabilityConfigMap(x)).toList, vm.verticalMigrationProbability.asScala.map(x => verticalMigrationProbabilityConfigMap(x)).toList)
 
   implicit def verticalMigrationProbabilityConfigMap(prob: VerticalMigrationProbabilityConfig) : VerticalMigrationProbability =
     new VerticalMigrationProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)

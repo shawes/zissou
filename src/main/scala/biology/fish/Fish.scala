@@ -86,7 +86,7 @@ class Fish(val id: Int,
   override def polygon: Option[HabitatPolygon] = fishPolygon
 
   override def getOntogeneticVerticalMigrationDepth: Double = {
-    verticalMigration.getDepth(getOntogeny)
+    verticalMigration.getOntogeneticDepth(getOntogeny)
   }
 
   override def getDielVerticalMigrationDepth(time : DateTime) : Double = {

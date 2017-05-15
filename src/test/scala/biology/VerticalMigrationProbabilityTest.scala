@@ -2,8 +2,11 @@ package biology
 
 import maths.ContinuousRange
 import org.scalatest.FlatSpec
+import org.mockito.Mockito._
+import org.scalatest.mockito.MockitoSugar
+import org.scalatest.{FlatSpec, PrivateMethodTester}
 
-class VerticalMigrationProbabilityTest extends FlatSpec {
+class VerticalMigrationProbabilityTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   "Vertical migration" should "be able to construct the " in {
     val result = new VerticalMigrationProbability(new ContinuousRange(50, 100, true), 100, 200, 300, 400)

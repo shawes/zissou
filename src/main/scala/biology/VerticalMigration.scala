@@ -2,64 +2,20 @@ package biology
 
 import locals.OntogenyState
 import locals.OntogenyState.OntogenyState
-import maths.{ContinuousRange, RandomNumberGenerator}
+import physical.GeoCoordinate
+import com.github.nscala_time.time.Imports._
 
-import scala.collection.mutable.ListBuffer
+class VerticalMigration(val ontogeneticProbabilities: List[VerticalMigrationProbability], val dielProbabilities: List[VerticalMigrationProbability]) {
 
-class VerticalMigration(val probabilities: List[VerticalMigrationProbability]) {
+  val ontogeneticMigration = new VerticalMigrationOntogenetic(ontogeneticProbabilities)
+  val dielMigration = new VerticalMigrationDiel(dielProbabilities)
 
-  def getDepth(ontogeny: OntogenyState): Double = {
-    getDepthRandom(ontogeny)
+  def getOntogeneticDepth(ontogeny: OntogenyState): Double = {
+    ontogeneticMigration.getDepth(ontogeny)
   }
 
-  private def getDepthRandom(ontogeny: OntogenyState): Double = {
-    val list: ListBuffer[(ContinuousRange, Double)] = ListBuffer.empty[(ContinuousRange, Double)]
-    probabilities.foreach(vmp => {
-      list append getProbability(vmp, ontogeny)
-    })
-
-    var cumulativeProb = 0.0
-    val number = RandomNumberGenerator.get
-
-    val iterator = list.iterator
-    var currentDepth: (ContinuousRange, Double) = new Tuple2(new ContinuousRange(), 0)
-    currentDepth = iterator.next
-    cumulativeProb += currentDepth._2
-    while (number > cumulativeProb && iterator.hasNext) {
-      currentDepth = iterator.next
-      cumulativeProb += currentDepth._2
-    }
-    calculateDepthInRange(currentDepth._1)
+  def getDielDepth(location: GeoCoordinate, currentTime : DateTime, timeZone : DateTimeZone, timeStep : Double): Double = {
+    dielMigration.getDepth(location, currentTime, timeZone, timeStep)
   }
 
-  private def getDepthRestricted(ontogeny: OntogenyState, depth : Double): Double = {
-    val list: ListBuffer[(ContinuousRange, Double)] = ListBuffer.empty[(ContinuousRange, Double)]
-    probabilities.foreach(vmp => {
-      list append getProbability(vmp, ontogeny)
-    })
-
-    var cumulativeProb = 0.0
-    val number = RandomNumberGenerator.get
-
-    val iterator = list.iterator
-    var currentDepth: (ContinuousRange, Double) = new Tuple2(new ContinuousRange(), 0)
-    currentDepth = iterator.next
-    cumulativeProb += currentDepth._2
-    while (number > cumulativeProb && iterator.hasNext) {
-      currentDepth = iterator.next
-      cumulativeProb += currentDepth._2
-    }
-    calculateDepthInRange(currentDepth._1)
-  }
-
-  private def calculateDepthInRange(depthRange: ContinuousRange): Double = {
-    RandomNumberGenerator.get(depthRange.start, depthRange.end)
-  }
-
-	def getProbability(prob: VerticalMigrationProbability, ontogeny: OntogenyState): (ContinuousRange, Double) = ontogeny match {
-		case OntogenyState.Hatching => new Tuple2(prob.depth, prob.hatching)
-		case OntogenyState.Preflexion => new Tuple2(prob.depth, prob.preFlexion)
-		case OntogenyState.Flexion => new Tuple2(prob.depth, prob.flexion)
-		case _ => new Tuple2(prob.depth, prob.postFlexion)
-	}
 }
