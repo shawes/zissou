@@ -7,18 +7,21 @@ import locals.{Constants, OntogenyState, PelagicLarvaeState}
 import org.joda.time.DateTime
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
+import com.github.nscala_time.time.Imports._
 import maths.RandomNumberGenerator
 import biology._
 
 import scala.collection.mutable.ListBuffer
 
-class Fish(val id: Int,
-               val pelagicLarvalDuration: Int,
-               val maximumLifeSpan: Int,
-               val birthplace: Birthplace,
-               val spawned: DateTime,
-               val fishOntogeny: FishOntogeny,
-               val verticalMigration: VerticalMigration)
+class Fish(
+  val id: Int,
+  val pelagicLarvalDuration: Int,
+  val maximumLifeSpan: Int,
+  val birthplace: Birthplace,
+  val spawned: DateTime,
+  val fishOntogeny: FishOntogeny,
+  val verticalMigrationOntogenetic: FishVerticalMigrationOntogenetic,
+  val verticalMigrationDiel : VerticalMigrationDiel)
   extends Larva with Logging {
 
   val fishHistory = ListBuffer.empty[TimeCapsule]
@@ -29,7 +32,7 @@ class Fish(val id: Int,
   var fishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
   var orientation : Double = RandomNumberGenerator.get(0, 359)
 
-  def this() = this(0, 0, 0, null, DateTime.now(), null, null)
+  def this() = this(0, 0, 0, null, DateTime.now(), null, null,null)
 
   override def settlementDate: DateTime = fishSettlementDate.get
 
@@ -86,11 +89,11 @@ class Fish(val id: Int,
   override def polygon: Option[HabitatPolygon] = fishPolygon
 
   override def getOntogeneticVerticalMigrationDepth: Double = {
-    verticalMigration.getOntogeneticDepth(getOntogeny)
+    verticalMigrationOntogenetic.getDepth(getOntogeny)
   }
 
-  override def getDielVerticalMigrationDepth(time : DateTime) : Double = {
-    0.0
+  override def getDielVerticalMigrationDepth(time : DateTime, timeZone : DateTimeZone, timeStep : Double) : Double = {
+    verticalMigrationDiel.getDepth(position, time, timeZone, timeStep)
   }
 
   override def toString: String =

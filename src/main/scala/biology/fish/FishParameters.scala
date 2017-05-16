@@ -1,7 +1,6 @@
 package biology.fish
 
 import locals.SwimmingAbility.SwimmingAbility
-import locals.VerticalMigrationPattern.VerticalMigrationPattern
 import locals._
 import biology._
 
@@ -11,8 +10,8 @@ class FishParameters(val pld: PelagicLarvalDuration,
            val savePositions: Boolean,
            val swimmingAbility: SwimmingAbility,
            val swimmingSpeed: Double,
-           val verticalMigrationPattern: VerticalMigrationPattern,
-           val verticalMigrationProbabilities: VerticalMigration, //Map[Int, Int], //
+           val verticalMigrationOntogeneticProbabilities: FishVerticalMigrationOntogenetic,
+           val verticalMigrationDielProbabilities: VerticalMigrationDiel,//Map[Int, Int], //
            val isMortal: Boolean,
            val mortalityRate: Double) {
 

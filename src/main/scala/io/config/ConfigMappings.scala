@@ -55,12 +55,17 @@ object ConfigMappings {
   implicit def ontogenyConfigMap(o: OntogenyConfig): FishOntogeny = new FishOntogeny(Time.convertDaysToSeconds(o.preFlexion),
     Time.convertDaysToSeconds(o.flexion), Time.convertDaysToSeconds(o.postFlexion))
 
-  implicit def verticalMigrationConfigMap(vm: VerticalMigrationConfig): VerticalMigration =
-    new VerticalMigration(vm.verticalMigrationProbability.asScala.map(x => verticalMigrationProbabilityConfigMap(x)).toList, vm.verticalMigrationProbability.asScala.map(x => verticalMigrationProbabilityConfigMap(x)).toList)
+  implicit def verticalMigrationOntogeneticConfigMap(vm: VerticalMigrationOntogeneticConfig): FishVerticalMigrationOntogenetic =
+    new FishVerticalMigrationOntogenetic(vm.fishVerticalMigrationOntogeneticProbability.asScala.map(x => verticalMigrationOntogeneticProbabilityConfigMap(x)).toList)
 
-  implicit def verticalMigrationProbabilityConfigMap(prob: VerticalMigrationProbabilityConfig) : VerticalMigrationProbability =
-    new VerticalMigrationProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)
+  implicit def verticalMigrationDielConfigMap(vm: VerticalMigrationDielConfig): VerticalMigrationDiel =
+    new VerticalMigrationDiel(vm.verticalMigrationDielProbability.asScala.map(x => verticalMigrationDielProbabilityConfigMap(x)).toList)
 
-  implicit def fishConfigMap(f: FishConfig): FishParameters = new FishParameters(f.pelagicLarvalDuration, f.ontogeny, "name", true, SwimmingAbility.withName(f.swimmingAbility), f.meanSwimmingSpeed,
-    VerticalMigrationPattern.withName(f.verticalMigrationPattern), f.verticalMigrationProbabilities, f.isMortal, f.mortalityRate)
+  implicit def verticalMigrationOntogeneticProbabilityConfigMap(prob: VerticalMigrationOntogeneticProbabilityConfig) :  FishVerticalMigrationOntogeneticProbability =
+    new FishVerticalMigrationOntogeneticProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)
+
+  implicit def verticalMigrationDielProbabilityConfigMap(prob: VerticalMigrationDielProbabilityConfig) : VerticalMigrationDielProbability =
+    new VerticalMigrationDielProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.day, prob.night)
+
+  implicit def fishConfigMap(f: FishConfig): FishParameters = new FishParameters(f.pelagicLarvalDuration, f.ontogeny, "name", true, SwimmingAbility.withName(f.swimmingAbility), f.meanSwimmingSpeed, f.verticalMigrationOntogeneticProbabilities, f.verticalMigrationDielProbabilities, f.isMortal, f.mortalityRate)
 }

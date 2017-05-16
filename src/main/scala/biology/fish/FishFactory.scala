@@ -38,7 +38,7 @@ class FishFactory(fish: FishConfig, save: Boolean) extends LarvaFactory with Log
           new Birthplace(site.title, birthLoc),
           time,
           new FishOntogeny(preflexionDistribution.sample.toInt, flexionDistribution.sample().toInt, postFlexionDistribution.sample().toInt),
-          fish.verticalMigrationProbabilities)
+          fish.verticalMigrationOntogeneticProbabilities, fish.verticalMigrationDielProbabilities)
       }
     //larvae append larvaeAtSite.toList
     //debug("Larvae size is now: " + larvaeCount)
