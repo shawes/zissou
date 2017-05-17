@@ -18,29 +18,29 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   val ontogeny = new FishOntogeny(10, 15, 20)
   val birthplace = new Birthplace("Adelaide", new GeoCoordinate(10, 150, 15))
   val pelagicState = PelagicLarvaeState.Pelagic
-  val verticalMigration: List[VerticalMigrationProbability] =
+  val ontogeneticVerticalMigration: List[FishVerticalMigrationOntogeneticProbability] =
     List(
-      new VerticalMigrationProbability(new ContinuousRange(1, 25, false), 0.9, 0.6, 0.3, 0.2),
-      new VerticalMigrationProbability(new ContinuousRange(25, 50, false), 0.1, 0.3, 0.5, 0.35),
-      new VerticalMigrationProbability(new ContinuousRange(50, 75, false), 0, 0.1, 0.15, 0.40),
-      new VerticalMigrationProbability(new ContinuousRange(75, 100, false), 0, 0, 0.05, 0.05)
+      new FishVerticalMigrationOntogeneticProbability(new ContinuousRange(1, 25, false), 0.9, 0.6, 0.3, 0.2),
+      new FishVerticalMigrationOntogeneticProbability(new ContinuousRange(25, 50, false), 0.1, 0.3, 0.5, 0.35),
+      new FishVerticalMigrationOntogeneticProbability(new ContinuousRange(50, 75, false), 0, 0.1, 0.15, 0.40),
+      new FishVerticalMigrationOntogeneticProbability(new ContinuousRange(75, 100, false), 0, 0, 0.05, 0.05)
     )
 
   "A fish" should "start at age zero" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     assert(fish.age == 0)
   }
 
   it should "have a pelagic larval duration" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     assert(fish.pelagicLarvalDuration == pld)
   }
 
   /*  it should "know when it has attained pelagic larval duration" in {
       val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-        ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
+        ontogeny, new FishVerticalMigrationOntogenetic(new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
       assert(!fish.hasBeenPelagicTooLong)
       fish.growOlder(29) // below PLD
       assert(!fish.hasBeenPelagicTooLong)
@@ -52,7 +52,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   /*  it should "know when it is in the competency window" in {
       val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-        ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability]))
+        ontogeny, new FishVerticalMigrationOntogenetic(new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
       assert(fish.inCompetencyWindow)
       fish.growOlder(29) // below PLD
       assert(fish.inCompetencyWindow)
@@ -64,7 +64,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   it should "know when it has reached max life span" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     assert(!fish.isTooOld)
     fish.growOlder(49) // below max
     assert(!fish.isTooOld)
@@ -76,7 +76,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   it should "know when it was born" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     val now = DateTime.now
     assert(fish.birthday.dayOfMonth() == now.dayOfMonth())
     assert(fish.birthday.dayOfWeek() == now.dayOfWeek())
@@ -85,19 +85,19 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   it should "be pelagic when it is born" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     assert(fish.isPelagic)
   }
 
   it should "have no history when its born" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     assert(fish.history.isEmpty)
   }
 
   it should "not move when there is an invalid position" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     val invalidPoint = new GeoCoordinate(Double.NaN, Double.NaN, 0)
     fish.move(invalidPoint)
     assert(fish.position == birthplace.location)
@@ -105,7 +105,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   it should "move when there is an valid position" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     val validPoint = new GeoCoordinate(2, 2, 2)
     fish.move(validPoint)
     assert(fish.position != birthplace.location)
@@ -114,25 +114,34 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   it should "have saved state once its moved" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     val validPoint = new GeoCoordinate(2, 2, 2)
     fish.move(validPoint)
     assert(fish.history.nonEmpty)
     assert(fish.isPelagic)
   }
 
-  it should "calls vertical migration appropriately" in {
-    val mockVertical = mock[VerticalMigration]
+  it should "calls ontogenetic vertical migration appropriately" in {
+    val mockOntogeneticVerticalMigration = mock[FishVerticalMigrationOntogenetic]
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, mockVertical)
+      ontogeny, mockOntogeneticVerticalMigration, new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     fish.getOntogeneticVerticalMigrationDepth
-    verify(mockVertical).getOntogeneticDepth(fish.getOntogeny)
+    verify(mockOntogeneticVerticalMigration).getDepth(fish.getOntogeny)
   }
+
+    it should "calls diel vertical migration appropriately" in {
+      val mockDielVerticalMigration = mock[VerticalMigrationDiel]
+      val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
+        ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]),
+        mockDielVerticalMigration)
+      fish.getDielVerticalMigrationDepth(null,null,0)
+      verify(mockDielVerticalMigration).getDepth(fish.position,null,null,0)
+    }
 
 
   it should "grow older" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     val expected = fish.age + 3000
     fish.growOlder(3000)
     assert(fish.age == expected)
@@ -140,7 +149,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   it should "know when it's pelagic" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     assert(fish.isPelagic)
     fish.kill()
     assert(!fish.isPelagic)
@@ -148,7 +157,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   it should "know when it's dead" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     assert(!fish.isDead)
     fish.kill()
     assert(fish.isDead)
@@ -156,7 +165,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   it should "settle when asked" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
     val settleTime = DateTime.now
     fish.settle(reef, settleTime)
@@ -167,7 +176,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   it should "know when it's settled" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, new VerticalMigration(List.empty[VerticalMigrationProbability], List.empty[VerticalMigrationProbability]))
+      ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
     val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
     val settleTime = DateTime.now
     assert(!fish.isSettled)

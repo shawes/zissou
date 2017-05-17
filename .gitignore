@@ -71,7 +71,7 @@ fabric.properties
 # modules.xml
 
 ### Test data ###
-data/
+test-data/
 
 catalog.xml
 logs/
