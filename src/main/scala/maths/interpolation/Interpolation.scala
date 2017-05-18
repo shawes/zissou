@@ -44,11 +44,9 @@ class Interpolation extends Logging {
     case _ => throw new RuntimeException("Undefined interpolation method")
   }
 
-  private def nextInterpolationStep(interpolation: Interpolation): InterpolationType = interpolation match {
+  private def nextInterpolationStep(interpolation: InterpolationType): InterpolationType = interpolation match {
     case Bicubic => Bilinear
     case Tricubic => TriLinear
     case _ => throw new RuntimeException("Undefined interpolation method")
   }
 }
-
-
