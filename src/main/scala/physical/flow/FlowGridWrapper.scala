@@ -19,7 +19,8 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
     val depthIndex = closestDepthIndex(coordinate.depth)
     //debug("Reading depth" + depthIndex + " gridY " + gridIndex(NetcdfIndex.Y) + "gridx" + gridIndex(NetcdfIndex.X))
     val data = datasets.map(dataset => dataset.readDataSlice(0, depthIndex, gridIndex(NetcdfIndex.Y), gridIndex(NetcdfIndex.X)).getDouble(0))
-    //debug(data.foreach(x => x.toString))
+
+    debug(data.foreach(x => x.toString))
     val velocity = new Velocity(data.head, data(1), data(2))
     if (velocity.isDefined) Some(velocity) else None
   }
@@ -84,7 +85,7 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
     //debug("Length is " + index.length)
     val data = datasets.map(dataset => dataset.readDataSlice(0, index(NetcdfIndex.Z), index(NetcdfIndex.Y), index(NetcdfIndex.X)).getFloat(0))
     //debug(data.foreach(x => x.toString))
-    val velocity = new Velocity(data.head, data(1), data(2))
+    val velocity = new Velocity(data.head.toDouble, data(1).toDouble, data(2).toDouble)
     if (velocity.isDefined) Some(velocity) else None
   }
 

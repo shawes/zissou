@@ -7,6 +7,7 @@ import com.github.nscala_time.time.Imports._
 import locals.OntogenyState._
 import locals.PelagicLarvaeState
 import locals.PelagicLarvaeState.PelagicLarvaeState
+import locals.DielVerticalMigrationType.DielVerticalMigrationType
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
 
@@ -53,9 +54,9 @@ trait Larva {
 
   def kill() : Unit
 
-  def getOntogeneticVerticalMigrationDepth: Double
+  def ontogeneticVerticallyMigrate(): Unit
 
-  def getDielVerticalMigrationDepth(time : DateTime, timeZone : DateTimeZone, timeStep : Double) : Double
+  def dielVerticallyMigrate(dielMigration : DielVerticalMigrationType) : Unit
 
   def inCompetencyWindow: Boolean
 

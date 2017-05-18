@@ -13,8 +13,10 @@ import io.config.Configuration
 import maths.RandomNumberGenerator
 import physical.habitat.HabitatManager
 import locals.LarvaType
+import locals.DielVerticalMigrationType
+import maths.integration.RungeKuttaIntegration
 
-class BiologicalModel(val config: Configuration, clock: SimulationClock) extends Logging {
+class BiologicalModel(val config: Configuration, clock: SimulationClock, integrator: RungeKuttaIntegration) extends Logging {
 
   val factory = LarvaFactory.apply(LarvaType.Fish, config.fish)
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
@@ -24,41 +26,49 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock) extends
   var fishLarvae: ListBuffer[List[Larva]] = ListBuffer.empty
   var pelagicLarvaeCount = 0
 
-  def apply(iteration: Int, disperser: ParticleDisperser): Unit = {
+  def apply(iteration: Int): Unit = {
     debug("Applying biology")
     calculateMortalityRate(iteration)
     spawnLarvae()
-    fishLarvae.foreach(fish => processLarva(fish, disperser))
+    fishLarvae.foreach(fish => processLarva(fish))
   }
 
-  private def processLarva(larvae: List[Larva], disperser: ParticleDisperser): Unit = {
+  private def processLarva(larvae: List[Larva]): Unit = {
     debug("Processing the fish")
     val swimmingLarvae: List[Larva] = larvae.filter(fish => fish.isPelagic)
     debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
-    swimmingLarvae.foreach(reefFish => apply(reefFish, disperser))
+    swimmingLarvae.foreach(reefFish => apply(reefFish))
 
   }
 
-  private def apply(larva: Larva, disperser: ParticleDisperser): Unit = {
-    move(disperser, larva)
+  private def apply(larva: Larva): Unit = {
+    move(larva)
     ageLarvae(larva)
     settle(larva)
     lifespanCheck(larva)
     mortalityCheck(larva)
   }
 
-  private def move(disperser: ParticleDisperser, larva: Larva): Unit = {
-    debug("Original position " + larva.position)
-    if (fish.canSwim) {
-      disperser.updatePosition(larva, clock, fish.swimmingSpeed, habitatManager)
-    } else {
-      disperser.updatePosition(larva, clock, habitatManager)
-    }
+  private def move(larva: Larva): Unit = {
+    debug("Old position " + larva.position)
+    val newPosition = integrator.integrate(larva.position, clock.now, larva.horizontalSwimmingSpeed)
+    larva.move(newPosition.get)
+    migrateLarvaVertically(larva)
     debug("New position " + larva.position)
   }
 
+
+  private def migrateLarvaVertically(larva: Larva): Unit = {
+    // Diel
+    if(clock.isSunRising(larva.position, "Australia/Sydney")) {
+      larva.dielVerticallyMigrate(DielVerticalMigrationType.Day)
+    } else if(clock.isSunSetting(larva.position, "Australia/Sydney")) {
+      larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
+    }
+  }
+
   private def ageLarvae(larva: Larva): Unit = {
-    larva growOlder clock.step.totalSeconds
+    larva growOlder clock.timeStep.totalSeconds
   }
 
   private def mortalityCheck(larva: Larva): Unit = {

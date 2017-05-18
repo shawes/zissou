@@ -3,6 +3,7 @@ package biology.fish
 import grizzled.slf4j.Logging
 import locals.OntogenyState.OntogenyState
 import locals.PelagicLarvaeState.PelagicLarvaeState
+import locals.DielVerticalMigrationType.DielVerticalMigrationType
 import locals.{Constants, OntogenyState, PelagicLarvaeState}
 import org.joda.time.DateTime
 import physical.GeoCoordinate
@@ -88,12 +89,16 @@ class Fish(
 
   override def polygon: Option[HabitatPolygon] = fishPolygon
 
-  override def getOntogeneticVerticalMigrationDepth: Double = {
-    verticalMigrationOntogenetic.getDepth(getOntogeny)
+  override def ontogeneticVerticallyMigrate: Unit = {
+    val depth = verticalMigrationOntogenetic.getDepth(getOntogeny)
+    val newDepth = new GeoCoordinate(position.latitude,position.longitude,depth)
+    updatePosition(newDepth)
   }
 
-  override def getDielVerticalMigrationDepth(time : DateTime, timeZone : DateTimeZone, timeStep : Double) : Double = {
-    verticalMigrationDiel.getDepth(position, time, timeZone, timeStep)
+  override def dielVerticallyMigrate(dielMigration : DielVerticalMigrationType) : Unit = {
+    val depth = verticalMigrationDiel.getDepth(dielMigration)
+    val newDepth = new GeoCoordinate(position.latitude,position.longitude,depth)
+    updatePosition(newDepth)
   }
 
   override def toString: String =

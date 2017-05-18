@@ -25,6 +25,11 @@ object OntogeneticVerticalMigrationType extends Enumeration {
   val Random, Restricted, StageBased = Value
 }
 
+object DielVerticalMigrationType extends Enumeration {
+  type DielVerticalMigrationType = Value
+  val Day, Night = Value
+}
+
 object DistributionType extends Enumeration {
   type DistributionType = Value
   val Normal, Skewed = Value

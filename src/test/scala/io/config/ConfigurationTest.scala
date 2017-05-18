@@ -1,7 +1,6 @@
 package io.config
 
 import java.io.StringReader
-import java.util.{ArrayList => JArrayList}
 import javax.xml.bind.JAXBContext
 
 import org.scalatest.FlatSpec

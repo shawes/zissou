@@ -10,10 +10,7 @@ import physical.Turbulence
 import physical.flow.Flow
 import utilities.SimpleTimer
 
-/**
-  *
-  * Created by Steven Hawes on 27/01/2016.
-  */
+
 class CoupledBiophysicalModel(val config: Configuration) extends Logging {
 
   val flow: Flow = config.flow
@@ -22,11 +19,8 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
   val turbulence: Turbulence = new Turbulence(config.turbulence.horizontalDiffusionCoefficient,
     config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds, RandomNumberGenerator)
   val ocean = new PhysicalModel(config)
-  val biology = new BiologicalModel(config, clock)
   val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)
-  val hasOntogeneticVerticalMigration = !config.fish.verticalMigrationOntogeneticProbabilities.fishVerticalMigrationOntogeneticProbability.isEmpty
-  val hasDielerticalMigration = !config.fish.verticalMigrationDielProbabilities.verticalMigrationDielProbability.isEmpty
-  val larvaeDisperser = new ParticleDisperser(integrator, hasOntogeneticVerticalMigration)
+  val biology = new BiologicalModel(config, clock, integrator)
 
   def run(): Unit = {
     val simulationTimer = new SimpleTimer()
@@ -37,7 +31,7 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
     val stepTimer = new SimpleTimer()
     stepTimer.start()
     while (clock.stillTime && biology.canDisperse(clock.now)) {
-      biology(iteration, larvaeDisperser)
+      biology(iteration)
       clock.tick()
       if (clock.isMidnight) {
         ocean.circulate()

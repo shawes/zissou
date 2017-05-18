@@ -2,7 +2,6 @@ package biology.fish
 
 import maths.ContinuousRange
 import org.scalatest.FlatSpec
-import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 
