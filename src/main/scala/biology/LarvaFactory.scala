@@ -7,7 +7,6 @@ import io.config.FishConfig
 import biology.fish.FishFactory
 
 trait LarvaFactory {
-
     def create(site: SpawningLocation, time: DateTime) : List[Larva]
 }
 
@@ -18,6 +17,4 @@ object LarvaFactory {
       case _ => null
     }
   }
-
-
 }

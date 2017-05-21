@@ -8,6 +8,8 @@ import maths.{ContinuousRange, RandomNumberGenerator}
 
 class VerticalMigrationDiel(val probabilities : List[VerticalMigrationDielProbability]) {
 
+  def enabled : Boolean = probabilities.nonEmpty
+
   def getDepth(dielMigration : DielVerticalMigrationType) : Double = {
     var cumulativeProb = 0.0
     val number = RandomNumberGenerator.get

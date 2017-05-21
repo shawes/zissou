@@ -59,7 +59,14 @@ class Fish(
 
   def horizontalSwimmingSpeed: Double = 0.0 //TODO: Implement the swimming speed
 
-  def growOlder(seconds: Int): Unit = fishAge += seconds
+  def growOlder(seconds: Int): Unit = {
+    val initialOntogeny = getOntogeny
+    fishAge += seconds
+    val currentOntogeny = getOntogeny
+    if(verticalMigrationOntogenetic.enabled && initialOntogeny != currentOntogeny) {
+      ontogeneticVerticallyMigrate
+    }
+  }
 
   def settle(settlementReef: HabitatPolygon, date: DateTime): Unit = {
     updateHabitat(settlementReef)

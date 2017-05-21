@@ -1,7 +1,7 @@
 package biology.fish
 
 import com.github.nscala_time.time.Imports._
-import locals.{HabitatType, PelagicLarvaeState}
+import locals.{HabitatType, PelagicLarvaeState, DielVerticalMigrationType}
 import maths.ContinuousRange
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -125,7 +125,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     val mockOntogeneticVerticalMigration = mock[FishVerticalMigrationOntogenetic]
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, mockOntogeneticVerticalMigration, new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
-    fish.getOntogeneticVerticalMigrationDepth
+    fish.ontogeneticVerticallyMigrate
     verify(mockOntogeneticVerticalMigration).getDepth(fish.getOntogeny)
   }
 
@@ -134,8 +134,8 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
         ontogeny, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]),
         mockDielVerticalMigration)
-      fish.getDielVerticalMigrationDepth(null,null,0)
-      verify(mockDielVerticalMigration).getDepth(fish.position,null,null,0)
+      fish.dielVerticallyMigrate(DielVerticalMigrationType.Day)
+      verify(mockDielVerticalMigration).getDepth(DielVerticalMigrationType.Day)
     }
 
 
