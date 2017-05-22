@@ -2,7 +2,6 @@ package biology
 
 import locals.DielVerticalMigrationType
 import locals.DielVerticalMigrationType.DielVerticalMigrationType
-import com.github.nscala_time.time.Imports._
 
 import maths.{ContinuousRange, RandomNumberGenerator}
 

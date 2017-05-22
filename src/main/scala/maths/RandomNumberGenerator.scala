@@ -20,7 +20,7 @@ object RandomNumberGenerator extends Random {
 
   private val random = new MersenneTwister(seed)
 
-  def seed: Long = Platform.currentTime
+  def seed: Long = 82723651
 
   def get: Double = random.nextDouble
 
@@ -37,5 +37,3 @@ object RandomNumberGenerator extends Random {
 
   def coinToss: Boolean = random.nextBoolean()
 }
-
-

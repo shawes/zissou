@@ -17,7 +17,8 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   private val habitatReader = new GisShapeFile()
   //val habitats: SimpleFeatureCollection = habitatReader.read(file)
   private val habitatPolygons: List[GeometryAdaptor] = defineAllPolygons(habitatReader.read(file))
-  private val reefHabitatPolygons: List[GeometryAdaptor] = habitatPolygons.view.filter(x => x.habitat == HabitatType.Reef || x.habitat == HabitatType.Other).force
+  private val reefHabitatPolygons: List[GeometryAdaptor] =
+    habitatPolygons.view.filter(x => x.habitat == HabitatType.Reef || x.habitat == HabitatType.Other).force
   private val bufferedPolygons: List[GeometryAdaptor] = defineAllBufferedPolygons()
   private val landPolygon: List[GeometryAdaptor] = habitatPolygons.filter(x => x.habitat == HabitatType.Land)
   private val geometry = new Geometry
