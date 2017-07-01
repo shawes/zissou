@@ -4,7 +4,8 @@ import locals.SwimmingAbility.SwimmingAbility
 import locals._
 import biology._
 
-class FishParameters(val pld: PelagicLarvalDuration,
+class FishParameters(
+           val pld: PelagicLarvalDuration,
            val ontogeny: FishOntogeny,
            val name: String,
            val savePositions: Boolean,

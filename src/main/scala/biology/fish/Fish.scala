@@ -2,11 +2,13 @@ package biology.fish
 
 import grizzled.slf4j.Logging
 import locals.OntogenyState.OntogenyState
+import locals.SwimmingAbility.SwimmingAbility
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.DielVerticalMigrationType.DielVerticalMigrationType
 import locals.{Constants, OntogenyState, PelagicLarvaeState}
 import org.joda.time.DateTime
 import physical.GeoCoordinate
+import physical.Velocity
 import physical.habitat.HabitatPolygon
 import com.github.nscala_time.time.Imports._
 import maths.RandomNumberGenerator
@@ -21,6 +23,7 @@ class Fish(
   val birthplace: Birthplace,
   val spawned: DateTime,
   val fishOntogeny: FishOntogeny,
+  val olafactorySense : Double,
   val verticalMigrationOntogenetic: FishVerticalMigrationOntogenetic,
   val verticalMigrationDiel : VerticalMigrationDiel)
   extends Larva with Logging {
@@ -31,7 +34,6 @@ class Fish(
   var fishSettlementDate: Option[DateTime] = None
   var fishPosition = birthplace.location
   var fishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
-  var orientation : Double = RandomNumberGenerator.get(0, 359)
 
   def this() = this(0, 0, 0, null, DateTime.now(), null, null,null)
 
@@ -57,7 +59,7 @@ class Fish(
 
   def updatePosition(newPos: GeoCoordinate): Unit = fishPosition = newPos
 
-  def horizontalSwimmingSpeed: Double = 0.0 //TODO: Implement the swimming speed
+  //def horizontalSwimmingSpeed: Double = 0.0 //TODO: Implement the swimming speed
 
   def growOlder(seconds: Int): Unit = {
     val initialOntogeny = getOntogeny
@@ -74,7 +76,14 @@ class Fish(
     changeState(PelagicLarvaeState.Settled)
   }
 
-  def orientate(): Unit = {
+  def swim() : Velocity = {
+    val angle = orientate
+  }
+
+  private def orientate(): Double = {
+    if(swimmingAbility == SwimmingAbility.Directed) {
+    } else
+    return 1
       //TODO: Needs to find the nearest fishPolygon
       //TODO: From there is the distance is below a scent threshold, swim towards it
   }

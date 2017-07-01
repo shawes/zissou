@@ -11,7 +11,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
 
   val geometry = new Geometry
 
-  def integrate(coordinate: GeoCoordinate, time: DateTime, speed: Double): Option[GeoCoordinate] = {
+  def integrate(coordinate: GeoCoordinate, time: DateTime, swimming: Velocity): Option[GeoCoordinate] = {
 
     val coordinateVelocity = flow.getVelocityOfCoordinate(coordinate, Today)
     if (coordinateVelocity.isDefined) {
@@ -42,7 +42,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
 
               val integratedVelocity = new Velocity(u, v, w)
 
-              geometry.translatePoint(coordinate, integratedVelocity, timeStep, speed)
+              geometry.translatePoint(coordinate, integratedVelocity, timeStep, swimming)
               //debug("RK4 velocity is " + integratedVelocity + " and moved to " + point)
               //point
             }

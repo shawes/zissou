@@ -51,7 +51,11 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def move(larva: Larva): Unit = {
     debug("Old position " + larva.position)
-    val newPosition = integrator.integrate(larva.position, clock.now, larva.horizontalSwimmingSpeed)
+    if(larva.swimmingAbility == SwimmingAbility.Directed) {
+      val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
+      val reef = habitatManager.getReef(distanceIndex)
+    }
+    val newPosition = integrator.integrate(larva.position, clock.now, larva.swim)
     larva.move(newPosition.get)
     migrateLarvaVertically(larva)
     debug("New position " + larva.position)

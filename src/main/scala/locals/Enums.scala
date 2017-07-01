@@ -42,7 +42,7 @@ object VerticalMigrationPattern extends Enumeration {
 
 object SwimmingAbility extends Enumeration {
   type SwimmingAbility = Value
-  val Passive, Random, Directed, Undirected = Value
+  val Passive, Directed, Undirected = Value
 }
 
 object ShapeFileType extends Enumeration {

@@ -5,6 +5,7 @@ import scala.collection.mutable.ListBuffer
 
 import com.github.nscala_time.time.Imports._
 import locals.OntogenyState._
+import locals.SwimmingAbility._
 import locals.PelagicLarvaeState
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.DielVerticalMigrationType.DielVerticalMigrationType
@@ -38,7 +39,13 @@ trait Larva {
 
   def ontogeny: Ontogeny
 
-  def horizontalSwimmingSpeed: Double
+  def criticalSwimmingSpeed: Double
+
+  def inSituSwimmingPotential : Double
+
+  def swimmingEndurance : Double
+
+  val swimmingAbility : SwimmingAbility
 
   def move(newPosition: GeoCoordinate) : Unit
 
