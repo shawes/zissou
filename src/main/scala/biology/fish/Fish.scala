@@ -82,7 +82,7 @@ class Fish(
   }
 
   private def orientate(): Double = {
-    if(swimmingAbility == SwimmingAbility.Directed) {
+    if(swimming.isDirected) {
       0
     } else
     return 1
@@ -133,11 +133,6 @@ class Fish(
   override def state: PelagicLarvaeState = fishState
 
   override def birthday: DateTime = spawned
-
-  override def criticalSwimmingSpeed: Double = 0
-override def inSituSwimmingPotential: Double = 0
-override val swimmingAbility: locals.SwimmingAbility.SwimmingAbility = SwimmingAbility.Directed
-override def swimmingEndurance: Double = 0
 
 
 

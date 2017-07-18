@@ -4,9 +4,6 @@ import java.io.File
 
 import biology.Larva
 
-/**
-  * Created by steve on 26/01/2016.
-  */
 class ResultsIO(larvae: List[List[Larva]], output: OutputFiles) {
 
   val shapeFile = new File(output.path + "//larvae_paths.shp")
@@ -18,7 +15,6 @@ class ResultsIO(larvae: List[List[Larva]], output: OutputFiles) {
     writeDispersalKernel()
     if (output.includeLarvaeMovements) writeLarvaeStateChangesToCsvFile()
   }
-
 
   private def writeLarvaeStateChangesToCsvFile() = {
     val larvaeFileWriter = new LarvaeHistoryCsvFile(larvae, output.path)

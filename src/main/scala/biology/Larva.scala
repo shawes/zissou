@@ -39,13 +39,7 @@ trait Larva {
 
   def ontogeny: Ontogeny
 
-  def criticalSwimmingSpeed: Double
-
-  def inSituSwimmingPotential : Double
-
-  def swimmingEndurance : Double
-
-  val swimmingAbility : SwimmingAbility
+  def swimming : Swimming
 
   def move(newPosition: GeoCoordinate) : Unit
 

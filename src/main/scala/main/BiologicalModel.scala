@@ -40,7 +40,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     val swimmingLarvae: List[Larva] = larvae.filter(fish => fish.isPelagic)
     debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
     swimmingLarvae.foreach(reefFish => apply(reefFish))
-
   }
 
   private def apply(larva: Larva): Unit = {
@@ -53,7 +52,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def move(larva: Larva): Unit = {
     debug("Old position " + larva.position)
-    if(larva.swimmingAbility == SwimmingAbility.Directed) {
+    if(larva.swimming.isDirected) {
       val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
       val reef = habitatManager.getReef(distanceIndex)
     }
