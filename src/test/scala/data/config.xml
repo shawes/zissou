@@ -53,7 +53,7 @@
     <swimming>
       <ability>Directed</ability>
       <criticalSwimmingSpeed>10.0</criticalSwimmingSpeed>
-      <inSituSwimmingSpeed>0.5</inSituSwimmingSpeed>
+      <inSituSwimmingPotential>0.5</inSituSwimmingPotential>
       <endurance>0.4</endurance>
       <reynoldsEffect>true</reynoldsEffect>
     </swimming>

@@ -15,6 +15,7 @@ import physical.habitat.HabitatManager
 import locals.LarvaType
 import locals.DielVerticalMigrationType
 import maths.integration.RungeKuttaIntegration
+import maths.Geometry
 
 class BiologicalModel(val config: Configuration, clock: SimulationClock, integrator: RungeKuttaIntegration) extends Logging {
 
@@ -25,6 +26,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
   var fishLarvae: ListBuffer[List[Larva]] = ListBuffer.empty
   var pelagicLarvaeCount = 0
+  val geometry = new Geometry
 
   def apply(iteration: Int): Unit = {
     debug("Applying biology")
@@ -50,16 +52,20 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def move(larva: Larva): Unit = {
     debug("Old position " + larva.position)
-    if(larva.swimming.isDirected) {
-      val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
-      val reef = habitatManager.getReef(distanceIndex)
-    }
+
     // Got to get the swimming velocity using the speed and the orientated direction
     // Find the nearest reef
     // Get the angle to the reef
     // Dampen the crit swimming speed by inSitu potential and endurance
     // Pass the velocity to the integrator
-    val newPosition = integrator.integrate(larva.position, clock.now, null)
+    var angle: Double = 0.0
+    if(larva.swimming.isDirected) {
+          val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
+          val reef = habitatManager.getReef(distanceIndex)
+          angle = geometry.getAngleBetweenTwoPoints(larva.position, reef.centroid)
+    }
+    val swimmingVelocity = larva.swimming(angle)
+    val newPosition = integrator.integrate(larva.position, clock.now, swimmingVelocity)
     larva.move(newPosition.get)
     migrateLarvaVertically(larva)
     debug("New position " + larva.position)
@@ -77,7 +83,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
     //Ontogenetic
     if(larva.undergoesOntogeneticMigration) {
-
+        larva.ontogeneticVerticallyMigrate
     }
   }
 

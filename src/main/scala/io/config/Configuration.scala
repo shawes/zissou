@@ -155,7 +155,7 @@ case class OntogenyConfig(preFlexion: Int, flexion: Int, postFlexion: Int) {
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-case class SwimmingConfig(ability: String, criticalSwimmingSpeed: Double, inSituSwimmingSpeed: Double, endurance: Double, reynoldsEffect: Boolean) {
+case class SwimmingConfig(ability: String, criticalSwimmingSpeed: Double, inSituSwimmingPotential: Double, endurance: Double, reynoldsEffect: Boolean) {
   private def this() = this(null, 0, 0, 0, false)
 }
 

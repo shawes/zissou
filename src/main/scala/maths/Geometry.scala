@@ -44,6 +44,10 @@ class Geometry {
         Math.cos(lon2 - lon1)) * Constants.EarthsRadius
   }
 
+  def getAngleBetweenTwoPoints(p1: GeoCoordinate, p2: GeoCoordinate): Double = {
+    Math.atan2(p2.latitude - p1.latitude, p2.longitude - p1.longitude)
+}
+
   private def ceilingDepth(depth: Double): Double = {
     var newDepth = depth
     if (depth < 0) newDepth = 0

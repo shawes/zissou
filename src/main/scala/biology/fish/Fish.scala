@@ -49,7 +49,7 @@ class Fish(
 
   def undergoesOntogeneticMigration : Boolean = verticalMigrationOntogenetic.probabilities.nonEmpty
 
-def undergoesDielMigration : Boolean = verticalMigrationDiel.probabilities.nonEmpty
+  def undergoesDielMigration : Boolean = verticalMigrationDiel.probabilities.nonEmpty
 
   def move(newPosition: GeoCoordinate): Unit = {
     if (newPosition.isValid) {
@@ -66,12 +66,9 @@ def undergoesDielMigration : Boolean = verticalMigrationDiel.probabilities.nonEm
   //def horizontalSwimmingSpeed: Double = 0.0 //TODO: Implement the swimming speed
 
   def growOlder(seconds: Int): Unit = {
-    val initialOntogeny = getOntogeny
+    //val initialOntogeny = getOntogeny
     fishAge += seconds
-    val currentOntogeny = getOntogeny
-    if(verticalMigrationOntogenetic.enabled && initialOntogeny != currentOntogeny) {
-      ontogeneticVerticallyMigrate
-    }
+    //val currentOntogeny = getOntogeny
   }
 
   def settle(settlementReef: HabitatPolygon, date: DateTime): Unit = {
