@@ -9,14 +9,13 @@ class FishParameters(
            val ontogeny: FishOntogeny,
            val name: String,
            val savePositions: Boolean,
-           val swimmingAbility: SwimmingAbility,
-           val swimmingSpeed: Double,
+           val swimming : Swimming,
            val verticalMigrationOntogeneticProbabilities: FishVerticalMigrationOntogenetic,
            val verticalMigrationDielProbabilities: VerticalMigrationDiel,//Map[Int, Int], //
            val isMortal: Boolean,
            val mortalityRate: Double) {
 
-  def this() = this(null, null, "", false, null, 0, null, null, false, 0)
+  def this() = this(null, null, "", false, null, null, null, false, 0)
 
-  def canSwim : Boolean = swimmingAbility != SwimmingAbility.Passive
+  def canSwim : Boolean = swimming.ability != SwimmingAbility.Passive
 }

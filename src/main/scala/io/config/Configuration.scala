@@ -16,14 +16,14 @@ case class Configuration(
   def this() = this(InputFilesConfig("", ""),
     SpawnConfig(new JArrayList[SpawningLocationConfig]),
     TurbulenceConfig(0, 0, applyTurbulence = false, 0),
-    FishConfig(OntogenyConfig(0, 0, 0), "", 0, 0,
+    FishConfig(OntogenyConfig(0, 0, 0), SwimmingConfig("", 0,0,0,false),
       VerticalMigrationOntogeneticConfig(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),
       VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]),
       PelagicLarvalDurationConfig(0, 0, ""), isMortal = false, 0, 0),
     FlowConfig(PeriodConfig("", ""),
       TimeStepConfig("", 0),
       DepthConfig(average = false, averageOverAllDepths = false, 0)),
-    HabitatConfig(BufferConfig(isBuffered = false, 0)),
+    HabitatConfig(BufferConfig(isBuffered = false, 0, 0)),
     OutputFilesConfig(includeLarvaeHistory = false, "", "", 0, ""))
 }
 
@@ -115,13 +115,13 @@ case class DepthConfig(average: Boolean, averageOverAllDepths: Boolean, maximumD
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 case class HabitatConfig(@XmlElementWrapper buffer: BufferConfig) {
-  private def this() = this(BufferConfig(isBuffered = false, 0))
+  private def this() = this(BufferConfig(isBuffered = false, 0, 0))
 }
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-case class BufferConfig(isBuffered: Boolean, bufferSize: Int) {
-  private def this() = this(false, 0)
+case class BufferConfig(isBuffered: Boolean, settlement: Int, olfactory : Int) {
+  private def this() = this(false, 0, 0)
 }
 
 @XmlRootElement
@@ -137,23 +137,26 @@ case class OutputFilesConfig(includeLarvaeHistory: Boolean,
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 case class FishConfig(ontogeny: OntogenyConfig,
-                      swimmingAbility: String,
-                      meanSwimmingSpeed: Double,
-                      standDeviationSwimmingSpeed: Double,
+                      swimming: SwimmingConfig,
                       verticalMigrationOntogeneticProbabilities: VerticalMigrationOntogeneticConfig,
                       verticalMigrationDielProbabilities: VerticalMigrationDielConfig,
                       pelagicLarvalDuration: PelagicLarvalDurationConfig,
                       isMortal: Boolean,
                       mortalityRate: Double,
                       nonSettlementPeriod: Int) {
-  private def this() = this(OntogenyConfig(0, 0, 0), "", 0, 0, VerticalMigrationOntogeneticConfig(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, ""), false, 0, 0)
-
+  private def this() = this(OntogenyConfig(0, 0, 0), SwimmingConfig("",0,0,0,false), VerticalMigrationOntogeneticConfig(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, ""), false, 0, 0)
 }
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 case class OntogenyConfig(preFlexion: Int, flexion: Int, postFlexion: Int) {
   private def this() = this(0, 0, 0)
+}
+
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
+case class SwimmingConfig(ability: String, criticalSwimmingSpeed: Double, inSituSwimmingSpeed: Double, endurance: Double, reynoldsEffect: Boolean) {
+  private def this() = this(null, 0, 0, 0, false)
 }
 
 @XmlRootElement

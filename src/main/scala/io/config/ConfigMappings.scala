@@ -27,7 +27,7 @@ object ConfigMappings {
     new TimeStep(t.duration, TimeStepType.withName(t.unit))
 
   implicit def bufferConfigMap(b: BufferConfig): Buffer =
-    new Buffer(b.isBuffered, b.bufferSize, b.bufferSize) //TODO: Fix for both sizes
+    new Buffer(b.isBuffered, b.settlement, b.olfactory) //TODO: Fix for both sizes
 
   implicit def inputConfigMap(i: InputFilesConfig): InputFiles =
     new InputFiles(i.flowFilePath, i.habitatFilePath, new File(i.flowFilePath).list())
@@ -55,6 +55,8 @@ object ConfigMappings {
   implicit def ontogenyConfigMap(o: OntogenyConfig): FishOntogeny = new FishOntogeny(Time.convertDaysToSeconds(o.preFlexion),
     Time.convertDaysToSeconds(o.flexion), Time.convertDaysToSeconds(o.postFlexion))
 
+  implicit def swimmingConfigMap(s: SwimmingConfig): Swimming = new Swimming(SwimmingAbility.withName(s.ability), s.criticalSwimmingSpeed, s.inSituSwimmingSpeed, s.endurance, s.reynoldsEffect)
+
   implicit def verticalMigrationOntogeneticConfigMap(vm: VerticalMigrationOntogeneticConfig): FishVerticalMigrationOntogenetic =
     new FishVerticalMigrationOntogenetic(vm.fishVerticalMigrationOntogeneticProbability.asScala.map(x => verticalMigrationOntogeneticProbabilityConfigMap(x)).toList)
 
@@ -67,5 +69,7 @@ object ConfigMappings {
   implicit def verticalMigrationDielProbabilityConfigMap(prob: VerticalMigrationDielProbabilityConfig) : VerticalMigrationDielProbability =
     new VerticalMigrationDielProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.day, prob.night)
 
-  implicit def fishConfigMap(f: FishConfig): FishParameters = new FishParameters(f.pelagicLarvalDuration, f.ontogeny, "name", true, SwimmingAbility.withName(f.swimmingAbility), f.meanSwimmingSpeed, f.verticalMigrationOntogeneticProbabilities, f.verticalMigrationDielProbabilities, f.isMortal, f.mortalityRate)
+  implicit def fishConfigMap(f: FishConfig): FishParameters = new FishParameters(f.pelagicLarvalDuration, f.ontogeny, "name", true, f.swimming, f.verticalMigrationOntogeneticProbabilities, f.verticalMigrationDielProbabilities, f.isMortal, f.mortalityRate)
+
+
 }
