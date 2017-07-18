@@ -147,7 +147,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   }
 
   private def defineAllBufferedPolygons(): List[GeometryAdaptor] = {
-    reefHabitatPolygons.map(reef => new GeometryAdaptor(reef.g.buffer(buffer.size / 100), reef.id, reef.habitat))
+    reefHabitatPolygons.map(reef => new GeometryAdaptor(reef.g.buffer(buffer.settlement / 100), reef.id, reef.habitat))
   }
 
 

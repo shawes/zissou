@@ -13,6 +13,8 @@ import io.config.Configuration
 import maths.RandomNumberGenerator
 import physical.habitat.HabitatManager
 import locals.LarvaType
+import locals.SwimmingAbility
+import locals.SwimmingAbility.SwimmingAbility
 import locals.DielVerticalMigrationType
 import maths.integration.RungeKuttaIntegration
 
@@ -55,7 +57,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
       val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
       val reef = habitatManager.getReef(distanceIndex)
     }
-    val newPosition = integrator.integrate(larva.position, clock.now, larva.swim)
+    val newPosition = integrator.integrate(larva.position, clock.now, null)
     larva.move(newPosition.get)
     migrateLarvaVertically(larva)
     debug("New position " + larva.position)
@@ -87,7 +89,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
       debug("Larva " + larva.id + " is in the competency window now")
       if (habitatManager.isBuffered) {
         debug("Searching buffered reefs")
-        val reefIndex = habitatManager.isCoordinateOverBufferLazy(larva.position)
+        val reefIndex = habitatManager.isCoordinateOverBufferLazy(larva.position, true)
         // = habitatManager.getIndexOfNearestReef(larva.position)
         if (reefIndex.isDefined) {
           debug("Larva is within reef buffer")

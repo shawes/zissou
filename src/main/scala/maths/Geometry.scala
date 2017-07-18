@@ -6,7 +6,7 @@ import physical.{GeoCoordinate, Velocity}
 class Geometry {
 
   def translatePoint(point: GeoCoordinate, velocity: Velocity,
-                     timeStep: Int, swimming: Double): GeoCoordinate  = {
+                     timeStep: Int, swimming: Velocity): GeoCoordinate  = {
 
     if (velocity.isUndefined) return point
 

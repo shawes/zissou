@@ -5,7 +5,7 @@ import locals.OntogenyState.OntogenyState
 import locals.SwimmingAbility.SwimmingAbility
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.DielVerticalMigrationType.DielVerticalMigrationType
-import locals.{Constants, OntogenyState, PelagicLarvaeState}
+import locals.{Constants, OntogenyState, PelagicLarvaeState, SwimmingAbility}
 import org.joda.time.DateTime
 import physical.GeoCoordinate
 import physical.Velocity
@@ -23,9 +23,9 @@ class Fish(
   val birthplace: Birthplace,
   val spawned: DateTime,
   val fishOntogeny: FishOntogeny,
-  val olafactorySense : Double,
+  val olafactorySense: Double,
   val verticalMigrationOntogenetic: FishVerticalMigrationOntogenetic,
-  val verticalMigrationDiel : VerticalMigrationDiel)
+  val verticalMigrationDiel: VerticalMigrationDiel)
   extends Larva with Logging {
 
   val fishHistory = ListBuffer.empty[TimeCapsule]
@@ -35,7 +35,7 @@ class Fish(
   var fishPosition = birthplace.location
   var fishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
 
-  def this() = this(0, 0, 0, null, DateTime.now(), null, null,null)
+  def this() = this(0, 0, 0, null, DateTime.now(), null, 0, null, null)
 
   override def settlementDate: DateTime = fishSettlementDate.get
 
@@ -77,11 +77,13 @@ class Fish(
   }
 
   def swim() : Velocity = {
-    val angle = orientate
+    //val angle = orientate
+    null
   }
 
   private def orientate(): Double = {
     if(swimmingAbility == SwimmingAbility.Directed) {
+      0
     } else
     return 1
       //TODO: Needs to find the nearest fishPolygon
@@ -131,6 +133,11 @@ class Fish(
   override def state: PelagicLarvaeState = fishState
 
   override def birthday: DateTime = spawned
+
+  override def criticalSwimmingSpeed: Double = 0
+override def inSituSwimmingPotential: Double = 0
+override val swimmingAbility: locals.SwimmingAbility.SwimmingAbility = SwimmingAbility.Directed
+override def swimmingEndurance: Double = 0
 
 
 

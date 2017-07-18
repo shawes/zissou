@@ -21,18 +21,18 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
 
       //debug("Got the velocity " + velocity + " at the location " + coordinate)
       //debug("Performing step 1")
-      val step1 = performRungeKuttaIteration(coordinate, velocity, timeStep, time)
+      val step1 = performRungeKuttaIteration(coordinate, velocity, timeStep, time, swimming)
       //debug("Step1 v= " + step1.velocity + " at the location " + step1.coordinate)
       if (step1.velocity.isDefined) {
-        val step2 = performRungeKuttaIteration(coordinate, step1.velocity.get, (timeStep * 1.5).toInt, time)
+        val step2 = performRungeKuttaIteration(coordinate, step1.velocity.get, (timeStep * 1.5).toInt, time, swimming)
         //debug("Step2 v= " + step2.velocity + " at the location " + step2.coordinate)
         if (step2.velocity.isDefined) {
           //debug("Performing step 3")
-          val step3 = performRungeKuttaIteration(coordinate, step2.velocity.get, (timeStep * 1.5).toInt, time)
+          val step3 = performRungeKuttaIteration(coordinate, step2.velocity.get, (timeStep * 1.5).toInt, time, swimming)
           //debug("Step3 v= " + step3.velocity + " at the location " + step3.coordinate)
           if (step3.velocity.isDefined) {
             //debug("Performing step 4")
-            val step4 = performRungeKuttaIteration(coordinate, step3.velocity.get, timeStep * 2, time)
+            val step4 = performRungeKuttaIteration(coordinate, step3.velocity.get, timeStep * 2, time, swimming)
             //debug("Step4 v= " + step4.velocity + " at the location " + step4.coordinate)
             if (step4.velocity.isDefined) {
 
@@ -63,7 +63,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
   }
 
   private def performRungeKuttaIteration(coordinate: GeoCoordinate, velocity: Velocity,
-                                         partialTimeStep: Int, time: DateTime): RungeKuttaStepDerivative = {
+                                         partialTimeStep: Int, time: DateTime, swimming: Velocity): RungeKuttaStepDerivative = {
     //debug("Starting an RK4 integration STEP")
     if (velocity.isUndefined) {
       return new RungeKuttaStepDerivative(None, coordinate)
@@ -72,7 +72,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
     val normalisedTime = partialTimeStep - timeStep
     //debug("Normalised time is " + partialTimeStep + "-" + timeStep + "=" + normalisedTime)
 
-    val newCoordinate = geometry.translatePoint(coordinate, velocity, partialTimeStep)
+    val newCoordinate = geometry.translatePoint(coordinate, velocity, partialTimeStep, swimming)
     //debug("New coord is " + newCoordinate)
     val newVelocity = flow.getVelocityOfCoordinate(newCoordinate, time.plusSeconds(normalisedTime), time, partialTimeStep)
     //debug("New velocity is " + newVelocity)

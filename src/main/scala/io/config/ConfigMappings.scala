@@ -27,7 +27,7 @@ object ConfigMappings {
     new TimeStep(t.duration, TimeStepType.withName(t.unit))
 
   implicit def bufferConfigMap(b: BufferConfig): Buffer =
-    new Buffer(b.isBuffered, b.bufferSize)
+    new Buffer(b.isBuffered, b.bufferSize, b.bufferSize) //TODO: Fix for both sizes
 
   implicit def inputConfigMap(i: InputFilesConfig): InputFiles =
     new InputFiles(i.flowFilePath, i.habitatFilePath, new File(i.flowFilePath).list())
