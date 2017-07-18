@@ -115,7 +115,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     val nearestReefIndex = getIndexOfNearestReef(coordinate)
     val distance = geometry.getDistanceBetweenTwoPoints(coordinate, reefHabitatPolygons(nearestReefIndex).centroid)
     // val distances = reefHabitatPolygons.map(reef => geometry.getDistanceBetweenTwoPoints(coordinate,reef.centroid)
-    var threshold = if(isSettlement) buffer.settlement else buffer.olafactory
+    var threshold = if(isSettlement) buffer.settlement else buffer.olfactory
     if (distance < threshold * 1000) {
       Some(nearestReefIndex)
     } else {

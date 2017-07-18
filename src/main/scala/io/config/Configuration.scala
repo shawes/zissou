@@ -120,7 +120,7 @@ case class HabitatConfig(@XmlElementWrapper buffer: BufferConfig) {
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-case class BufferConfig(isBuffered: Boolean, settlement: Int, olfactory : Int) {
+case class BufferConfig(isBuffered: Boolean, settlement: Double, olfactory : Double) {
   private def this() = this(false, 0, 0)
 }
 

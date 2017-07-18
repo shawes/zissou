@@ -23,7 +23,7 @@ class Fish(
   val birthplace: Birthplace,
   val spawned: DateTime,
   val fishOntogeny: FishOntogeny,
-  val olafactorySense: Double,
+  val swimming: Swimming,
   val verticalMigrationOntogenetic: FishVerticalMigrationOntogenetic,
   val verticalMigrationDiel: VerticalMigrationDiel)
   extends Larva with Logging {
@@ -35,7 +35,7 @@ class Fish(
   var fishPosition = birthplace.location
   var fishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
 
-  def this() = this(0, 0, 0, null, DateTime.now(), null, 0, null, null)
+  def this() = this(0, 0, 0, null, DateTime.now(), null, null, null, null)
 
   override def settlementDate: DateTime = fishSettlementDate.get
 
