@@ -47,6 +47,10 @@ class Fish(
 
   override def age: Int = fishAge
 
+  def undergoesOntogeneticMigration : Boolean = verticalMigrationOntogenetic.probabilities.nonEmpty
+
+def undergoesDielMigration : Boolean = verticalMigrationDiel.probabilities.nonEmpty
+
   def move(newPosition: GeoCoordinate): Unit = {
     if (newPosition.isValid) {
       changeState(PelagicLarvaeState.Pelagic)

@@ -69,4 +69,8 @@ trait Larva {
 
   def isSettled: Boolean = state == PelagicLarvaeState.Settled
 
+  def undergoesDielMigration : Boolean
+
+  def undergoesOntogeneticMigration : Boolean
+
 }

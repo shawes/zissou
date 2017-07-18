@@ -13,8 +13,6 @@ import io.config.Configuration
 import maths.RandomNumberGenerator
 import physical.habitat.HabitatManager
 import locals.LarvaType
-import locals.SwimmingAbility
-import locals.SwimmingAbility.SwimmingAbility
 import locals.DielVerticalMigrationType
 import maths.integration.RungeKuttaIntegration
 
@@ -56,6 +54,11 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
       val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
       val reef = habitatManager.getReef(distanceIndex)
     }
+    // Got to get the swimming velocity using the speed and the orientated direction
+    // Find the nearest reef
+    // Get the angle to the reef
+    // Dampen the crit swimming speed by inSitu potential and endurance
+    // Pass the velocity to the integrator
     val newPosition = integrator.integrate(larva.position, clock.now, null)
     larva.move(newPosition.get)
     migrateLarvaVertically(larva)
@@ -64,11 +67,17 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
 
   private def migrateLarvaVertically(larva: Larva): Unit = {
+    if(larva.undergoesDielMigration) {
     // Diel
     if(clock.isSunRising(larva.position, "Australia/Sydney")) {
       larva.dielVerticallyMigrate(DielVerticalMigrationType.Day)
     } else if(clock.isSunSetting(larva.position, "Australia/Sydney")) {
       larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
+    }
+  }
+    //Ontogenetic
+    if(larva.undergoesOntogeneticMigration) {
+
     }
   }
 
