@@ -16,6 +16,7 @@ import locals.LarvaType
 import locals.DielVerticalMigrationType
 import maths.integration.RungeKuttaIntegration
 import maths.Geometry
+import physical.Velocity
 
 class BiologicalModel(val config: Configuration, clock: SimulationClock, integrator: RungeKuttaIntegration) extends Logging {
 
@@ -52,36 +53,38 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def move(larva: Larva): Unit = {
     debug("Old position " + larva.position)
-
-    // Got to get the swimming velocity using the speed and the orientated direction
-    // Find the nearest reef
-    // Get the angle to the reef
-    // Dampen the crit swimming speed by inSitu potential and endurance
-    // Pass the velocity to the integrator
-    var angle: Double = 0.0
-    if(larva.swimming.isDirected) {
-          val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
-          val reef = habitatManager.getReef(distanceIndex)
-          angle = geometry.getAngleBetweenTwoPoints(larva.position, reef.centroid)
-    }
-    val swimmingVelocity = larva.swimming(angle)
-    val newPosition = integrator.integrate(larva.position, clock.now, swimmingVelocity)
+    val newPosition = integrator.integrate(larva.position, clock.now, swim(larva))
     larva.move(newPosition.get)
     migrateLarvaVertically(larva)
     debug("New position " + larva.position)
   }
 
+  private def swim(larva : Larva) : Velocity = {
+    val noSwimming = new Velocity(0, 0, 0)
+    if(larva.swimming.isDirected) {
+        habitatManager.isCoordinateOverBufferLazy(larva.position, isSettlement=false) match {
+          case Some(reefIndex) => orientateTowardsReef(larva, reefIndex)
+          case None => noSwimming
+        }
+    } else {
+      noSwimming
+    }
+  }
+
+  private def orientateTowardsReef(larva : Larva, reefIndex : Int) : Velocity = {
+    val reef = habitatManager.getReef(reefIndex)
+    val angle = geometry.getAngleBetweenTwoPoints(larva.position, reef.centroid)
+    larva.swimming(angle)
+  }
 
   private def migrateLarvaVertically(larva: Larva): Unit = {
     if(larva.undergoesDielMigration) {
-    // Diel
-    if(clock.isSunRising(larva.position, "Australia/Sydney")) {
-      larva.dielVerticallyMigrate(DielVerticalMigrationType.Day)
-    } else if(clock.isSunSetting(larva.position, "Australia/Sydney")) {
-      larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
+      if(clock.isSunRising(larva.position, "Australia/Sydney")) {
+        larva.dielVerticallyMigrate(DielVerticalMigrationType.Day)
+      } else if(clock.isSunSetting(larva.position, "Australia/Sydney")) {
+        larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
+      }
     }
-  }
-    //Ontogenetic
     if(larva.undergoesOntogeneticMigration) {
         larva.ontogeneticVerticallyMigrate
     }
@@ -103,7 +106,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
       debug("Larva " + larva.id + " is in the competency window now")
       if (habitatManager.isBuffered) {
         debug("Searching buffered reefs")
-        val reefIndex = habitatManager.isCoordinateOverBufferLazy(larva.position, true)
+        val reefIndex = habitatManager.isCoordinateOverBufferLazy(larva.position, isSettlement=true)
         // = habitatManager.getIndexOfNearestReef(larva.position)
         if (reefIndex.isDefined) {
           debug("Larva is within reef buffer")
