@@ -117,7 +117,8 @@
   <habitat>
     <buffer>
       <isBuffered>true</isBuffered>
-      <bufferSize>25</bufferSize>
+      <settlement>10</settlement>
+      <olfactory>20</olfactory>
       <filePath>path</filePath>
     </buffer>
   </habitat>

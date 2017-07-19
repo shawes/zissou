@@ -19,8 +19,8 @@ import physical.habitat.HabitatManager
 class BiologicalModel(val config: Configuration, clock: SimulationClock, integrator: RungeKuttaIntegration) extends Logging {
 
   val fish: FishParameters = config.fish
-  val factory = LarvaFactory.apply(LarvaType.Fish, fish)
-  val mortality = new MortalityDecay(fish.pelagicLarvalDuration.mean)
+  val factory = LarvaFactory.apply(LarvaType.Fish, config.fish)
+  val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
   var fishLarvae: ListBuffer[List[Larva]] = ListBuffer.empty
