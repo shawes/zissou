@@ -10,19 +10,17 @@ import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
 import io.config.ConfigMappings._
 import io.config.Configuration
-import maths.RandomNumberGenerator
-import physical.habitat.HabitatManager
-import locals.LarvaType
-import locals.DielVerticalMigrationType
+import locals.{DielVerticalMigrationType, LarvaType}
+import maths.{Geometry, RandomNumberGenerator}
 import maths.integration.RungeKuttaIntegration
-import maths.Geometry
 import physical.Velocity
+import physical.habitat.HabitatManager
 
 class BiologicalModel(val config: Configuration, clock: SimulationClock, integrator: RungeKuttaIntegration) extends Logging {
 
-  val factory = LarvaFactory.apply(LarvaType.Fish, config.fish)
-  val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val fish: FishParameters = config.fish
+  val factory = LarvaFactory.apply(LarvaType.Fish, fish)
+  val mortality = new MortalityDecay(fish.pelagicLarvalDuration.mean)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
   var fishLarvae: ListBuffer[List[Larva]] = ListBuffer.empty
