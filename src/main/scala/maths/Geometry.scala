@@ -5,20 +5,13 @@ import physical.{GeoCoordinate, Velocity}
 
 class Geometry {
 
-
   def translatePoint(point: GeoCoordinate, velocity: Velocity,
-                     timeStep: Int): GeoCoordinate = translatePoint(point, velocity, timeStep, 0)
-
-  def translatePoint(point: GeoCoordinate, velocity: Velocity,
-                     timeStep: Int, speed: Double): GeoCoordinate = polynomialTranslation(point, velocity, timeStep, speed)
-
-  private def polynomialTranslation(point: GeoCoordinate, velocity: Velocity,
-                                    timeStep: Int, speed: Double): GeoCoordinate = {
+                     timeStep: Int, swimming: Velocity): GeoCoordinate  = {
 
     if (velocity.isUndefined) return point
 
-    val xDistance = (velocity.u + speed) * timeStep
-    val yDistance = (velocity.v + speed) * timeStep
+    val xDistance = (velocity.u + swimming.u) * timeStep
+    val yDistance = (velocity.v + swimming.v) * timeStep
 
     val kmLatitude = (-0.00000344188 * math.pow(point.latitude, 3)) + (.000466 * math.pow(point.latitude, 2)) +
       (-0.001537 * point.latitude) + 110.572356
@@ -50,6 +43,10 @@ class Geometry {
       Math.cos(lat1) * Math.cos(lat2) *
         Math.cos(lon2 - lon1)) * Constants.EarthsRadius
   }
+
+  def getAngleBetweenTwoPoints(p1: GeoCoordinate, p2: GeoCoordinate): Double = {
+    Math.atan2(p2.latitude - p1.latitude, p2.longitude - p1.longitude)
+}
 
   private def ceilingDepth(depth: Double): Double = {
     var newDepth = depth

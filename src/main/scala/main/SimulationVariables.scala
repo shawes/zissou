@@ -1,19 +1,20 @@
 package main
 
-import biology.{Fish, Spawn}
+import biology.Spawn
+import biology.fish.FishParameters
 import io.{InputFiles, OutputFiles}
 import physical.Turbulence
 import physical.flow.Flow
 import physical.habitat.Habitat
 
-class SimulationVariables(val fish: Fish,
+class SimulationVariables(val fish: FishParameters,
                           val spawn: Spawn,
                           val turbulence: Turbulence,
                           val flow: Flow,
                           val habitat: Habitat,
                           val inputs: InputFiles,
                           val output: OutputFiles) {
-  def this() = this(new Fish(), new Spawn(), new Turbulence(), new Flow(), new Habitat(), new InputFiles(), new OutputFiles())
+  def this() = this(new FishParameters(), new Spawn(), new Turbulence(), new Flow(), new Habitat(), new InputFiles(), new OutputFiles())
 
   def toXml =
     <SimulationVariables>

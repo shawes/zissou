@@ -3,18 +3,25 @@ package main
 import java.io.File
 
 import grizzled.slf4j.Logging
-import io.ConfigurationFileReader
-import io.config.Configuration
+import io.config.{Configuration, ConfigurationFile}
+
 
 object Simulator extends App with Logging {
 
-    val model = new CoupledBiophysicalModel(readConfigurationFile)
-    model.run()
-
-
-  private def readConfigurationFile: Configuration = {
-    val configFileReader = new ConfigurationFileReader()
-    val testConfigPathDesktop = args(0)
-    configFileReader.read(new File(testConfigPathDesktop))
+  readConfigurationFile match {
+    case Some(config) => new CoupledBiophysicalModel(config).run()
+    case None => println("Please supply a valid configuration file.")
   }
+
+  private def readConfigurationFile: Option[Configuration] = {
+    val configurationFile = new ConfigurationFile()
+    if(args.nonEmpty) {
+      val testConfigPathDesktop = args(0)
+      val config = configurationFile.read(new File(testConfigPathDesktop))
+      Some(config)
+    } else {
+      None
+    }
+  }
+
 }

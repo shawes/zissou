@@ -1,0 +1,13 @@
+r
+sbt
+compile
+r
+dw'k
+q
+quit
+exit
+sbt clean
+clean
+clean clean-files
+quit
+exit

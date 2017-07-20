@@ -20,6 +20,8 @@ class Velocity(var u: Double, var v: Double, var w: Double) {
   def ==(that: Velocity): Boolean =
     u == that.u && v == that.v && w == that.w
 
+  def isDefined: Boolean = !isUndefined
+
   def isUndefined: Boolean = {
     u.isNaN || v.isNaN || w.isNaN
   }

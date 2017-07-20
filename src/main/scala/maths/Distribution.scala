@@ -1,10 +1,10 @@
 package maths
 
-abstract class Distribution(val mean: Double, val standardDeviation: Double) {
+abstract class Distribution(val mean: Double, val sd: Double) {
   def getValue: Double
 }
 
-final class NormalDistribution(m: Double, sd: Double) extends Distribution(m, sd) {
+final class NormalDistribution(normal_mean: Double, normal_sd: Double) extends Distribution(normal_mean, normal_sd) {
 
   var hasDeviate: Boolean = false
   var storedDeviate: Double = 1.0
@@ -12,7 +12,7 @@ final class NormalDistribution(m: Double, sd: Double) extends Distribution(m, sd
   override def getValue: Double = {
     if (hasDeviate) {
       hasDeviate = false
-      storedDeviate * standardDeviation + mean
+      storedDeviate * sd + mean
     } else {
       storedDeviate = 100.0
       hasDeviate = true

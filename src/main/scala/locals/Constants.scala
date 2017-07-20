@@ -5,6 +5,7 @@ import org.joda.time.DateTime
 object Constants {
 
   val SecondsInDay = 86400
+  val DuskOrDawn = 2700 //Dusk or dawn roughly starts / ends 45 mins before or after sunset / sunrise
   val FlowPolygonVertices = 4
   val MaxLatitudeShift = 0.02
   val MaxLongitudeShift = 0.02
@@ -31,6 +32,19 @@ object Constants {
     val UndefinedVelocityException = -200
     val UndefinedCoordinateException = -300
     val CoordinateNotFoundException = -400
+  }
+
+  object Interpolation {
+    val CubicPoints = 4
+    val BicubicPoints = 16
+    val TricubicPoints = 64
+  }
+
+  object NetcdfIndex {
+    val X = 0
+    val Y = 1
+    val Z = 2
+    val Time = 3
   }
 
 

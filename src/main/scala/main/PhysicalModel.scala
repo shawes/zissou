@@ -1,28 +1,27 @@
 package main
 
 import grizzled.slf4j.Logging
-import io.FlowReader
+import io.FlowFileIterator
 import io.config.ConfigMappings._
 import io.config.Configuration
-import maths.RandomNumberGenerator
 import physical.flow.FlowController
 
 /**
   * Created by steve on 27/01/2016.
   */
-class PhysicalModel(val config: Configuration, randomNumbers: RandomNumberGenerator) extends Logging {
+class PhysicalModel(val config: Configuration) extends Logging {
 
-  debug("input files directory " + config.inputFiles.flowFilePath)
-  val flowDataReader = new FlowReader(config.inputFiles, config.flow)
-  val flowController = new FlowController(config.flow, randomNumbers)
+  debug("Input files directory " + config.inputFiles.flowFilePath)
+  val flowFile = new FlowFileIterator(config.inputFiles.flowFilePath, config.flow)
+  val flowController = new FlowController(config.flow)
 
   def initialise(): Unit = {
-    flowController.initialiseFlow(flowDataReader)
+    flowController.initialise(flowFile)
   }
 
   def circulate(): Unit = {
-    if (flowDataReader.hasNext) {
-      flowController.refresh(flowDataReader.next())
+    if (flowFile.hasNext) {
+      flowController.refresh(flowFile.next())
     }
   }
 }

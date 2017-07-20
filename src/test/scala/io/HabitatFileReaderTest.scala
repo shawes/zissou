@@ -1,8 +1,8 @@
 package io
 
-import org.scalatest.mock.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
 import org.scalatest.Matchers._
+import org.scalatest.mockito.MockitoSugar
+import org.scalatest.{FlatSpec, PrivateMethodTester}
 
 /**
   * Created by steve on 25/01/2016.
@@ -10,7 +10,7 @@ import org.scalatest.Matchers._
 class HabitatFileReaderTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   "The habitat file writer" should "initialise" in {
-    val habitatFileReader = new HabitatFileReader()
+    val habitatFileReader = new GisShapeFile()
     habitatFileReader should not be null
   }
 

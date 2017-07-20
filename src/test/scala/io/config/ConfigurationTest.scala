@@ -1,15 +1,14 @@
 package io.config
 
 import java.io.StringReader
-import java.util.{ArrayList => JArrayList}
 import javax.xml.bind.JAXBContext
 
 import org.scalatest.FlatSpec
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 
 class ConfigurationTest extends FlatSpec with MockitoSugar {
 
-  val context = JAXBContext.newInstance(classOf[Configuration])
+  private val context = JAXBContext.newInstance(classOf[Configuration])
 
   "The configuration case class" should "parse the input files xml node" in {
     val configXml = "<simulationVariables><inputFiles><flowFilePath>flow</flowFilePath><habitatFilePath>habitat</habitatFilePath></inputFiles></simulationVariables>"
@@ -77,9 +76,10 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
   }
 
   it should "parse the habitat node" in {
-    val configXml = "<simulationVariables><habitat><buffer><isBuffered>true</isBuffered><bufferSize>25</bufferSize></buffer></habitat></simulationVariables>"
+    val configXml = "<simulationVariables><habitat><buffer><isBuffered>true</isBuffered><settlement>25</settlement><olfactory>41</olfactory></buffer></habitat></simulationVariables>"
     val config = context.createUnmarshaller().unmarshal(new StringReader(configXml)).asInstanceOf[Configuration]
-    assert(config.habitat.buffer.bufferSize == 25)
+    assert(config.habitat.buffer.settlement == 25)
+    assert(config.habitat.buffer.olfactory == 41)
     assert(config.habitat.buffer.isBuffered)
   }
 
@@ -94,23 +94,30 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
   }
 
   it should "parse the fish node" in {
-    val configXml = "<simulationVariables><fish><swimmingAbility>Passive</swimmingAbility><ontogeny><flexion>518400</flexion><preFlexion>172800</preFlexion><postFlexion>691200</postFlexion></ontogeny><meanSwimmingSpeed>0.102</meanSwimmingSpeed><standDeviationSwimmingSpeed>0.019</standDeviationSwimmingSpeed><verticalMigrationPattern>Ontogenetic</verticalMigrationPattern><verticalMigrationProbabilities><verticalMigrationProbability><depthStart>3</depthStart><depthFinish>10</depthFinish><hatching>0.8</hatching><preFlexion>0.05</preFlexion><flexion>0.05</flexion><postFlexion>0.05</postFlexion></verticalMigrationProbability><verticalMigrationProbability><depth>10</depth><hatching>0.2</hatching><preFlexion>0.55</preFlexion><flexion>0.35</flexion><postFlexion>0.55</postFlexion></verticalMigrationProbability></verticalMigrationProbabilities><pelagicLarvalDuration><mean>22</mean><stdev>1.1</stdev><distribution>Normal</distribution></pelagicLarvalDuration><isMortal>true</isMortal><mortalityRate>0.26</mortalityRate><nonSettlementPeriod>85</nonSettlementPeriod></fish></simulationVariables>"
+    val configXml = "<simulationVariables><fish> <ontogeny> <flexion>518400</flexion> <preFlexion>172800</preFlexion> <postFlexion>691200</postFlexion> </ontogeny> <swimming> <ability>Directed</ability> <criticalSwimmingSpeed>10.0</criticalSwimmingSpeed> <inSituSwimmingPotential>0.5</inSituSwimmingPotential> <endurance>0.4</endurance> <reynoldsEffect>true</reynoldsEffect> </swimming> <verticalMigrationDielProbabilities> <verticalMigrationDielProbability> <depthStart>0</depthStart> <depthFinish>50</depthFinish> <day>0.1</day> <night>0.9</night> </verticalMigrationDielProbability> <verticalMigrationDielProbability> <depthStart>50</depthStart> <depthFinish>100</depthFinish> <day>0.5</day> <night>0.5</night> </verticalMigrationDielProbability> </verticalMigrationDielProbabilities> <verticalMigrationOntogeneticProbabilities> <fishVerticalMigrationOntogeneticProbability> <depthStart>3</depthStart> <depthFinish>10</depthFinish> <hatching>0.8</hatching> <preFlexion>0.05</preFlexion> <flexion>0.05</flexion> <postFlexion>0.05</postFlexion> </fishVerticalMigrationOntogeneticProbability> <fishVerticalMigrationOntogeneticProbability> <depthStart>10</depthStart> <depthFinish>50</depthFinish> <hatching>0.2</hatching> <preFlexion>0.55</preFlexion> <flexion>0.35</flexion> <postFlexion>0.55</postFlexion> </fishVerticalMigrationOntogeneticProbability> </verticalMigrationOntogeneticProbabilities> <pelagicLarvalDuration> <mean>22</mean> <stdev>1.1</stdev> <distribution>Normal</distribution> </pelagicLarvalDuration> <isMortal>true</isMortal> <mortalityRate>0.26</mortalityRate> <nonSettlementPeriod>85</nonSettlementPeriod> </fish></simulationVariables>"
     val config = context.createUnmarshaller().unmarshal(new StringReader(configXml)).asInstanceOf[Configuration]
-    assert(config.fish.swimmingAbility == "Passive")
     assert(config.fish.ontogeny.flexion == 518400)
     assert(config.fish.ontogeny.preFlexion == 172800)
     assert(config.fish.ontogeny.postFlexion == 691200)
-    assert(config.fish.meanSwimmingSpeed == 0.102)
-    assert(config.fish.standDeviationSwimmingSpeed == 0.019)
-    assert(config.fish.verticalMigrationPattern == "Ontogenetic")
-    assert(config.fish.verticalMigrationProbabilities.verticalMigrationProbability.size() == 2)
-    val verticalMigrationPattern = config.fish.verticalMigrationProbabilities.verticalMigrationProbability.get(0)
-    assert(verticalMigrationPattern.depthStart == 3)
-    assert(verticalMigrationPattern.depthFinish == 10)
-    assert(verticalMigrationPattern.flexion == 0.05)
-    assert(verticalMigrationPattern.preFlexion == 0.05)
-    assert(verticalMigrationPattern.postFlexion == 0.05)
-    assert(verticalMigrationPattern.hatching == 0.8)
+    assert(config.fish.swimming.ability == "Directed")
+    assert(config.fish.swimming.criticalSwimmingSpeed == 10.0)
+    assert(config.fish.swimming.inSituSwimmingPotential == 0.5)
+    assert(config.fish.swimming.endurance == 0.4)
+    assert(config.fish.swimming.reynoldsEffect)
+    assert(config.fish.verticalMigrationOntogeneticProbabilities.fishVerticalMigrationOntogeneticProbability.size() == 2)
+    val ontogeneticVerticalMigrationPattern = config.fish.verticalMigrationOntogeneticProbabilities.fishVerticalMigrationOntogeneticProbability.get(0)
+    assert(ontogeneticVerticalMigrationPattern.depthStart == 3)
+    assert(ontogeneticVerticalMigrationPattern.depthFinish == 10)
+    assert(ontogeneticVerticalMigrationPattern.flexion == 0.05)
+    assert(ontogeneticVerticalMigrationPattern.preFlexion == 0.05)
+    assert(ontogeneticVerticalMigrationPattern.postFlexion == 0.05)
+    assert(ontogeneticVerticalMigrationPattern.hatching == 0.8)
+    assert(config.fish.verticalMigrationDielProbabilities.verticalMigrationDielProbability.size() == 2)
+    val dielVerticalMigrationPattern = config.fish.verticalMigrationDielProbabilities.verticalMigrationDielProbability.get(1)
+    assert(dielVerticalMigrationPattern.depthStart == 50)
+    assert(dielVerticalMigrationPattern.depthFinish == 100)
+    assert(dielVerticalMigrationPattern.day == 0.5)
+    assert(dielVerticalMigrationPattern.night == 0.5)
     assert(config.fish.pelagicLarvalDuration.distribution == "Normal")
     assert(config.fish.pelagicLarvalDuration.mean == 22)
     assert(config.fish.pelagicLarvalDuration.stdev == 1.1)

@@ -16,13 +16,14 @@ case class Configuration(
   def this() = this(InputFilesConfig("", ""),
     SpawnConfig(new JArrayList[SpawningLocationConfig]),
     TurbulenceConfig(0, 0, applyTurbulence = false, 0),
-    FishConfig(OntogenyConfig(0, 0, 0), "", 0, 0, "",
-      VerticalMigrationConfig(new JArrayList[VerticalMigrationProbabilityConfig]),
+    FishConfig(OntogenyConfig(0, 0, 0), SwimmingConfig("", 0,0,0,false),
+      VerticalMigrationOntogeneticConfig(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),
+      VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]),
       PelagicLarvalDurationConfig(0, 0, ""), isMortal = false, 0, 0),
     FlowConfig(PeriodConfig("", ""),
       TimeStepConfig("", 0),
       DepthConfig(average = false, averageOverAllDepths = false, 0)),
-    HabitatConfig(BufferConfig(isBuffered = false, 0)),
+    HabitatConfig(BufferConfig(isBuffered = false, 0, 0)),
     OutputFilesConfig(includeLarvaeHistory = false, "", "", 0, ""))
 }
 
@@ -114,13 +115,13 @@ case class DepthConfig(average: Boolean, averageOverAllDepths: Boolean, maximumD
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 case class HabitatConfig(@XmlElementWrapper buffer: BufferConfig) {
-  private def this() = this(BufferConfig(isBuffered = false, 0))
+  private def this() = this(BufferConfig(isBuffered = false, 0, 0))
 }
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-case class BufferConfig(isBuffered: Boolean, bufferSize: Int) {
-  private def this() = this(false, 0)
+case class BufferConfig(isBuffered: Boolean, settlement: Double, olfactory : Double) {
+  private def this() = this(false, 0, 0)
 }
 
 @XmlRootElement
@@ -136,17 +137,14 @@ case class OutputFilesConfig(includeLarvaeHistory: Boolean,
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 case class FishConfig(ontogeny: OntogenyConfig,
-                      swimmingAbility: String,
-                      meanSwimmingSpeed: Double,
-                      standDeviationSwimmingSpeed: Double,
-                      verticalMigrationPattern: String,
-                      verticalMigrationProbabilities: VerticalMigrationConfig,
+                      swimming: SwimmingConfig,
+                      verticalMigrationOntogeneticProbabilities: VerticalMigrationOntogeneticConfig,
+                      verticalMigrationDielProbabilities: VerticalMigrationDielConfig,
                       pelagicLarvalDuration: PelagicLarvalDurationConfig,
                       isMortal: Boolean,
                       mortalityRate: Double,
                       nonSettlementPeriod: Int) {
-  private def this() = this(OntogenyConfig(0, 0, 0), "", 0, 0, "", VerticalMigrationConfig(new JArrayList[VerticalMigrationProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, ""), false, 0, 0)
-
+  private def this() = this(OntogenyConfig(0, 0, 0), SwimmingConfig("",0,0,0,false), VerticalMigrationOntogeneticConfig(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, ""), false, 0, 0)
 }
 
 @XmlRootElement
@@ -157,28 +155,54 @@ case class OntogenyConfig(preFlexion: Int, flexion: Int, postFlexion: Int) {
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-case class PelagicLarvalDurationConfig(mean: Double, stdev: Double, distribution: String) {
-  private def this() = this(0, 0, "")
-}
-
-@XmlRootElement(name = "verticalMigrationProbabilities")
-@XmlAccessorType(XmlAccessType.FIELD)
-case class VerticalMigrationConfig(
-                                    @XmlElements(
-                                      value = Array(new XmlElement(name = "verticalMigrationProbability"))
-                                    )
-                                    verticalMigrationProbability: java.util.List[VerticalMigrationProbabilityConfig]
-                                    ) {
-  private def this() = this(new JArrayList[VerticalMigrationProbabilityConfig])
+case class SwimmingConfig(ability: String, criticalSwimmingSpeed: Double, inSituSwimmingPotential: Double, endurance: Double, reynoldsEffect: Boolean) {
+  private def this() = this(null, 0, 0, 0, false)
 }
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-case class VerticalMigrationProbabilityConfig(depthStart: Int,
+case class PelagicLarvalDurationConfig(mean: Double, stdev: Double, distribution: String) {
+  private def this() = this(0, 0, "")
+}
+
+@XmlRootElement(name = "verticalMigrationOntogeneticProbabilities")
+@XmlAccessorType(XmlAccessType.FIELD)
+case class VerticalMigrationOntogeneticConfig(
+                                    @XmlElements(
+                                      value = Array(new XmlElement(name = "verticalMigrationProbability"))
+                                    )
+                                    fishVerticalMigrationOntogeneticProbability: java.util.List[VerticalMigrationOntogeneticProbabilityConfig]
+                                    ) {
+  private def this() = this(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig])
+}
+
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
+case class VerticalMigrationOntogeneticProbabilityConfig(depthStart: Int,
                                               depthFinish: Int,
                                               hatching: Double,
                                               preFlexion: Double,
                                               flexion: Double,
                                               postFlexion: Double) {
   private def this() = this(0, 0, 0, 0, 0, 0)
+}
+
+@XmlRootElement(name = "verticalMigrationDielProbabilities")
+@XmlAccessorType(XmlAccessType.FIELD)
+case class VerticalMigrationDielConfig(
+                                    @XmlElements(
+                                      value = Array(new XmlElement(name = "verticalMigrationProbability"))
+                                    )
+                                    verticalMigrationDielProbability: java.util.List[VerticalMigrationDielProbabilityConfig]
+                                    ) {
+  private def this() = this(new JArrayList[VerticalMigrationDielProbabilityConfig])
+}
+
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
+case class VerticalMigrationDielProbabilityConfig(depthStart: Int,
+                                              depthFinish: Int,
+                                              day : Double,
+                                              night : Double) {
+  private def this() = this(0, 0, 0, 0)
 }

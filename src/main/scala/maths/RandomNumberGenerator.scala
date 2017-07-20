@@ -2,9 +2,25 @@ package maths
 
 import org.apache.commons.math3.random.MersenneTwister
 
+import scala.compat.Platform
 
-class RandomNumberGenerator(seed: Long) {
+trait Random {
+  def get: Double
+
+  def get(low: Double, high: Double): Double
+
+  def getPlusMinus: Double
+
+  def coinToss: Boolean
+
+  def seed: Long
+}
+
+object RandomNumberGenerator extends Random {
+
   private val random = new MersenneTwister(seed)
+
+  def seed: Long = 82723651
 
   def get: Double = random.nextDouble
 
@@ -21,5 +37,3 @@ class RandomNumberGenerator(seed: Long) {
 
   def coinToss: Boolean = random.nextBoolean()
 }
-
-

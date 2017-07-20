@@ -22,7 +22,12 @@ object TimeStepType extends Enumeration {
 
 object OntogeneticVerticalMigrationType extends Enumeration {
   type OntogeneticVerticalMigrationType = Value
-  val Shallow, Deep = Value
+  val Random, Restricted, StageBased = Value
+}
+
+object DielVerticalMigrationType extends Enumeration {
+  type DielVerticalMigrationType = Value
+  val Day, Night = Value
 }
 
 object DistributionType extends Enumeration {
@@ -32,12 +37,12 @@ object DistributionType extends Enumeration {
 
 object VerticalMigrationPattern extends Enumeration {
   type VerticalMigrationPattern = Value
-  val None, Dial, Ontogenetic = Value
+  val None, Diel, Ontogenetic, Both = Value
 }
 
 object SwimmingAbility extends Enumeration {
   type SwimmingAbility = Value
-  val Passive, Random, Directed, Undirected = Value
+  val Passive, Directed, Undirected = Value
 }
 
 object ShapeFileType extends Enumeration {
@@ -55,4 +60,22 @@ object OntogenyState extends Enumeration {
   val Hatching, Preflexion, Flexion, Postflexion = Value
 }
 
+object LarvaType extends Enumeration {
+  type LarvaType = Value
+  val Fish = Value
+}
 
+object QuadrantType extends Enumeration {
+  type QuadrantType = Value
+  val TopLeft, TopRight, BottomLeft, BottomRight = Value
+}
+
+object InterpolationType extends Enumeration {
+  type InterpolationType = Value
+  val Bilinear, TriLinear, Bicubic, Tricubic = Value
+}
+
+object Day extends Enumeration {
+  type Day = Value
+  val Today, Tomorrow = Value
+}
