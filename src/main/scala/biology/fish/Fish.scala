@@ -51,14 +51,9 @@ class Fish(
 
   def undergoesDielMigration : Boolean = verticalMigrationDiel.probabilities.nonEmpty
 
-  def move(newPosition: GeoCoordinate): Unit = {
-    if (newPosition.isValid) {
-      changeState(PelagicLarvaeState.Pelagic)
-      updatePosition(newPosition)
-      //updateHabitat(newHabitat)
-    } else {
-      error("The position the larva is being asked to move to is not valid")
-    }
+  def move(location: GeoCoordinate): Unit = {
+    changeState(PelagicLarvaeState.Pelagic)
+    updatePosition(location)
   }
 
   def updatePosition(newPos: GeoCoordinate): Unit = fishPosition = newPos

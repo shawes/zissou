@@ -30,6 +30,7 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
       updateDayCounters()
     } else {
       if (endOfMonth) {
+        debug("Reached the end of the month")
         currentFile += 1
         val nextday = ListBuffer.empty[(GridDataset, String)]
         variables.foreach(variable => nextday += ((loadNextFile(variable), variable)))
@@ -90,7 +91,6 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
     val path = netcdfFolder + "/" + prefix
     val netcdfFile = new NetcdfFileHandler
     val files = new File(path).list().filter(p => p.endsWith(NetcdfExtension))
-    debug("list of file has " + files.length)
     numberOfFiles = files.length
     netcdfFile.openLocalFile(path + "/" + files(currentFile))
   }
@@ -99,6 +99,7 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
     val grid = datasets.head.head._1.findGridByName(datasets.head.head._2)
     val shape = grid.getShape
     days = shape(0) - 1
+    debug("There are this many days in the month: " + days)
   }
 
   def hasNext: Boolean = currentFile < numberOfFiles

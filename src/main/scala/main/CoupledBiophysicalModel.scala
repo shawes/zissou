@@ -24,7 +24,8 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
 
   def run(): Unit = {
     val simulationTimer = new SimpleTimer()
-    info("Simulation run started at " + simulationTimer.start())
+    simulationTimer.start()
+    info("Simulation run started")
     //var iteration: Int = 1
     var iteration = 1
     ocean.initialise()
@@ -36,7 +37,7 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
       if (clock.isMidnight) {
         ocean.circulate()
         stepTimer.stop()
-        info("Day iteration " + iteration / 12 + " has been completed in " + stepTimer.result + " secs")
+        info("Day iteration " + iteration / 12 + " has been completed in " + stepTimer.result() + " secs")
         stepTimer.start()
       }
       //iteration += 1

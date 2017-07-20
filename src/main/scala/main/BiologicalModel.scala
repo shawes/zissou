@@ -51,21 +51,22 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def move(larva: Larva): Unit = {
     debug("Old position " + larva.position)
-    val newPosition = integrator.integrate(larva.position, clock.now, swim(larva))
-    larva.move(newPosition.get)
+    integrator.integrate(larva.position, clock.now, swim(larva)) match {
+      case Some(position) => larva.move(position)
+      case None => debug("Larvae could not move") //TODO: What to do if moved over land
+    }
     migrateLarvaVertically(larva)
     debug("New position " + larva.position)
   }
 
-  private def swim(larva : Larva) : Velocity = {
-    val noSwimming = new Velocity(0, 0, 0)
+  private def swim(larva : Larva) : Option[Velocity] = {
     if(larva.swimming.isDirected) {
         habitatManager.isCoordinateOverBufferLazy(larva.position, isSettlement=false) match {
-          case Some(reefIndex) => orientateTowardsReef(larva, reefIndex)
-          case None => noSwimming
+          case Some(reefIndex) => Some(orientateTowardsReef(larva, reefIndex))
+          case None => None
         }
     } else {
-      noSwimming
+      None
     }
   }
 
