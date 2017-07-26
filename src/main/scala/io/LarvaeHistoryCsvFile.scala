@@ -34,8 +34,13 @@ class LarvaeHistoryCsvFile(larvae: List[List[Larva]], filepath: String) extends 
       sb append larva.pelagicLarvalDuration + ","
       sb append larva.birthplace.name + ","
       sb append hist.state + ","
-      sb append hist.habitat.id + ","
-      sb append hist.habitat.habitat.toString + ","
+      if(hist.habitat.nonEmpty) {
+      sb append hist.habitat.get.id + ","
+      sb append hist.habitat.get.habitat.toString + ","
+    } else {
+      sb append "-1,"
+      sb append "pelagic,"
+    }
       sb append hist.position.latitude + ","
       sb append hist.position.longitude + ","
       sb append hist.position.depth + ",\n"

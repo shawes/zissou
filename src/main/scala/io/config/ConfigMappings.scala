@@ -52,8 +52,8 @@ object ConfigMappings {
   implicit def pelagicLarvalDurationMap(pld: PelagicLarvalDurationConfig): PelagicLarvalDuration =
     new PelagicLarvalDuration(new NormalDistribution(pld.mean, pld.stdev), DistributionType.Normal)
 
-  implicit def ontogenyConfigMap(o: OntogenyConfig): FishOntogeny = new FishOntogeny(Time.convertDaysToSeconds(o.preFlexion),
-    Time.convertDaysToSeconds(o.flexion), Time.convertDaysToSeconds(o.postFlexion))
+  implicit def ontogenyConfigMap(o: OntogenyConfig): FishOntogeny =
+    new FishOntogeny(o.preFlexion, o.flexion, o.postFlexion)
 
   implicit def swimmingConfigMap(s: SwimmingConfig): Swimming = new Swimming(SwimmingAbility.withName(s.ability), s.criticalSwimmingSpeed, s.inSituSwimmingPotential, s.endurance, s.reynoldsEffect)
 

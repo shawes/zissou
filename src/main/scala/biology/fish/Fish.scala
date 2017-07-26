@@ -5,11 +5,13 @@ import locals.OntogenyState.OntogenyState
 import locals.SwimmingAbility.SwimmingAbility
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.DielVerticalMigrationType.DielVerticalMigrationType
-import locals.{Constants, OntogenyState, PelagicLarvaeState, SwimmingAbility}
+import locals.HabitatType
+import locals.{Constants, OntogenyState, PelagicLarvaeState, SwimmingAbility, HabitatType}
 import org.joda.time.DateTime
 import physical.GeoCoordinate
 import physical.Velocity
 import physical.habitat.HabitatPolygon
+import physical.habitat.GeometryAdaptor
 import com.github.nscala_time.time.Imports._
 import maths.RandomNumberGenerator
 import biology._
@@ -34,6 +36,7 @@ class Fish(
   var fishSettlementDate: Option[DateTime] = None
   var fishPosition = birthplace.location
   var fishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
+  //val pelagicHabitat = Some(new GeometryAdaptor(null, -1, HabitatType.Ocean))
 
   def this() = this(0, 0, 0, null, DateTime.now(), null, null, null, null)
 
@@ -43,7 +46,7 @@ class Fish(
 
   def getOntogeny: OntogenyState = ontogeny.getState(age)
 
-  override def ontogeny: Ontogeny = fishOntogeny
+  override def ontogeny: FishOntogeny = fishOntogeny
 
   override def age: Int = fishAge
 
@@ -72,11 +75,6 @@ class Fish(
     changeState(PelagicLarvaeState.Settled)
   }
 
-  def swim() : Velocity = {
-    //val angle = orientate
-    null
-  }
-
   private def orientate(): Double = {
     if(swimming.isDirected) {
       0
@@ -97,7 +95,7 @@ class Fish(
     saveState()
   }
 
-  private def saveState() = history append new TimeCapsule(age, getOntogeny, state, polygon.orNull, position)
+  private def saveState() = fishHistory append new TimeCapsule(age, getOntogeny, state, polygon, position)
 
   override def position: GeoCoordinate = fishPosition
 

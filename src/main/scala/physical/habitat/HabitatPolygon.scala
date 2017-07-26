@@ -17,7 +17,6 @@ trait HabitatPolygon {
   def direction(coordinate : GeoCoordinate) : Double
 }
 
-
 trait HabitatPolygonToJtsGeometryAdaptor {
   self: HabitatPolygon with GeometryAdaptor =>
 }

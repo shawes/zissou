@@ -27,6 +27,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   var pelagicLarvaeCount = 0
   val geometry = new Geometry
 
+
   def apply(iteration: Int): Unit = {
     debug("Applying biology")
     calculateMortalityRate(iteration)
@@ -51,10 +52,16 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def move(larva: Larva): Unit = {
     debug("Old position " + larva.position)
-    integrator.integrate(larva.position, clock.now, swim(larva)) match {
-      case Some(position) => larva.move(position)
-      case None => debug("Larvae could not move") //TODO: What to do if moved over land
+    val dampeningFactor: List[Double] = List(1.0, 0.75, 0.5, 0.25)
+    def moveParticle(larva : Larva, dampeningFactor : List[Double]) : Unit = {
+      if(dampeningFactor.nonEmpty) {
+        integrator.integrate(larva.position, clock.now, swim(larva), dampeningFactor.head) match {
+          case Some(position) => larva.move(position)
+          case None => moveParticle(larva, dampeningFactor.tail)//debug("Larvae could not move")
+        }
+      }
     }
+    moveParticle(larva, dampeningFactor)
     migrateLarvaVertically(larva)
     debug("New position " + larva.position)
   }
