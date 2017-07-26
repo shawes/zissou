@@ -30,7 +30,7 @@ class FishFactory(fish: FishConfig, save: Boolean) extends LarvaFactory with Log
         val pld: Double = pldDistribution.sample
 
         val birthLoc = new GeoCoordinate(site.location.latitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLatitudeShift,
-          site.location.longitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift)
+          site.location.longitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift, site.location.depth)
 
          val larvalFish = new Fish(larvaeCount,
           Time.convertDaysToSeconds(pld),

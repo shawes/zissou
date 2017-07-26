@@ -7,8 +7,8 @@ object Constants {
   val SecondsInDay = 86400
   val DuskOrDawn = 2700 //Dusk or dawn roughly starts / ends 45 mins before or after sunset / sunrise
   val FlowPolygonVertices = 4
-  val MaxLatitudeShift = 0.02
-  val MaxLongitudeShift = 0.02
+  val MaxLatitudeShift = 0.005
+  val MaxLongitudeShift = 0.005
   val LarvaeCapacityAtSite = 10000
   //val NoClosestReefFound = -1
   val Ocean = -27
