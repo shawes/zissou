@@ -7,7 +7,7 @@ import biology.fish._
 import com.github.nscala_time.time.Imports._
 import io.{InputFiles, OutputFiles}
 import locals._
-import maths.{ContinuousRange, NormalDistribution, Time}
+import maths.{ContinuousRange, NormalDistribution}
 import org.joda.time.DateTime
 import physical.flow.{Depth, Flow}
 import physical.habitat.Buffer

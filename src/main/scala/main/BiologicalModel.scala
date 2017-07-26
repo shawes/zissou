@@ -54,11 +54,15 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     debug("Old position " + larva.position)
     val dampeningFactor: List[Double] = List(1.0, 0.75, 0.5, 0.25)
     def moveParticle(larva : Larva, dampeningFactor : List[Double]) : Unit = {
+      debug("Dampening factor size: " + dampeningFactor.size)
       if(dampeningFactor.nonEmpty) {
         integrator.integrate(larva.position, clock.now, swim(larva), dampeningFactor.head) match {
           case Some(position) => larva.move(position)
           case None => moveParticle(larva, dampeningFactor.tail)//debug("Larvae could not move")
         }
+      } else {
+        debug("Larvae could not move")
+        larva.move(larva.position)
       }
     }
     moveParticle(larva, dampeningFactor)

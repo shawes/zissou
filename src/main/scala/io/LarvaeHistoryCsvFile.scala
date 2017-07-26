@@ -13,7 +13,7 @@ class LarvaeHistoryCsvFile(larvae: List[List[Larva]], filepath: String) extends 
     info("Writing " + larvae.size + " larvae")
     var count = 1
     for (larvaeList <- larvae) {
-      val bw = new BufferedWriter(new java.io.FileWriter(new File(filepath + "//larvae_paths" + count + ".csv")))
+      val bw = new BufferedWriter(new java.io.FileWriter(new File(filepath + "//larvae_log_batch" + count + ".csv")))
       bw.write(columnHeaders)
       bw.newLine()
       larvaeList.foreach(larva => bw.write(writeCsvRow(larva)))
@@ -32,21 +32,21 @@ class LarvaeHistoryCsvFile(larvae: List[List[Larva]], filepath: String) extends 
       sb append hist.age + ","
       sb append hist.stage + ","
       sb append larva.pelagicLarvalDuration + ","
-      sb append larva.birthplace.name.toLowerCase + ","
+      sb append larva.birthplace.name + ","
       sb append hist.state + ","
       if(hist.habitat.nonEmpty) {
-      sb append hist.habitat.get.id + ","
-      sb append hist.habitat.get.habitat.toString.toLowerCase + ","
-    } else {
-      sb append "-1,"
-      sb append "ocean,"
-    }
+        sb append hist.habitat.get.id + ","
+        sb append hist.habitat.get.habitat.toString + ","
+      } else {
+        sb append "-1,"
+        sb append "ocean,"
+      }
       sb append hist.position.latitude + ","
       sb append hist.position.longitude + ","
       sb append hist.position.depth + ",\n"
     })
 
-    val csvRow = sb.toString()
+    val csvRow = sb.toString().toLowerCase()
     debug(csvRow)
     csvRow
 
