@@ -37,6 +37,7 @@ class Fish(
   var fishPosition = birthplace.location
   var fishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
   //val pelagicHabitat = Some(new GeometryAdaptor(null, -1, HabitatType.Ocean))
+  var lastDielMigration : Option[DielVerticalMigrationType] = None
 
   def this() = this(0, 0, 0, null, DateTime.now(), null, null, null, null)
 
@@ -111,9 +112,12 @@ class Fish(
   }
 
   override def dielVerticallyMigrate(dielMigration : DielVerticalMigrationType) : Unit = {
-    val depth = verticalMigrationDiel.getDepth(dielMigration)
-    val newDepth = new GeoCoordinate(position.latitude, position.longitude, depth)
-    updatePosition(newDepth)
+    if(!lastDielMigration.isDefined || lastDielMigration.get != dielMigration) {
+      val depth = verticalMigrationDiel.getDepth(dielMigration)
+      val newDepth = new GeoCoordinate(position.latitude, position.longitude, depth)
+      updatePosition(newDepth)
+      lastDielMigration = Some(dielMigration)
+   }
   }
 
   override def toString: String =
