@@ -24,4 +24,8 @@ class PhysicalModel(val config: Configuration) extends Logging {
       flowController.refresh(flowFile.next())
     }
   }
+
+  def close() : Unit = {
+    flowFile.closeAllOpenDatasets()
+  }
 }

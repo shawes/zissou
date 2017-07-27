@@ -44,6 +44,8 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
       iteration += 1
     }
 
+    ocean.close()
+
     val resultsWriter = new ResultsIO(biology.fishLarvae.toList, config.output)
     resultsWriter.write()
     simulationTimer.stop()

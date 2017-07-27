@@ -2,9 +2,7 @@ name := "zissou"
 
 version := "1.0"
 
-crossScalaVersions := Seq("2.11.8", "2.11.1", "2.10.3")
-
-scalaVersion := "2.12.1"
+scalaVersion := "2.12.2"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:implicitConversions")
 
@@ -12,6 +10,13 @@ parallelExecution in Test := false
 
 resolvers += Resolver.sonatypeRepo("public")
 assemblyJarName in assembly := "zissou.jar"
+
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", "jdom-info.xml") => MergeStrategy.first
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}
 
 libraryDependencies ++= Seq(
   "org.scalactic" %% "scalactic" % "3.0.1",
@@ -28,9 +33,9 @@ libraryDependencies ++= Seq(
   "edu.ucar" % "cdm" % "4.6.8",
   //"edu.ucar" % "opendap" % "latest.integration",
   "org.geotools" % "gt-shapefile" % "17-RC1",
-  "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
-  "javax.media" % "jai_codec" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
-  "javax.media" % "jai_imageio" % "1.1" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar",
+  "javax.media" % "jai_core" % "1.1.3" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
+  "javax.media" % "jai_codec" % "1.1.3" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
+  "javax.media" % "jai_imageio" % "1.1" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar",
   "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.1"
 )
 

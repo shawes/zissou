@@ -47,7 +47,7 @@ class LarvaeHistoryCsvFile(larvae: List[List[Larva]], filepath: String) extends 
     })
 
     val csvRow = sb.toString().toLowerCase()
-    debug(csvRow)
+    //debug(csvRow)
     csvRow
 
   }

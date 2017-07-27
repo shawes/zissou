@@ -93,8 +93,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     if(larva.undergoesDielMigration) {
       debug("Diel migration")
       if(clock.isSunRising(larva.position, "Australia/Sydney")) {
+        debug("Rising sun")
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Day)
       } else if(clock.isSunSetting(larva.position, "Australia/Sydney")) {
+        debug("Setting sun")
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
       }
     }

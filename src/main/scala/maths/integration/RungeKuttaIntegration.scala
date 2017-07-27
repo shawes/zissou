@@ -19,8 +19,8 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
   }
 
   private def performRungeKuttaSteps(velocity: Velocity, coordinate: GeoCoordinate, time: DateTime, swimming: Option[Velocity], dampening: Double) : Option[GeoCoordinate] = {
-    val step1 = performRungeKuttaIteration(coordinate, Some(velocity), timeStep, time, swimming)
-    //debug("Step1 v= " + step1.velocity + " at the location " + step1.coordinate)
+    val step1 = performRungeKuttaIteration(coordinate, Some(velocity*dampening), timeStep, time, swimming)
+    debug("Step1 v= " + step1.velocity + " at the location " + step1.coordinate)
     if (step1.velocity.isDefined) {
       val step2 = performRungeKuttaIteration(coordinate, Some(step1.velocity.get*dampening), (timeStep * 1.5).toInt, time, swimming)
       //debug("Step2 v= " + step2.velocity + " at the location " + step2.coordinate)
@@ -41,14 +41,22 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
             val integratedVelocity = new Velocity(u, v, w)*dampening
             val turbulentVelocity = turbulence.apply(integratedVelocity)
 
-            return Some(geometry.translatePoint(coordinate, turbulentVelocity, timeStep, swimming.getOrElse(new Velocity(0, 0, 0))))
+            Some(geometry.translatePoint(coordinate, turbulentVelocity, timeStep, swimming.getOrElse(new Velocity(0, 0, 0))))
             //debug("RK4 velocity is " + integratedVelocity + " and moved to " + point)
             //point
+          } else {
+            None
           }
+        } else {
+          None
         }
+      } else {
+        None
       }
     }
-    None
+    else {
+      None
+    }
   }
     //val newVelocity = flow.getVelocityOfCoordinate(point, isFuture = true)
     // If there is no velocity at the next time step, assume its land and don't move
@@ -62,9 +70,9 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
       val normalisedTime = partialTimeStep - timeStep
       //debug("Normalised time is " + partialTimeStep + "-" + timeStep + "=" + normalisedTime)
       val newCoordinate = geometry.translatePoint(coordinate, velocity.get, partialTimeStep, swimming.getOrElse(new Velocity(0,0,0)))
-      //debug("New coord is " + newCoordinate)
+      //debug("New translated coord is " + newCoordinate)
       val newVelocity = flow.getVelocityOfCoordinate(newCoordinate, time.plusSeconds(normalisedTime), time, partialTimeStep)
-      //debug("New velocity is " + newVelocity)
+      //debug("New translated velocity is " + newVelocity)
       //if (newVelocity.isEmpty) {
       //  new RungeKuttaStepDerivative(new Velocity(Double.NaN, Double.NaN), newCoordinate)
       // } else {
