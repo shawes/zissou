@@ -5,7 +5,7 @@ import org.scalatest.{FlatSpec, PrivateMethodTester}
 
 class GeoCoordinateTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
-  "A geo coordinate" should "not be null" in {
+  "A geocoordinate" should "not be null" in {
     val coordinate = new GeoCoordinate(1,2,3)
     assert(coordinate != null)
   }
@@ -56,7 +56,7 @@ class GeoCoordinateTest extends FlatSpec with MockitoSugar with PrivateMethodTes
 
   it should "pretty print the coordinate" in {
     val coordinate = new GeoCoordinate(1,2,3)
-    val printText = "lat=1.0, lon=2.0, depth=3.0"
+    val printText = "lat=1.00000, lon=2.00000, depth=3.0"
     assert(coordinate.toString == printText)
   }
 

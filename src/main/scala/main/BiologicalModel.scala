@@ -52,15 +52,17 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def move(larva: Larva): Unit = {
     debug("Old position " + larva.position)
-    val dampeningFactor: List[Double] = List(1.0, 0.75, 0.5, 0.25)
+    val dampeningFactor: List[Double] = List(1.0, 0.66, 0.33)
+    val orientate = swim(larva)
     def moveParticle(larva : Larva, dampeningFactor : List[Double]) : Unit = {
       debug("Dampening factor size: " + dampeningFactor.size)
       if(dampeningFactor.nonEmpty) {
-        integrator.integrate(larva.position, clock.now, swim(larva), dampeningFactor.head) match {
+        integrator.integrate(larva.position, clock.now, orientate, dampeningFactor.head) match {
           case Some(position) => larva.move(position)
           case None => moveParticle(larva, dampeningFactor.tail)//debug("Larvae could not move")
         }
-      } else {
+      }
+      else {
         debug("Larvae could not move")
         larva.move(larva.position)
       }
@@ -89,6 +91,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def migrateLarvaVertically(larva: Larva): Unit = {
     if(larva.undergoesDielMigration) {
+      debug("Diel migration")
       if(clock.isSunRising(larva.position, "Australia/Sydney")) {
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Day)
       } else if(clock.isSunSetting(larva.position, "Australia/Sydney")) {
@@ -96,7 +99,8 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
       }
     }
     if(larva.undergoesOntogeneticMigration) {
-        larva.ontogeneticVerticallyMigrate
+      debug("OVM migration")
+      larva.ontogeneticVerticallyMigrate
     }
   }
 

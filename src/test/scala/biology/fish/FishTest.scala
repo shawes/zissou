@@ -96,13 +96,13 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     assert(fish.history.isEmpty)
   }
 
-  it should "not move when there is an invalid position" in {
-    val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
-      ontogeny, swimming, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
-    val invalidPoint = new GeoCoordinate(Double.NaN, Double.NaN, 0)
-    fish.move(invalidPoint)
-    assert(fish.position == birthplace.location)
-  }
+  // it should "not move when there is an invalid position" in {
+  //   val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
+  //     ontogeny, swimming, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
+  //   val invalidPoint = new GeoCoordinate(Double.NaN, Double.NaN, 0)
+  //   fish.move(invalidPoint)
+  //   assert(fish.position == birthplace.location)
+  // }
 
   it should "move when there is an valid position" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,

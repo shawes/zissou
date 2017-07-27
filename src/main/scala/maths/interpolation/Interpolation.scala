@@ -16,7 +16,7 @@ class Interpolation extends Logging {
   def apply(coordinate: GeoCoordinate, grid: FlowGridWrapper, index: Array[Int]): Option[Velocity] = {
     //debug("Interpolating the coordinate " + coordinate)
     val centroid = grid.getCentroid(index)
-    //debug("Retrieved the polygon " + polygon.id)
+    //debug("Retrieved the grid " + centroid)
     val latitudeDisplacement = (coordinate.latitude - centroid.latitude) * (1.0 / 0.1) + 1.0
     val longitudeDisplacement = (coordinate.longitude - centroid.longitude) * (1.0 / 0.1) + 1.0
     //debug("Latitude displacement = " + latitudeDisplacement + ", longitude displacement = " + longitudeDisplacement)

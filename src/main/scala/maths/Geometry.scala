@@ -12,6 +12,7 @@ class Geometry {
 
     val xDistance = (velocity.u + swimming.u) * timeStep
     val yDistance = (velocity.v + swimming.v) * timeStep
+    val zDistance = velocity.w * timeStep
 
     val kmLatitude = (-0.00000344188 * math.pow(point.latitude, 3)) + (.000466 * math.pow(point.latitude, 2)) +
       (-0.001537 * point.latitude) + 110.572356
@@ -21,7 +22,7 @@ class Geometry {
     //val depth = ceilingDepth(point.depth + (velocity.w * timeStep))
 
     new GeoCoordinate(point.latitude + (xDistance / (kmLatitude * 1000)),
-      point.longitude + (yDistance / (kmLongitude * 1000)), point.depth)
+      point.longitude + (yDistance / (kmLongitude * 1000)), point.depth + zDistance)
   }
 
   /**

@@ -9,13 +9,13 @@ import io.config.Configuration
 
 class BiologicalModelTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
-  "Biological model" should "initialise" in {
-    val mockIntegrator = mock[RungeKuttaIntegration]
-    val mockClock = mock[SimulationClock]
-    val mockConfig = mock[Configuration]
-    val model = new BiologicalModel(mockConfig, mockClock, mockIntegrator)
-    assert(model != null)
-  }
+  // "Biological model" should "initialise" in {
+  //   val mockIntegrator = mock[RungeKuttaIntegration]
+  //   val mockClock = mock[SimulationClock]
+  //   val mockConfig = mock[Configuration]
+  //   val model = new BiologicalModel(mockConfig, mockClock, mockIntegrator)
+  //   assert(model != null)
+  // }
 
   // it should "...." in {
   //
