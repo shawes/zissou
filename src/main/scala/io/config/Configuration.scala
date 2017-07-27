@@ -169,9 +169,9 @@ case class PelagicLarvalDurationConfig(mean: Double, stdev: Double, distribution
 @XmlAccessorType(XmlAccessType.FIELD)
 case class VerticalMigrationOntogeneticConfig(
                                     @XmlElements(
-                                      value = Array(new XmlElement(name = "verticalMigrationProbability"))
+                                      value = Array(new XmlElement(name = "verticalMigrationOntogeneticProbability"))
                                     )
-                                    fishVerticalMigrationOntogeneticProbability: java.util.List[VerticalMigrationOntogeneticProbabilityConfig]
+                                    verticalMigrationOntogeneticProbability: java.util.List[VerticalMigrationOntogeneticProbabilityConfig]
                                     ) {
   private def this() = this(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig])
 }
@@ -191,7 +191,7 @@ case class VerticalMigrationOntogeneticProbabilityConfig(depthStart: Int,
 @XmlAccessorType(XmlAccessType.FIELD)
 case class VerticalMigrationDielConfig(
                                     @XmlElements(
-                                      value = Array(new XmlElement(name = "verticalMigrationProbability"))
+                                      value = Array(new XmlElement(name = "verticalMigrationDielProbability"))
                                     )
                                     verticalMigrationDielProbability: java.util.List[VerticalMigrationDielProbabilityConfig]
                                     ) {

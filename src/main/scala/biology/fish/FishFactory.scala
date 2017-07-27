@@ -19,11 +19,13 @@ class FishFactory(fish: FishConfig, save: Boolean) extends LarvaFactory with Log
    val postFlexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fish.ontogeny.postFlexion), Constants.SecondsInDay *0.5)
   var larvaeCount: Int = 0
 
+  //debug("VERT: " + fish.verticalMigrationOntogeneticProbabilities.size)
+
 
   override def create(site: SpawningLocation, time: DateTime): List[Fish] = {
     val larvae: ListBuffer[Fish] = ListBuffer.empty
     //for (site <- sites) {
-    // debug("Site found is " + site.toString)
+
     // val larvaeAtSite = new ListBuffer[ReefFish]
       for (i <- 0 until site.numberOfLarvae) {
         larvaeCount += 1
@@ -39,9 +41,11 @@ class FishFactory(fish: FishConfig, save: Boolean) extends LarvaFactory with Log
           Time.convertDaysToSeconds(pld),
           new Birthplace(site.title, birthLoc),
           time,
-          new FishOntogeny(preFlexionDistribution.sample().toInt, flexionDistribution.sample().toInt, postFlexionDistribution.sample().toInt),
+          new FishOntogeny(preFlexionDistribution.sample().toInt,     flexionDistribution.sample().toInt,
+          postFlexionDistribution.sample().toInt),
           fish.swimming,
-          fish.verticalMigrationOntogeneticProbabilities, fish.verticalMigrationDielProbabilities)
+          fish.verticalMigrationOntogeneticProbabilities,
+          fish.verticalMigrationDielProbabilities)
           larvae += larvalFish
                   // debug("The ontogeny is " + larvalFish.ontogeny.preFlexion + ", " + larvalFish.ontogeny.flexion + ", " + larvalFish.ontogeny.postFlexion)
       }
