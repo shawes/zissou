@@ -58,4 +58,8 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Loggin
     return false
   }
 
+  private def getTimeZone(location : GeoCoordinate) : Double = {
+    location.longitude * 24 / 360
+  }
+
 }
