@@ -25,7 +25,7 @@ class PhysicalModel(val config: Configuration) extends Logging {
     }
   }
 
-  def close() : Unit = {
-    flowFile.closeAllOpenDatasets()
+  def shutdown() : Unit = {
+    flowFile.shutdown()
   }
 }

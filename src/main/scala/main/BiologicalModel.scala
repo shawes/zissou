@@ -58,11 +58,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
       debug("Dampening factor size: " + dampeningFactor.size)
       if(dampeningFactor.nonEmpty) {
         integrator.integrate(larva.position, clock.now, orientate, dampeningFactor.head) match {
-          case Some(position) => larva.move(position)
+          case Some(newPosition) => larva.move(newPosition)
           case None => moveParticle(larva, dampeningFactor.tail)//debug("Larvae could not move")
         }
-      }
-      else {
+      } else {
         debug("Larvae could not move")
         larva.move(larva.position)
       }
@@ -125,13 +124,13 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
         val reefIndex = habitatManager.isCoordinateOverBufferLazy(larva.position, isSettlement=true)
         // = habitatManager.getIndexOfNearestReef(larva.position)
         if (reefIndex.isDefined) {
-          debug("Larva is within reef buffer")
+          debug("Larva is within reef buffer, so settle that bitch")
           larva.settle(habitatManager.getReef(reefIndex.get), clock.now)
           pelagicLarvaeCount -= 1
         } else {
           val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
           val reef = habitatManager.getReef(distanceIndex)
-          debug("Closest reef is still " + reef.distance(larva.position) * 100 + "km away")
+          debug("Closest reef is still " + reef.distance(larva.position)/10 + "km away")
         }
       }
       else {

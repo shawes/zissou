@@ -19,6 +19,7 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
   var day = 0
   var days = 0
   var numberOfFiles = Int.MaxValue
+  val netcdfHandler = new NetcdfFileHandler()
 
   def next(): FlowGridWrapper = {
     debug("Getting the next day")
@@ -87,12 +88,16 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
     }
   }
 
+  def shutdown() : Unit = {
+    closeAllOpenDatasets()
+    netcdfHandler.shutdown()
+  }
+
   private def loadNextFile(prefix: String): GridDataset = {
     val path = netcdfFolder + "/" + prefix
-    val netcdfFile = new NetcdfFileHandler
     val files = new File(path).list().filter(p => p.endsWith(NetcdfExtension))
     numberOfFiles = files.length
-    netcdfFile.openLocalFile(path + "/" + files(currentFile))
+    netcdfHandler.openLocalFile(path + "/" + files(currentFile))
   }
 
   private def updateDayCounters() : Unit = {

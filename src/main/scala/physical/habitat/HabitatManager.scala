@@ -113,10 +113,12 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
 
   def isCoordinateOverBufferLazy(coordinate: GeoCoordinate, isSettlement: Boolean): Option[Int] = {
     val nearestReefIndex = getIndexOfNearestReef(coordinate)
-    val distance = geometry.getDistanceBetweenTwoPoints(coordinate, reefHabitatPolygons(nearestReefIndex).centroid)
+    val distance = geometry.getDistanceBetweenTwoPoints(coordinate, reefHabitatPolygons(nearestReefIndex).centroid)/1000
+
     // val distances = reefHabitatPolygons.map(reef => geometry.getDistanceBetweenTwoPoints(coordinate,reef.centroid)
     val threshold = if(isSettlement) buffer.settlement else buffer.olfactory
-    if (distance < threshold * 1000) {
+    debug("Distance is: "+ distance+", threshold is: "+threshold)
+    if (distance < threshold) {
       Some(nearestReefIndex)
     } else {
       None

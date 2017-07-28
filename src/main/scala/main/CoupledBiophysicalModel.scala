@@ -23,6 +23,7 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
   val biology = new BiologicalModel(config, clock, integrator)
 
   def run(): Unit = {
+    try {
     val simulationTimer = new SimpleTimer()
     simulationTimer.start()
     info("Simulation run started")
@@ -44,11 +45,16 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
       iteration += 1
     }
 
-    ocean.close()
+    ocean.shutdown()
 
     val resultsWriter = new ResultsIO(biology.fishLarvae.toList, config.output)
     resultsWriter.write()
     simulationTimer.stop()
     info("Simulation run completed in " + simulationTimer.result / 60 + " minutes")
+  } catch {
+    case e : Exception => e.printStackTrace()
+  } finally {
+    ocean.shutdown()
   }
+}
 }

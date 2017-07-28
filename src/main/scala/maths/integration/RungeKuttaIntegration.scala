@@ -38,12 +38,17 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Turbulence, timeSt
             val v = (step1.velocity.get.v + (2 * step2.velocity.get.v) + (2 * step3.velocity.get.v) + step4.velocity.get.v) * 0.16666
             val w = (step1.velocity.get.w + (2 * step2.velocity.get.w) + (2 * step3.velocity.get.w) + step4.velocity.get.w) * 0.16666
 
-            val integratedVelocity = new Velocity(u, v, w)*dampening
-            val turbulentVelocity = turbulence.apply(integratedVelocity)
+            //debug("Dampening factor is: " + dampening)
+            val integratedVelocity = new Velocity(u, v, w)
+            debug("Integrated velocity is: " + integratedVelocity)
 
-            Some(geometry.translatePoint(coordinate, turbulentVelocity, timeStep, swimming.getOrElse(new Velocity(0, 0, 0))))
-            //debug("RK4 velocity is " + integratedVelocity + " and moved to " + point)
-            //point
+            val turbulentVelocity = turbulence.apply(integratedVelocity)
+            debug("Turbulent velocity is: " + turbulentVelocity)
+            val point = geometry.translatePoint(coordinate, turbulentVelocity, timeStep, swimming.getOrElse(new Velocity(0, 0, 0)))
+            flow.getVelocityOfCoordinate(point, Today) match {
+              case Some(velocity) => Some(point)
+              case None => None
+            }
           } else {
             None
           }
