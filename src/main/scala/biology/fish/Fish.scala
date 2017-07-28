@@ -107,8 +107,7 @@ class Fish(
 
   override def ontogeneticVerticallyMigrate: Unit = {
     val depth = verticalMigrationOntogenetic.getDepth(getOntogeny)
-    val newDepth = new GeoCoordinate(position.latitude, position.longitude, depth)
-    updatePosition(newDepth)
+    updatePosition(new GeoCoordinate(position.latitude, position.longitude, depth))
   }
 
   override def dielVerticallyMigrate(dielMigration : DielVerticalMigrationType) : Unit = {

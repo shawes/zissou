@@ -8,9 +8,7 @@ import com.github.nscala_time.time.Imports._
 import org.joda.time.Days
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator
 import com.luckycatlabs.sunrisesunset.dto.Location
-import java.util.Calendar
 import java.util.Locale
-import java.util.TimeZone
 import org.joda.time.Seconds
 
 
