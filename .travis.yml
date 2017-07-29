@@ -4,11 +4,11 @@ sudo: false
 language: scala
 
 scala:
-   - 2.12.1
+   - 2.12.2
 
 branches:
   only:
-    - dev
+    - master
 
 jdk:
   - oraclejdk8
