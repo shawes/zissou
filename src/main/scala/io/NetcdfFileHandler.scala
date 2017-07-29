@@ -6,7 +6,7 @@ import ucar.nc2.dataset.NetcdfDataset
 
 class NetcdfFileHandler extends Logging {
 
-  NetcdfDataset.initNetcdfFileCache(1,200,15*60)
+  //NetcdfDataset.initNetcdfFileCache(1,200,15*60)
 
   def openLocalFile(file: String): GridDataset = {
      GridDataset.open(file)
