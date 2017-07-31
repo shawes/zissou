@@ -15,28 +15,22 @@ class Interpolation extends Logging {
   //TODO: Get dimensions from flow grid
   def apply(coordinate: GeoCoordinate, grid: FlowGridWrapper, index: Array[Int]): Option[Velocity] = {
     this.synchronized {
-    //debug("Interpolating the coordinate " + coordinate)
-    val centroid = grid.getCentroid(index)
-    //debug("Retrieved the grid " + centroid)
-    val latitudeDisplacement = (coordinate.latitude - centroid.latitude) * (1.0 / 0.1) + 1.0
-    val longitudeDisplacement = (coordinate.longitude - centroid.longitude) * (1.0 / 0.1) + 1.0
-    //debug("Latitude displacement = " + latitudeDisplacement + ", longitude displacement = " + longitudeDisplacement)
+      val centroid = grid.getCentroid(index)
+      val latitudeDisplacement = (coordinate.latitude - centroid.latitude) * (1.0 / 0.1) + 1.0
+      val longitudeDisplacement = (coordinate.longitude - centroid.longitude) * (1.0 / 0.1) + 1.0
 
-    //val bicubicInterpolation = new BicubicInterpolation()
-    //val bilinearInterpolation = new BilinearInterpolation()
-
-    val neighbourhood = grid.getInterpolationValues(coordinate, Bicubic)
-    if (neighbourhood.isDefined) {
-      Some(interpolate(Bicubic, neighbourhood.get, longitudeDisplacement, latitudeDisplacement))
-    } else {
-      val neighbourhood = grid.getInterpolationValues(coordinate, Bilinear)
+      val neighbourhood = grid.getInterpolationValues(coordinate, Bicubic)
       if (neighbourhood.isDefined) {
-        Some(interpolate(Bilinear, neighbourhood.get, longitudeDisplacement, latitudeDisplacement))
+        Some(interpolate(Bicubic, neighbourhood.get, longitudeDisplacement, latitudeDisplacement))
       } else {
-        grid.getVelocity(index)
+        val neighbourhood = grid.getInterpolationValues(coordinate, Bilinear)
+        if (neighbourhood.isDefined) {
+          Some(interpolate(Bilinear, neighbourhood.get, longitudeDisplacement, latitudeDisplacement))
+        } else {
+          grid.getVelocity(index)
+        }
       }
     }
-  }
   }
 
   private def interpolate(interpolation: InterpolationType, neighbourhood: Array[Array[Velocity]],

@@ -79,15 +79,6 @@ class Fish(
     changeState(PelagicLarvaeState.Settled)
   }
 
-  private def orientate(): Double = {
-    if(swimming.isDirected) {
-      0
-    } else
-    return 1
-      //TODO: Needs to find the nearest fishPolygon
-      //TODO: From there is the distance is below a scent threshold, swim towards it
-  }
-
   def updateHabitat(newHabitat: HabitatPolygon): Unit = fishPolygon = Some(newHabitat)
 
   def kill(): Unit = {

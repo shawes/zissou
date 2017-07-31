@@ -59,7 +59,7 @@ class FlowController(var flow: Flow) extends Logging {
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, day: Day): Option[Velocity] = {
     val index = flowGrids.head.getIndex(coordinate, day)
-    //debug("The index of the flowGrid is: "+ index)
+    debug("The index of the flowGrid is: "+ index)
     // Move the particle upwards if there is no velocity found at the depth (assuming its not that deep)
     // while (!flowGrids.head.getVelocity(index).isDefined && index(NetcdfIndex.Z) > 0) {
     //   index(NetcdfIndex.Z) -= 1
