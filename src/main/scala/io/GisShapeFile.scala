@@ -5,9 +5,11 @@ import java.util
 
 import biology.{Larva, TimeCapsule}
 import com.vividsolutions.jts.geom.{Coordinate, LineString, MultiLineString, Point}
+
 import locals.ShapeFileType._
 import locals.{OntogenyState, ShapeFileType}
 import org.geotools.data._
+import grizzled.slf4j.Logging
 
 //import org.geotools.data.{DataStore, DefaultTransaction}
 import org.geotools.data.collection.ListFeatureCollection
@@ -21,7 +23,7 @@ import physical.adaptors.GeometryToGeoCoordinateAdaptor
 
 import scala.collection.mutable.ListBuffer
 
-class GisShapeFile() {
+class GisShapeFile() extends Logging {
 
   val ShapeFileName = "LarvaePaths.shp"
   val geometryFactory = JTSFactoryFinder.getGeometryFactory()
@@ -43,31 +45,57 @@ class GisShapeFile() {
   }
 
   private def writeLineShapeFile(larvae: List[Larva], file: File) = {
-
+    debug("Writing line shape file")
     val features = new java.util.ArrayList[SimpleFeature]
-    val featureBuilder = new SimpleFeatureBuilder(createLineSchema())
+
+    //rivate static SimpleFeatureType createFeatureType() {
+
+        val builder :SimpleFeatureTypeBuilder = new SimpleFeatureTypeBuilder()
+        builder.setName("Larvae");
+        builder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate reference system
+
+        // add attributes in order
+        //     schema.setCRS(DefaultGeographicCRS.WGS84)
+        builder.add("the_geom", classOf[LineString])
+        //builder.add("id", classOf[Integer])
+
+
+        //builder.add("Location", Point.class);
+        //builder.length(15).add("Name", String.class); // <- 15 chars width for name field
+
+        // build the type
+        val  larvaLine  :SimpleFeatureType = builder.buildFeatureType();
+
+        //return LOCATION;
+    //}
+
 
     for (larva <- larvae) {
-      val hatchingFilter = larva.history.filter(x => x.stage == OntogenyState.Hatching)
-      val preflexionFilter = larva.history.filter(x => x.stage == OntogenyState.Preflexion)
-      val flexionFilter = larva.history.filter(x => x.stage == OntogenyState.Flexion)
-      val postFlexionFilter = larva.history.filter(x => x.stage == OntogenyState.Postflexion)
-
-      val lines = new ListBuffer[LineString]()
-      lines += writeStageLine(hatchingFilter.toList)
-      lines += writeStageLine(preflexionFilter.toList)
-      lines += writeStageLine(flexionFilter.toList)
-      lines += writeStageLine(postFlexionFilter.toList)
-
-      addMultiLineFeature(featureBuilder, larva.id, lines.toArray)
+      // val hatchingFilter = larva.history.filter(x => x.stage == OntogenyState.Hatching)
+      // val preflexionFilter = larva.history.filter(x => x.stage == OntogenyState.Preflexion)
+      // val flexionFilter = larva.history.filter(x => x.stage == OntogenyState.Flexion)
+      // val postFlexionFilter = larva.history.filter(x => x.stage == OntogenyState.Postflexion)
+      // debug("Hatching movements are: "+hatchingFilter.size)
+      // val lines = new ListBuffer[LineString]()
+      // lines += writeStageLine(hatchingFilter.toList)
+      // lines += writeStageLine(preflexionFilter.toList)
+      // lines += writeStageLine(flexionFilter.toList)
+      // lines += writeStageLine(postFlexionFilter.toList)
+      val featureBuilder = new SimpleFeatureBuilder(larvaLine)
+      featureBuilder.add(writeStageLine(larva.history.toList))
+      //featureBuilder.set("id", larva.id)
+      val feature = featureBuilder.buildFeature(null)
+      debug("Id is: "+feature.getID())
+      features.add(feature)
     }
+
     val dataStoreFactory: FileDataStoreFactorySpi = new ShapefileDataStoreFactory()
     val params = createParams(file)
-    val featureType = createLineSchema()
+    //val featureType = createLineSchema()
     val newDataStore = dataStoreFactory.createNewDataStore(params)
-    newDataStore.createSchema(featureType)
+    newDataStore.createSchema(larvaLine)
     //writeFeaturesToShapeFile(features, newDataStore)
-    val collection = new ListFeatureCollection(featureType, features)
+    val collection = new ListFeatureCollection(larvaLine, features)
     val typeName: String = newDataStore.getTypeNames.head
     val featureSource = newDataStore.getFeatureSource(typeName)
     val createTransaction = new DefaultTransaction("create")
@@ -81,13 +109,9 @@ class GisShapeFile() {
   private def writeStageLine(history: List[TimeCapsule]): LineString = {
     val coordinates = new ListBuffer[Coordinate]()
     for (hist <- history) {
-      coordinates += new Coordinate(hist.position.latitude, hist.position.longitude)
+      coordinates += new Coordinate(hist.position.longitude, hist.position.latitude)
     }
-    if (coordinates.size > 1) {
-      geometryFactory.createLineString(coordinates.toArray)
-    } else {
-      geometryFactory.createLineString(new Array[Coordinate](0))
-    }
+    geometryFactory.createLineString(coordinates.toArray)
   }
 
   private def createParams(file: File): util.HashMap[String, Serializable] = {
@@ -100,8 +124,8 @@ class GisShapeFile() {
   private def addMultiLineFeature(featureBuilder: SimpleFeatureBuilder, id: Int, lines: Array[LineString]): SimpleFeature = {
 
     val multi = geometryFactory.createMultiLineString(lines)
-    featureBuilder.add(id)
     featureBuilder.add(multi)
+    featureBuilder.add(id)
     featureBuilder.buildFeature(null)
   }
 
@@ -109,8 +133,8 @@ class GisShapeFile() {
     val schema = new SimpleFeatureTypeBuilder()
     schema.setName("LarvaePaths")
     schema.setCRS(DefaultGeographicCRS.WGS84)
-    schema.add("the_geom", classOf[MultiLineString])
-    schema.add("id", classOf[Integer])
+    schema.add("Path", classOf[LineString])
+    schema.add("Id", classOf[Integer])
     schema.buildFeatureType()
   }
 
@@ -132,33 +156,39 @@ class GisShapeFile() {
     val collection = new ListFeatureCollection(featureType, features)
 
 
-
-
     val transaction = new DefaultTransaction("create")
     val typeName: String = dataStore.getTypeNames()(0)
     val featureSource = dataStore.getFeatureSource(typeName)
 
+    val featureStore = featureSource.asInstanceOf[SimpleFeatureStore]
+    //if (shape == ShapeFileType.Line) {
+    //val collection = new ListFeatureCollection(createLineSchema(), features)
+    featureStore.setTransaction(transaction)
+    featureStore.addFeatures(collection)
+    transaction.commit()
+    transaction.close()
+  //}
 
-    /* featureSource match {
-       case sfs: SimpleFeatureStore =>
-         val featureStore = featureSource.asInstanceOf[SimpleFeatureStore]
-         if (shape == ShapeFileType.Line) {
-         val collection = new ListFeatureCollection(createLineSchema(), features)
-         featureStore.setTransaction(transaction)
-         featureStore.addFeatures(collection)
-         transaction.commit()
-           transaction.close()
-         }
-         else {
-           val collection = new ListFeatureCollection(createLineSchema(), features)
-           featureStore.setTransaction(transaction)
-           featureStore.addFeatures(collection)
-           transaction.commit()
-         transaction.close()
-         }
-       case _ =>
-         throw new scala.IllegalArgumentException()
-     }*/
+    // featureSource match {
+    //    case sfs: SimpleFeatureStore =>
+    //      val featureStore = featureSource.asInstanceOf[SimpleFeatureStore]
+    //      if (shape == ShapeFileType.Line) {
+    //      val collection = new ListFeatureCollection(createLineSchema(), features)
+    //      featureStore.setTransaction(transaction)
+    //      featureStore.addFeatures(collection)
+    //      transaction.commit()
+    //        transaction.close()
+    //      }
+    //      else {
+    //        val collection = new ListFeatureCollection(createLineSchema(), features)
+    //        featureStore.setTransaction(transaction)
+    //        featureStore.addFeatures(collection)
+    //        transaction.commit()
+    //      transaction.close()
+    //      }
+    //    case _ =>
+    //      throw new scala.IllegalArgumentException()
+    //  }
   }
 
   private def addPointFeature(featureBuilder: SimpleFeatureBuilder, id: Int, time: TimeCapsule): SimpleFeature = {
