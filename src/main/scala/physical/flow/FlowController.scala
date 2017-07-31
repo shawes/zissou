@@ -49,8 +49,7 @@ class FlowController(var flow: Flow) extends Logging {
       val ratioB = timeStep - ratioA
 
       Some(velocityNow.get * (ratioA * divisor) + velocityFuture.get * (ratioB * divisor))
-    }
-    else {
+    } else {
       None
     }
 

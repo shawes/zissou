@@ -38,10 +38,13 @@ class Fish(
   var fishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
   //val pelagicHabitat = Some(new GeometryAdaptor(null, -1, HabitatType.Ocean))
   var lastDielMigration : Option[DielVerticalMigrationType] = None
+  private var hasChangedOntogeneticState : Boolean = false
 
   def this() = this(0, 0, 0, null, DateTime.now(), null, null, null, null)
 
   override def settlementDate: DateTime = fishSettlementDate.get
+
+  override def changedOntogeneticState : Boolean = hasChangedOntogeneticState
 
   def inCompetencyWindow: Boolean = age < pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion //TODO: Need to code in a better competency window
 
@@ -68,9 +71,14 @@ class Fish(
   //def horizontalSwimmingSpeed: Double = 0.0 //TODO: Implement the swimming speed
 
   def growOlder(seconds: Int): Unit = {
-    //val initialOntogeny = getOntogeny
+    val initialOntogeny = getOntogeny
     fishAge += seconds
-    //val currentOntogeny = getOntogeny
+    val currentOntogeny = getOntogeny
+    if(initialOntogeny == currentOntogeny) {
+      hasChangedOntogeneticState = true
+    } else {
+      hasChangedOntogeneticState = false
+    }
   }
 
   def settle(settlementReef: HabitatPolygon, date: DateTime): Unit = {

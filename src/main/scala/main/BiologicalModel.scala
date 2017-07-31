@@ -43,8 +43,8 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def apply(larva: Larva): Unit = {
-    move(larva)
     ageLarvae(larva)
+    move(larva)
     settle(larva)
     lifespanCheck(larva)
     mortalityCheck(larva)
@@ -99,7 +99,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
       }
     }
-    if(larva.undergoesOntogeneticMigration) {
+    if(larva.undergoesOntogeneticMigration && larva.changedOntogeneticState) {
       debug("OVM migration")
       larva.ontogeneticVerticallyMigrate
     }

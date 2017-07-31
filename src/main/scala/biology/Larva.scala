@@ -73,4 +73,6 @@ trait Larva {
 
   def undergoesOntogeneticMigration : Boolean
 
+  def changedOntogeneticState : Boolean
+
 }
