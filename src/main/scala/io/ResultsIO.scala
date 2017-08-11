@@ -4,11 +4,13 @@ import java.io.File
 
 import biology.Larva
 
-class ResultsIO(larvae: List[List[Larva]], output: OutputFiles) {
+class ResultsIO(larvae: List[List[Larva]], output: OutputFiles, name : String) {
 
-  val shapeFile = new File(output.path + "//larvae_paths.shp")
-  val kernelFile = new File(output.path + "//dispersal_kernel.csv")
-  val larvalPathsFile = new File(output.path + "//larvae_paths.csv")
+  val directory = new File(output.path + "//" + name)
+  directory.mkdir()
+  val shapeFile = new File(directory.toPath + "//larvae_paths.shp")
+  val kernelFile = new File(directory.toPath + "//dispersal_kernel.csv")
+  //val larvalPathsFile = new File(directory.toPath + "//larvae_paths.csv")
 
   def write(): Unit = {
     writeLarvaeMovementsToShapeFile()
@@ -17,7 +19,7 @@ class ResultsIO(larvae: List[List[Larva]], output: OutputFiles) {
   }
 
   private def writeLarvaeStateChangesToCsvFile() = {
-    val larvaeFileWriter = new LarvaeHistoryCsvFile(larvae, output.path)
+    val larvaeFileWriter = new LarvaeHistoryCsvFile(larvae, directory.toPath.toString)
     larvaeFileWriter.write()
     //larvaeFileWriter.writeExcelFile(fishLarvae.flatten, output.saveOutputFilePath)
   }

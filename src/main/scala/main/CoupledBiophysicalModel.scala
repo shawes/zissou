@@ -11,13 +11,17 @@ import physical.flow.Flow
 import utilities.SimpleTimer
 
 
-class CoupledBiophysicalModel(val config: Configuration) extends Logging {
+class CoupledBiophysicalModel(val config: Configuration, val name : String) extends Logging {
 
   val flow: Flow = config.flow
   val clock = new SimulationClock(flow.period, flow.timeStep)
 
-  val turbulence: Turbulence = new Turbulence(config.turbulence.horizontalDiffusionCoefficient,
-    config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds, RandomNumberGenerator)
+
+  val turbulence: Option[Turbulence] = config.turbulence.applyTurbulence match {
+      case true => Some(new Turbulence(config.turbulence.horizontalDiffusionCoefficient,
+        config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds, RandomNumberGenerator))
+      case false => None
+    }
   val ocean = new PhysicalModel(config)
   val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)
   val biology = new BiologicalModel(config, clock, integrator)
@@ -47,7 +51,7 @@ class CoupledBiophysicalModel(val config: Configuration) extends Logging {
 
     ocean.shutdown()
 
-    val resultsWriter = new ResultsIO(biology.fishLarvae.toList, config.output)
+    val resultsWriter = new ResultsIO(biology.fishLarvae.toList, config.output, name)
     resultsWriter.write()
     simulationTimer.stop()
     info("Simulation run completed in " + simulationTimer.result / 60 + " minutes")

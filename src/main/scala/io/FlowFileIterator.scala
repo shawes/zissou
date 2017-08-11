@@ -39,7 +39,7 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
       }
     }
 
-    val latlonBounds = new LatLonRect(new LatLonPointImpl(-40.0, 142.0), new LatLonPointImpl(-10.0, 162.0))
+    val latlonBounds = new LatLonRect(new LatLonPointImpl(-40.0, 142.0), new LatLonPointImpl(-10.0, 180.0))
     val depthRange: Range = new Range(0, 14)
 
     val datasetsSubset = if (endOfMonth) {

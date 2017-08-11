@@ -32,7 +32,8 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     debug("Applying biology")
     calculateMortalityRate(iteration)
     spawnLarvae()
-    fishLarvae.par.foreach(fish => processLarva(fish))
+    //fishLarvae.par.foreach(fish => processLarva(fish))
+    fishLarvae.foreach(fish => processLarva(fish))
   }
 
   private def processLarva(larvae: List[Larva]): Unit = {
@@ -51,11 +52,11 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def move(larva: Larva): Unit = {
-    debug("Old position " + larva.position)
+    //debug("Old position " + larva.position)
     val dampeningFactor: List[Double] = List(1.0, 0.66, 0.33)
     val orientate = swim(larva)
     def moveParticle(larva : Larva, dampeningFactor : List[Double]) : Unit = {
-      debug("Dampening factor size: " + dampeningFactor.size)
+      //debug("Dampening factor size: " + dampeningFactor.size)
       if(dampeningFactor.nonEmpty) {
         integrator.integrate(larva.position, clock.now, orientate, dampeningFactor.head) match {
           case Some(newPosition) => larva.move(newPosition)

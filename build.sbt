@@ -19,24 +19,26 @@ assemblyMergeStrategy in assembly := {
 }
 
 libraryDependencies ++= Seq(
-  "org.scalactic" %% "scalactic" % "3.0.1",
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+  "org.scalactic" %% "scalactic" % "3.0.3",
+  "org.scalatest" %% "scalatest" % "3.0.3" % "test",
   "junit" % "junit" % "4.12" % "test",
-  "org.mockito" % "mockito-core" % "2.7.19",
+  "org.mockito" % "mockito-core" % "2.8.47",
   "com.github.nscala-time" %% "nscala-time" % "2.16.0",
   "org.apache.commons" % "commons-math3" % "3.6.1",
-  "org.clapper" %% "grizzled-slf4j" % "1.3.0",
+  "org.clapper" %% "grizzled-slf4j" % "1.3.1",
   "org.slf4j" % "slf4j-api" % "1.7.25",
   "org.slf4j" % "slf4j-simple" % "1.7.25",
   //"org.slf4j" % "slf4j-jdk14" % "latest.integration",
-  "edu.ucar" % "netcdf4" % "4.6.8",
-  "edu.ucar" % "cdm" % "4.6.8",
+  "edu.ucar" % "netcdf4" % "4.6.10",
+  "edu.ucar" % "cdm" % "4.6.10",
   //"edu.ucar" % "opendap" % "latest.integration",
-  "org.geotools" % "gt-shapefile" % "17-RC1",
+  //"org.scala-lang" % "scala-library" % "2.12.3",
+  "org.geotools" % "gt-shapefile" % "17.2",
   "javax.media" % "jai_core" % "1.1.3" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
   "javax.media" % "jai_codec" % "1.1.3" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
   "javax.media" % "jai_imageio" % "1.1" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar",
-  "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.1"
+  "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
+  "org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3"
 )
 
 
@@ -49,8 +51,8 @@ libraryDependencies := {
     case Some((2, scalaMajor)) if scalaMajor >= 12 =>
       libraryDependencies.value ++ Seq(
         "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
-        "org.scala-lang.modules" %% "scala-swing" % "2.0.0-M2")
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
+        "org.scala-lang.modules" %% "scala-swing" % "2.0.0")
     case Some((2, scalaMajor)) if scalaMajor >= 11 =>
       libraryDependencies.value ++ Seq(
         "org.scala-lang.modules" %% "scala-xml" % "1.0.6",

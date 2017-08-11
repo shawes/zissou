@@ -62,8 +62,10 @@ class Fish(
   def undergoesDielMigration : Boolean = verticalMigrationDiel.probabilities.nonEmpty
 
   def move(location: GeoCoordinate): Unit = {
-    changeState(PelagicLarvaeState.Pelagic)
-    updatePosition(location)
+    //if(location != fishPosition) {
+      changeState(PelagicLarvaeState.Pelagic)
+      updatePosition(location)
+    //}
   }
 
   def updatePosition(newPos: GeoCoordinate): Unit = fishPosition = newPos
@@ -75,9 +77,9 @@ class Fish(
     fishAge += seconds
     val currentOntogeny = getOntogeny
     if(initialOntogeny == currentOntogeny) {
-      hasChangedOntogeneticState = true
-    } else {
       hasChangedOntogeneticState = false
+    } else {
+      hasChangedOntogeneticState = true
     }
   }
 
