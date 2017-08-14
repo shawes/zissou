@@ -1,8 +1,7 @@
 #!/bin/bash
 #PBS -P ichthyconnect
-#PBS -q scavenger
 #PBS -l select=1:ncpus=1:mem=8GB
-#PBS -l walltime=0:10:00
+#PBS -l walltime=0:30:00
 #PBS -M steven.hawes@sydney.edu.au
 #PBS -m abe
 #PBS -j oe
