@@ -1,0 +1,6 @@
+#!/bin/bash
+#PBS -P ichthyconnect
+#PBS -q dtq
+#PBS -l select=1:ncpus=1:mem=4gb,walltime=00:20:00
+
+rsync -avx /rds/PRJ-ichthyconnect/bran3p5_data /scratch/ichthyconnect/netcdf
