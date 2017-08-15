@@ -14,10 +14,10 @@
         <depth>5</depth>
         <flowId>1</flowId>
       </site>
-      <numberOfLarvae>50</numberOfLarvae>
+      <numberOfLarvae>1000</numberOfLarvae>
       <releasePeriod>
-        <start>2011-12-01T00:00:00</start>
-        <end>2011-12-05T00:00:00</end>
+        <start>2008-05-01T00:00:00</start>
+        <end>2008-05-10T00:00:00</end>
       </releasePeriod>
       <interval>1</interval>
     </spawningLocation>

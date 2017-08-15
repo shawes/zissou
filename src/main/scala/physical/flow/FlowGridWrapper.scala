@@ -16,6 +16,7 @@ import scala.collection.parallel.mutable._
 class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val datasets: List[GeoGrid]) extends Logging {
 
   def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
+  //  this.synchronized {
     val gridIndex = gcs.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
     if(gridIndex(0) != -1 && gridIndex(1) != -1) {
     val depthIndex = closestDepthIndex(coordinate.depth)
@@ -29,6 +30,7 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
   } else {
     None
   }
+//}
   }
 
   private def closestDepthIndex(depth: Double): Int = depths match {
@@ -52,11 +54,13 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
   }
 
   def getIndex(coordinate: GeoCoordinate, day: Day): Array[Int] = {
+    //this.synchronized {
     val indexXY = gcs.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
     val indexZ = closestDepthIndex(coordinate.depth)
     val indexT = timeIndex(day)
     //debug("x="+indexXY(0)+",y="+indexXY(1) +",z="+indexZ+",t="+indexT)
     Array(indexXY(0), indexXY(1), indexZ, indexT)
+  //}
   }
 
   private def timeIndex(day: Day): Int = day match {
@@ -92,7 +96,7 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
   }
 
   def getVelocity(index: Array[Int]): Option[Velocity] = {
-
+//this.synchronized {
       //debug("Grid Index is x="+index(NetcdfIndex.X)+",y="+index(NetcdfIndex.Y) +",z="+index(NetcdfIndex.Z))
 //    val data = datasets.map(dataset => dataset.readDataSlice(0, index(NetcdfIndex.Z),      index(NetcdfIndex.Y), index(NetcdfIndex.X)).getFloat(0))
 
@@ -106,9 +110,11 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
     //val velocity = new Velocity(data.head.toDouble, data(1).toDouble, data(2).toDouble)
     val velocity = new Velocity(u,v,w)
     if (velocity.isDefined) Some(velocity) else None
+  //}
   }
 
   private def findQuadratCoordinateIsIn(coordinate: GeoCoordinate): QuadrantType = {
+    //this.synchronized {
     val index = gcs.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
     val centroid = gcs.getLatLon(index(NetcdfIndex.X), index(NetcdfIndex.Y))
 
@@ -125,6 +131,7 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
         QuadrantType.BottomRight
       }
     }
+  //}
   }
 
   private def quadrantPosition(quadrant: QuadrantType, size: Int): (Int, Int) = quadrant match {

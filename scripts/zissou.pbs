@@ -1,11 +1,12 @@
 #!/bin/bash
 #PBS -P ichthyconnect
-#PBS -l select=1:ncpus=1:mem=8GB
-#PBS -l walltime=0:30:00
+#PBS -l select=1:ncpus=1:mem=16GB
+#PBS -l walltime=0:15:00
 #PBS -M steven.hawes@sydney.edu.au
 #PBS -m abe
 #PBS -j oe
 #PBS -o zissou.log
+#PBS -q scavenger
 cd $PBS_O_WORKDIR
 
 module load java

@@ -29,7 +29,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
 
   def apply(iteration: Int): Unit = {
-    debug("Applying biology")
+    //debug("Applying biology")
     calculateMortalityRate(iteration)
     spawnLarvae()
     //fishLarvae.par.foreach(fish => processLarva(fish))
@@ -37,9 +37,9 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def processLarva(larvae: List[Larva]): Unit = {
-    debug("Processing the fish")
+    //debug("Processing the fish")
     val swimmingLarvae: List[Larva] = larvae.filter(fish => fish.isPelagic)
-    debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
+    //debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
     swimmingLarvae.foreach(reefFish => apply(reefFish))
   }
 
@@ -119,19 +119,19 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def settle(larva: Larva): Unit = {
     if (larva.inCompetencyWindow) {
-      debug("Larva " + larva.id + " is in the competency window now")
+    //  debug("Larva " + larva.id + " is in the competency window now")
       if (habitatManager.isBuffered) {
-        debug("Searching buffered reefs")
+        //debug("Searching buffered reefs")
         val reefIndex = habitatManager.isCoordinateOverBufferLazy(larva.position, isSettlement=true)
         // = habitatManager.getIndexOfNearestReef(larva.position)
         if (reefIndex.isDefined) {
-          debug("Larva is within reef buffer, so settle that bitch")
+          //debug("Larva is within reef buffer, so settle that bitch")
           larva.settle(habitatManager.getReef(reefIndex.get), clock.now)
           pelagicLarvaeCount -= 1
         } else {
           val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
           val reef = habitatManager.getReef(distanceIndex)
-          debug("Closest reef is still " + reef.distance(larva.position)/10 + "km away")
+          //debug("Closest reef is still " + reef.distance(larva.position)/10 + "km away")
         }
       }
       else {
@@ -156,7 +156,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   private def spawnLarvae(): Unit = {
     val spawningSites = spawn.getSitesWhereFishAreSpawning(clock.now)
     if (spawningSites.nonEmpty) {
-      trace("Found non-empty spawning site")
+      //trace("Found non-empty spawning site")
       spawnFish(spawningSites)
     }
   }

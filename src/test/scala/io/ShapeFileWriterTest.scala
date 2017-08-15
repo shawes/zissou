@@ -13,7 +13,7 @@ class ShapeFileWriterTest extends FlatSpec with MockitoSugar with PrivateMethodT
   it should "throw an IllegalArgumentException when called with null paramaters" in {
     val shapeFileWriter = new GisShapeFile()
     intercept[IllegalArgumentException] {
-      shapeFileWriter.write(null, null, null)
+      shapeFileWriter.write(null, null, null, 0)
     }
   }
 

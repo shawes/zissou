@@ -37,24 +37,29 @@ class GisShapeFile() extends Logging {
     }
   }
 
-  def write(larvae: List[Larva], shape: ShapeFileType, file: File): Unit = shape match {
-    case ShapeFileType.Line => writeLineShapeFile(larvae, file)
-    case ShapeFileType.Point => writePointShapeFile(larvae, file)
+  def write(larvae: List[Larva], shape: ShapeFileType, file: File, percent : Double): Unit = shape match {
+    case ShapeFileType.Line => writeLineShapeFile(larvae, file, percent)
+    case ShapeFileType.Point => writePointShapeFile(larvae, file, percent)
     case _ => throw new scala.IllegalArgumentException()
   }
 
-  private def writeLineShapeFile(larvae: List[Larva], file: File) = {
+  private def writeLineShapeFile(larvae: List[Larva], file: File, percent : Double) = {
     val features = new java.util.ArrayList[SimpleFeature]
     val builder :SimpleFeatureTypeBuilder = new SimpleFeatureTypeBuilder()
-    builder.setName("Larvae");
-    builder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate reference system
+    builder.setName("Larvae")
+    builder.setCRS(DefaultGeographicCRS.WGS84) // <- Coordinate reference system
     builder.add("the_geom", classOf[LineString])
+    builder.add("birth", classOf[String])
+    builder.add("settle",classOf[Integer])
+
 
     val  larvaLine:SimpleFeatureType = builder.buildFeatureType();
 
     for (larva <- larvae) {
       val featureBuilder = new SimpleFeatureBuilder(larvaLine)
       featureBuilder.add(writeStageLine(larva.history.toList))
+      featureBuilder.add(larva.birthplace)
+      featureBuilder.add(larva.polygon.get.id)
       val feature = featureBuilder.buildFeature(null)
       features.add(feature)
     }
@@ -102,7 +107,7 @@ class GisShapeFile() extends Logging {
     schema.buildFeatureType()
   }
 
-  private def writePointShapeFile(larvae: List[Larva], file: File) = {
+  private def writePointShapeFile(larvae: List[Larva], file: File, percent : Double) = {
     val features = new java.util.ArrayList[SimpleFeature]
     val featureBuilder = new SimpleFeatureBuilder(createPointSchema())
     larvae.foreach(l => l.history.foreach(hist => addPointFeature(featureBuilder, l.id, hist)))
@@ -117,7 +122,6 @@ class GisShapeFile() extends Logging {
   private def writeFeaturesToShapeFile(features: util.ArrayList[SimpleFeature], dataStore: DataStore): Unit = {
     val featureType = createLineSchema()
     val collection = new ListFeatureCollection(featureType, features)
-
 
     val transaction = new DefaultTransaction("create")
     val typeName: String = dataStore.getTypeNames()(0)

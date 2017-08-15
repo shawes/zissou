@@ -36,7 +36,7 @@ object ConfigMappings {
     new Depth(d.average, d.averageOverAllDepths, d.maximumDepthForAverage, null)
 
   implicit def outputFilesConfigMap(o: OutputFilesConfig): OutputFiles =
-    new OutputFiles(o.includeLarvaeHistory, ShapeFileType.withName(o.shape), o.saveOutputFilePath)
+    new OutputFiles(o.includeLarvaeHistory, ShapeFileType.withName(o.shape), o.saveOutputFilePath, o.percentage)
 
   implicit def releasePeriodConfigMap(r: ReleasePeriodConfig): Interval =
     new Interval(new DateTime(r.start), new DateTime(r.end))
