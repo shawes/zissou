@@ -5,6 +5,7 @@ import java.util
 
 import biology.{Larva, TimeCapsule}
 import com.vividsolutions.jts.geom.{Coordinate, LineString, Point}
+import maths.RandomNumberGenerator
 
 import locals.ShapeFileType._
 import locals.ShapeFileType
@@ -56,12 +57,14 @@ class GisShapeFile() extends Logging {
     val  larvaLine:SimpleFeatureType = builder.buildFeatureType();
 
     for (larva <- larvae) {
-      val featureBuilder = new SimpleFeatureBuilder(larvaLine)
-      featureBuilder.add(writeStageLine(larva.history.toList))
-      featureBuilder.add(larva.birthplace)
-      featureBuilder.add(larva.polygon.get.id)
-      val feature = featureBuilder.buildFeature(null)
-      features.add(feature)
+      if(RandomNumberGenerator.get*100 < percent) {
+        val featureBuilder = new SimpleFeatureBuilder(larvaLine)
+        featureBuilder.add(writeStageLine(larva.history.toList))
+        featureBuilder.add(larva.birthplace)
+        featureBuilder.add(larva.polygon.get.id)
+        val feature = featureBuilder.buildFeature(null)
+        features.add(feature)
+     }
     }
 
     val dataStoreFactory: FileDataStoreFactorySpi = new ShapefileDataStoreFactory()
