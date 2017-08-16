@@ -1,4 +1,4 @@
-package main
+package model
 
 import grizzled.slf4j.Logging
 import physical.TimeStep

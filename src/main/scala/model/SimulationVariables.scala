@@ -1,4 +1,4 @@
-package main
+package model
 
 import biology.Spawn
 import biology.fish.FishParameters
