@@ -14,7 +14,6 @@ class Interpolation extends Logging {
   val bilinearInterpolation = new BilinearInterpolation()
   //TODO: Get dimensions from flow grid
   def apply(coordinate: GeoCoordinate, grid: FlowGridWrapper, index: Array[Int]): Option[Velocity] = {
-    this.synchronized {
       val centroid = grid.getCentroid(index)
       val latitudeDisplacement = (coordinate.latitude - centroid.latitude) * (1.0 / 0.1) + 1.0
       val longitudeDisplacement = (coordinate.longitude - centroid.longitude) * (1.0 / 0.1) + 1.0
@@ -30,7 +29,6 @@ class Interpolation extends Logging {
           grid.getVelocity(index)
         }
       }
-    }
   }
 
   private def interpolate(interpolation: InterpolationType, neighbourhood: Array[Array[Velocity]],

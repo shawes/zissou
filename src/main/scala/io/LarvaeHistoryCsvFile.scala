@@ -11,15 +11,15 @@ class LarvaeHistoryCsvFile(larvae: List[Larva], filepath: String) extends Loggin
 
   def write(): Unit = {
     info("Writing " + larvae.size + " larvae")
-    var count = 1
+    //var count = 1
+    val bw = new BufferedWriter(new java.io.FileWriter(new File(filepath + "//larvae-log-batch.csv")))
     for (larva <- larvae) {
-      val bw = new BufferedWriter(new java.io.FileWriter(new File(filepath + "//larvae_log_batch" + count + ".csv")))
       bw.write(columnHeaders)
       bw.newLine()
       bw.write(writeCsvRow(larva))
-      bw.close()
-      count += 1
+      //count += 1
     }
+    bw.close()
   }
 
   private def writeCsvRow(larva: Larva): String = {

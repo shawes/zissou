@@ -75,11 +75,15 @@ class Fish(
   def growOlder(seconds: Int): Unit = {
     val initialOntogeny = getOntogeny
     fishAge += seconds
-    val currentOntogeny = getOntogeny
-    if(initialOntogeny == currentOntogeny) {
-      hasChangedOntogeneticState = false
-    } else {
-      hasChangedOntogeneticState = true
+    if(age > pelagicLarvalDuration) { 
+      kill() 
+    } else {  
+      val currentOntogeny = getOntogeny
+      if(initialOntogeny == currentOntogeny) {
+        hasChangedOntogeneticState = false
+      } else {
+        hasChangedOntogeneticState = true
+      }
     }
   }
 
