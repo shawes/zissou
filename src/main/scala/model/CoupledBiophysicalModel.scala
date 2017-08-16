@@ -1,4 +1,4 @@
-package main
+package model
 
 import grizzled.slf4j.Logging
 import io.ResultsIO
@@ -41,20 +41,18 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
       clock.tick()
       if (clock.isMidnight) {
         ocean.circulate()
-        stepTimer.stop()
-        info("Day iteration " + iteration / 12 + " has been completed in " + stepTimer.result() + " secs")
+        //stepTimer.stop()
+        info("Day iteration " + iteration / 12 + " has been completed in " + stepTimer.stop() + " secs")
         stepTimer.start()
       }
-      //iteration += 1
       iteration += 1
     }
-
+    info("Simulation run completed in " + (simulationTimer.stop() / 60.0) + " minutes")
     ocean.shutdown()
 
     val resultsWriter = new ResultsIO(biology.fishLarvae.toList, config.output, name)
     resultsWriter.write()
-    simulationTimer.stop()
-    info("Simulation run completed in " + simulationTimer.result / 60 + " minutes")
+
   } catch {
     case e : Exception => e.printStackTrace()
   } finally {

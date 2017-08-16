@@ -4,12 +4,12 @@ import java.io.File
 
 import biology.Larva
 
-class ResultsIO(larvae: List[List[Larva]], output: OutputFiles, name : String) {
+class ResultsIO(larvae: List[Larva], output: OutputFiles, name : String) {
 
   val directory = new File(output.path + "//" + name)
   directory.mkdir()
-  val shapeFile = new File(directory.toPath + "//larvae_paths.shp")
-  val kernelFile = new File(directory.toPath + "//dispersal_kernel.csv")
+  val shapeFile = new File(directory.toPath + "//larvae-dispersal.shp")
+  val kernelFile = new File(directory.toPath + "//dispersal-kernel.csv")
   //val larvalPathsFile = new File(directory.toPath + "//larvae_paths.csv")
 
   def write(): Unit = {
@@ -25,13 +25,13 @@ class ResultsIO(larvae: List[List[Larva]], output: OutputFiles, name : String) {
   }
 
   private def writeDispersalKernel() = {
-    val dispersalKernelWriter = new DispersalKernelFile(larvae.flatten, kernelFile)
+    val dispersalKernelWriter = new DispersalKernelFile(larvae, kernelFile)
     dispersalKernelWriter.write()
   }
 
   private def writeLarvaeMovementsToShapeFile() = {
     val shapeFileWriter = new GisShapeFile()
-    shapeFileWriter.write(larvae.flatten, output.shapeType, shapeFile, output.percent)
+    shapeFileWriter.write(larvae, output.shapeType, shapeFile, output.percent)
 
     //shapeFileWriter.writeShapes(larvae, output.SaveOutputFilePath, output.ShapeType);
   }

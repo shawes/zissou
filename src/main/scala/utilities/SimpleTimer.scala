@@ -8,17 +8,14 @@ class SimpleTimer() {
   private val Start = 0
   private val Stop = 1
   private val timer = Array.ofDim[DateTime](2)
+  timer(Start) = DateTime.now
 
   def start(): Unit = {
     timer(Start) = DateTime.now
   }
 
-  def stop(): Unit = {
+  def stop(): Int = {
     timer(Stop) = DateTime.now
-  }
-
-  def result(): Int = {
     timer(Stop).getSecondOfDay - timer(Start).getSecondOfDay
   }
-
 }

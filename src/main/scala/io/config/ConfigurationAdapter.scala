@@ -1,6 +1,6 @@
 package io.config
 
-import main.SimulationVariables
+import model.SimulationVariables
 
 class ConfigurationAdapter {
   def toVariables(config: Configuration) : SimulationVariables = {

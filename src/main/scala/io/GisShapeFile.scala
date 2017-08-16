@@ -25,7 +25,6 @@ import scala.collection.mutable.ListBuffer
 
 class GisShapeFile() extends Logging {
 
-  val ShapeFileName = "larvae-paths.shp"
   val geometryFactory = JTSFactoryFinder.getGeometryFactory()
 
   def read(file: File): SimpleFeatureCollection = {
@@ -47,7 +46,7 @@ class GisShapeFile() extends Logging {
   private def writeLineShapeFile(larvae: List[Larva], file: File, percent : Double) = {
     val features = new java.util.ArrayList[SimpleFeature]
     val builder :SimpleFeatureTypeBuilder = new SimpleFeatureTypeBuilder()
-    builder.setName("Larvae")
+    builder.setName("larva")
     builder.setCRS(DefaultGeographicCRS.WGS84) // <- Coordinate reference system
     builder.add("the_geom", classOf[LineString])
     builder.add("birth", classOf[String])

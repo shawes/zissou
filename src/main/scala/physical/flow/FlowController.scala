@@ -68,11 +68,10 @@ class FlowController(var flow: Flow) extends Logging {
   }
 
   def initialise(reader: FlowFileIterator) {
-    val timer = new SimpleTimer()
-    timer.start()
+    //val timer = new SimpleTimer()
+    //timer.start()
     if (reader.hasNext) refresh(reader.next())
-    timer.stop()
-    debug("Finished reading the next flow data in " + timer.result() + " seconds")
+    //debug("Finished reading the next flow data in " + timer.stop() + " seconds")
     flow.dimensions = reader.flow.dimensions
   }
 

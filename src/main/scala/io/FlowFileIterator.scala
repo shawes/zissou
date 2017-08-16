@@ -6,6 +6,7 @@ import grizzled.slf4j._
 import physical.flow.{Flow, FlowGridWrapper}
 import ucar.ma2.Range
 import ucar.nc2.dt.grid.{GeoGrid, GridDataset}
+import ucar.nc2.dt.GridCoordSystem
 import ucar.unidata.geoloc.{LatLonPointImpl, LatLonRect}
 
 import scala.collection.mutable.ListBuffer
@@ -42,14 +43,15 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
     val latlonBounds = new LatLonRect(new LatLonPointImpl(-40.0, 142.0), new LatLonPointImpl(-10.0, 180.0))
     val depthRange: Range = new Range(0, 14)
 
-    val datasetsSubset = if (endOfMonth) {
+    val subset = if (endOfMonth) {
       getGeoGridsFromGridDatasets(latlonBounds, depthRange)
     } else {
       val timeRange: Range = new Range(day, nextDay)
       getGeoGridsFromGridDataset(latlonBounds, timeRange, depthRange)
     }
+    val data = subset.map(dataset => (dataset.readDataSlice(-1,-1,-1,-1).copyToNDJavaArray().asInstanceOf[Array[Array[Array[Array[Float]]]]], dataset.getCoordinateSystem()))
 
-    val gridwrapper = new FlowGridWrapper(datasetsSubset.head.getCoordinateSystem, depths, datasetsSubset)
+    val gridwrapper = new FlowGridWrapper(depths, data)
     incrementDayCounter()
     gridwrapper
   }

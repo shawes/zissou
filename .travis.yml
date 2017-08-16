@@ -9,6 +9,7 @@ scala:
 branches:
   only:
     - master
+    - parallel
 
 jdk:
   - oraclejdk8
