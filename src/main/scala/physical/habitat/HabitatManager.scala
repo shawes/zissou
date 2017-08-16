@@ -39,30 +39,18 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   def getReef(index: Int): HabitatPolygon = habitatPolygons(index)
 
   def defineAllPolygons(habitats: SimpleFeatureCollection): List[GeometryAdaptor] = {
-
     val polys: ListBuffer[GeometryAdaptor] = ListBuffer.empty[GeometryAdaptor]
     val shapes = habitats.features()
-
     try {
       while (shapes.hasNext) {
         val shape = shapes.next()
         val geometry = SimpleFeatureAdaptor.getGeometry(shape)
-
-        //        if (geometry.getNumGeometries > 1) {
-        //          val multipolygon = SimpleFeatureAdaptor.getMultiPolygon(shape)
-        //          for (i <- 0 until geometry.getNumGeometries) {
-        //            polys += new GeometryAdaptor(multipolygon.getGeometryN(i), SimpleFeatureAdaptor.getId(shape), SimpleFeatureAdaptor.getHabitatType(shape))
-        //
-        //          }
-        //        } else {
-          polys += new GeometryAdaptor(geometry, SimpleFeatureAdaptor.getId(shape), SimpleFeatureAdaptor.getHabitatType(shape))
-        //}
+        polys += new GeometryAdaptor(geometry, SimpleFeatureAdaptor.getId(shape), SimpleFeatureAdaptor.getHabitatType(shape))
       }
+      polys.toList
     } finally {
       shapes.close()
     }
-    debug("There are actually this many polygons: " + polys.size)
-    polys.toList
   }
 
   def landStuff(): Unit = {

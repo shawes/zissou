@@ -23,7 +23,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
-  var fishLarvae: ListBuffer[Larva] = ListBuffer.empty
+  //var fishLarvae: ListBuffer[Larva] = ListBuffer.empty
+  val pelagicLarvae: ListBuffer[Larva] = ListBuffer.empty
+  val stationaryLarvae: ListBuffer[Larva] = ListBuffer.empty
+  val settledLarvae: ListBuffer[Larva] = ListBuffer.empty
   var pelagicLarvaeCount = 0
   val geometry = new Geometry
 
@@ -32,14 +35,15 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     //debug("Applying biology")
     calculateMortalityRate(iteration)
     spawnLarvae()
-    fishLarvae.par.foreach(fish => biology(fish))
+    pelagicLarvae.par.foreach(fish => biology(fish))
+    refresh()
   }
 
-  private def processLarva(larvae: List[Larva]): Unit = {
-    //debug("Processing the fish")
-    val swimmingLarvae: List[Larva] = larvae.filter(fish => fish.isPelagic)
-    //debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
-    swimmingLarvae.foreach(reefFish => biology(reefFish))
+  def refresh() : Unit = {
+    val cull = pelagicLarvae.partition(larva => larva.isPelagic)
+    pelagicLarvae.clear()
+    pelagicLarvae ++= cull._1
+    stationaryLarvae ++= cull._2
   }
 
   private def biology(larva: Larva): Unit = {
@@ -51,24 +55,20 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def move(larva: Larva): Unit = {
-    //debug("Old position " + larva.position)
-    val dampeningFactor: List[Double] = List(1.0, 0.66, 0.33)
+    val dampeningFactor: List[Double] = List(1.0)
     val orientate = swim(larva)
     def moveParticle(larva : Larva, dampeningFactor : List[Double]) : Unit = {
-      //debug("Dampening factor size: " + dampeningFactor.size)
       if(dampeningFactor.nonEmpty) {
         integrator.integrate(larva.position, clock.now, orientate, dampeningFactor.head) match {
           case Some(newPosition) => larva.move(newPosition)
-          case None => moveParticle(larva, dampeningFactor.tail)//debug("Larvae could not move")
+          case None => moveParticle(larva, dampeningFactor.tail)
         }
       } else {
-        debug("Larvae could not move")
         larva.move(larva.position)
       }
     }
     moveParticle(larva, dampeningFactor)
     migrateLarvaVertically(larva)
-    debug("New position " + larva.position)
   }
 
   private def swim(larva : Larva) : Option[Velocity] = {
@@ -90,17 +90,13 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def migrateLarvaVertically(larva: Larva): Unit = {
     if(larva.undergoesDielMigration) {
-      debug("Diel migration")
       if(clock.isSunRising(larva.position, "Australia/Sydney")) {
-        debug("Rising sun")
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Day)
       } else if(clock.isSunSetting(larva.position, "Australia/Sydney")) {
-        debug("Setting sun")
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
       }
     }
     if(larva.undergoesOntogeneticMigration && larva.changedOntogeneticState) {
-      debug("OVM migration")
       larva.ontogeneticVerticallyMigrate
     }
   }
@@ -112,15 +108,12 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   private def mortalityCheck(larva: Larva): Unit = {
     if (fish.isMortal && RandomNumberGenerator.get < mortality.getRate) {
       larva.kill()
-      pelagicLarvaeCount -= 1
     }
   }
 
   private def settle(larva: Larva): Unit = {
     if (larva.inCompetencyWindow) {
-    //  debug("Larva " + larva.id + " is in the competency window now")
       if (habitatManager.isBuffered) {
-        //debug("Searching buffered reefs")
         val reefIndex = habitatManager.isCoordinateOverBufferLazy(larva.position, isSettlement=true)
         // = habitatManager.getIndexOfNearestReef(larva.position)
         if (reefIndex.isDefined) {
@@ -163,15 +156,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def spawnFish(sites: List[SpawningLocation]) = {
     val spawn = sites.map(site => factory.create(site, clock.now)).flatten
-    pelagicLarvaeCount += spawn.size
-    fishLarvae ++= spawn
+    //pelagicLarvaeCount += spawn.size
+    pelagicLarvae ++= spawn
   }
 
-  def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvaeCount > 0
+  def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvae.nonEmpty
 
-  private def updateActiveLarvaeCount(larva: Larva): Unit = {
-    if (!larva.isPelagic) {
-      pelagicLarvaeCount -= 1
-    }
-  }
 }

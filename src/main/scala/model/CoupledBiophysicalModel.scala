@@ -50,7 +50,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
     info("Simulation run completed in " + (simulationTimer.stop() / 60.0) + " minutes")
     ocean.shutdown()
 
-    val resultsWriter = new ResultsIO(biology.fishLarvae.toList, config.output, name)
+    val resultsWriter = new ResultsIO(biology.stationaryLarvae.toList, config.output, name)
     resultsWriter.write()
 
   } catch {

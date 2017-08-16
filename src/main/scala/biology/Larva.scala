@@ -1,17 +1,13 @@
 package biology
 
-
 import scala.collection.mutable.ListBuffer
-
 import com.github.nscala_time.time.Imports._
 import locals.OntogenyState._
-import locals.SwimmingAbility._
 import locals.PelagicLarvaeState
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.DielVerticalMigrationType.DielVerticalMigrationType
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
-
 
 trait Larva {
 
