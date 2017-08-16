@@ -8,8 +8,8 @@ class ResultsIO(larvae: List[List[Larva]], output: OutputFiles, name : String) {
 
   val directory = new File(output.path + "//" + name)
   directory.mkdir()
-  val shapeFile = new File(directory.toPath + "//larvae_paths.shp")
-  val kernelFile = new File(directory.toPath + "//dispersal_kernel.csv")
+  val shapeFile = new File(directory.toPath + "//larvae-dispersal.shp")
+  val kernelFile = new File(directory.toPath + "//dispersal-kernel.csv")
   //val larvalPathsFile = new File(directory.toPath + "//larvae_paths.csv")
 
   def write(): Unit = {

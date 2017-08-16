@@ -32,8 +32,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     //debug("Applying biology")
     calculateMortalityRate(iteration)
     spawnLarvae()
-    //fishLarvae.par.foreach(fish => processLarva(fish))
-    fishLarvae.foreach(fish => processLarva(fish))
+    fishLarvae.par.foreach(fish => processLarva(fish))
   }
 
   private def processLarva(larvae: List[Larva]): Unit = {
