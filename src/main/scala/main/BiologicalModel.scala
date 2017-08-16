@@ -128,11 +128,11 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
           //debug("Larva is within reef buffer, so settle that bitch")
           larva.settle(habitatManager.getReef(reefIndex.get), clock.now)
           pelagicLarvaeCount -= 1
-        } else {
-          val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
-          val reef = habitatManager.getReef(distanceIndex)
+        //} else {
+        //  val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
+        //  val reef = habitatManager.getReef(distanceIndex)
           //debug("Closest reef is still " + reef.distance(larva.position)/10 + "km away")
-        }
+        //}
       }
       else {
         val reefIndex = habitatManager.isCoordinateOverReef(larva.position)

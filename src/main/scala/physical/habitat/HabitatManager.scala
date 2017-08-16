@@ -74,7 +74,6 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
      */
     //TODO: Uses brute-force algorithm, need to change to divide and conquer
     def getClosestHabitat(coordinate: GeoCoordinate): SimpleFeature = {
-
       val location: Point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
       var shortestDistance: Double = Double.MaxValue
       var closestReef: SimpleFeature = null
