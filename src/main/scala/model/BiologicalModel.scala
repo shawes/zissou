@@ -111,6 +111,12 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     }
   }
 
+  private def senseReef(larva : Larva) : Unit = {
+    if(larva.inCompetencyWindow) {
+      
+    }
+  }
+
   private def settle(larva: Larva): Unit = {
     if (larva.inCompetencyWindow) {
       if (habitatManager.isBuffered) {

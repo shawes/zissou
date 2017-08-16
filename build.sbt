@@ -34,6 +34,7 @@ libraryDependencies ++= Seq(
   //"edu.ucar" % "opendap" % "latest.integration",
   //"org.scala-lang" % "scala-library" % "2.12.3",
   "org.geotools" % "gt-shapefile" % "17.2",
+  "org.geotools" % "gt-main" % "17.2",
   "javax.media" % "jai_core" % "1.1.3" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
   "javax.media" % "jai_codec" % "1.1.3" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
   "javax.media" % "jai_imageio" % "1.1" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar",

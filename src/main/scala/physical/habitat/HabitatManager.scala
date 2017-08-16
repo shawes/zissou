@@ -7,6 +7,9 @@ import io.GisShapeFile
 import locals.HabitatType
 import maths.Geometry
 import org.geotools.data.simple.SimpleFeatureCollection
+import org.geotools.data.collection.ListFeatureCollection
+import org.opengis.filter
+
 import physical.GeoCoordinate
 
 import scala.collection.mutable.ListBuffer
@@ -15,8 +18,10 @@ import scala.collection.mutable.ListBuffer
 class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]) extends Logging {
 
   private val habitatReader = new GisShapeFile()
-  //val habitats: SimpleFeatureCollection = habitatReader.read(file)
-  private val habitatPolygons: List[GeometryAdaptor] = defineAllPolygons(habitatReader.read(file))
+  private val features = habitatReader.read(file)
+
+  private val habitatPolygons: List[GeometryAdaptor] = defineAllPolygons(features)
+
   private val reefHabitatPolygons: List[GeometryAdaptor] =
     habitatPolygons.view.filter(x => x.habitat == HabitatType.Reef || x.habitat == HabitatType.Other).force
   private val bufferedPolygons: List[GeometryAdaptor] = defineAllBufferedPolygons()
@@ -38,7 +43,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
 
   def getReef(index: Int): HabitatPolygon = habitatPolygons(index)
 
-  def defineAllPolygons(habitats: SimpleFeatureCollection): List[GeometryAdaptor] = {
+  def defineAllPolygons(habitats: ListFeatureCollection): List[GeometryAdaptor] = {
     val polys: ListBuffer[GeometryAdaptor] = ListBuffer.empty[GeometryAdaptor]
     val shapes = habitats.features()
     try {
@@ -53,9 +58,6 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     }
   }
 
-  def landStuff(): Unit = {
-    debug("The land area has this many points: " + landPolygon.head.coordinates.length)
-  }
 
   /*  /*
     This method find the closest reef to the point returns null otherwise

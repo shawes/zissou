@@ -19,7 +19,10 @@ import org.geotools.feature.simple.{SimpleFeatureBuilder, SimpleFeatureTypeBuild
 import org.geotools.geometry.jts.JTSFactoryFinder
 import org.geotools.referencing.crs.DefaultGeographicCRS
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
+import org.opengis.filter.Filter
+import org.geotools.factory.CommonFactoryFinder
 import physical.adaptors.GeometryToGeoCoordinateAdaptor
+import scala.collection.JavaConverters._
 
 import scala.collection.mutable.ListBuffer
 
@@ -27,11 +30,15 @@ class GisShapeFile() extends Logging {
 
   val geometryFactory = JTSFactoryFinder.getGeometryFactory()
 
-  def read(file: File): SimpleFeatureCollection = {
+  def read(file: File): ListFeatureCollection = {
     val store = FileDataStoreFinder.getDataStore(file)
     try {
-      val features = store.getFeatureSource.getFeatures
-      DataUtilities.collection(features)
+      val ff = CommonFactoryFinder.getFilterFactory2()
+      val filters : ListBuffer[Filter] = ListBuffer.empty
+      filters += ff.equals(ff.property("HABITAT"), ff.literal("Reef"))
+      filters += ff.equals(ff.property("HABITAT"), ff.literal("Other"))
+      val features = store.getFeatureSource.getFeatures(ff.or(filters.asJava))
+      new ListFeatureCollection(DataUtilities.collection(features))
     } finally {
       store.dispose()
     }
