@@ -142,6 +142,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
       }
     }
   }
+}
 
   private def lifespanCheck(larva: Larva): Unit = {
     if (larva.isTooOld) {
