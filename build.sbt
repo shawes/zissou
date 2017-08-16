@@ -9,7 +9,7 @@ scalacOptions ++= Seq("-deprecation", "-feature", "-language:implicitConversions
 parallelExecution in Test := false
 
 resolvers += Resolver.sonatypeRepo("public")
-assemblyJarName in assembly := "zissou-ap.jar"
+assemblyJarName in assembly := "zissou.jar"
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", "jdom-info.xml") => MergeStrategy.first
