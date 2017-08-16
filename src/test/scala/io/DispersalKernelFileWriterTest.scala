@@ -19,7 +19,7 @@ class DispersalKernelFileWriterTest extends FlatSpec with MockitoSugar with Priv
   //  }
 
   it should "have the correct column headers for the csv file" in {
-    val ColumnHeaders = "id,born,birthplace,age,recruited,reef-id,reef-type"
+    val ColumnHeaders = "id,born,birthplace,age,recruited,reef"
     val dispersalKernelReader = new DispersalKernelFile(null, null)
     val columns = PrivateMethod[String]('columnHeaders)
     val headers = dispersalKernelReader invokePrivate columns()

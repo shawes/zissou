@@ -167,10 +167,10 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   it should "settle when asked" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, swimming, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
-    val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
+    //val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
     val settleTime = DateTime.now
-    fish.settle(reef, settleTime)
-    assert(fish.polygon.get == reef)
+    fish.settle(116, settleTime)
+    assert(fish.polygon.get == 116)
     assert(fish.settlementDate == settleTime)
     assert(fish.isSettled)
   }
@@ -178,10 +178,10 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   it should "know when it's settled" in {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, DateTime.now,
       ontogeny, swimming, new FishVerticalMigrationOntogenetic(List.empty[FishVerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
-    val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
+    //val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
     val settleTime = DateTime.now
     assert(!fish.isSettled)
-    fish.settle(reef, settleTime)
+    fish.settle(116, settleTime)
     assert(fish.isSettled)
   }
 
