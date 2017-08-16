@@ -13,15 +13,14 @@ import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.GeoGrid
 import scala.collection.parallel.mutable._
 
-class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val datasets: List[GeoGrid]) extends Logging {
+class FlowGridWrapper(val depths: List[Double], val data: List[(Array[Array[Array[Array[Float]]]],GridCoordSystem)]) extends Logging {
 
-  val data : List[(Array[Array[Array[Float]]],GridCoordSystem)] = datasets.map(dataset => (dataset.readDataSlice(0,-1,-1,-1).copyToNDJavaArray().asInstanceOf[Array[Array[Array[Float]]]], dataset.getCoordinateSystem))
 
   def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
     val gridIndex = data.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
     if(gridIndex(0) != -1 && gridIndex(1) != -1) {
       val depthIndex = closestDepthIndex(coordinate.depth)
-      val velocityData = data.map(array => array._1(depthIndex)(gridIndex(NetcdfIndex.Y))(gridIndex(NetcdfIndex.X)))
+      val velocityData = data.map(array => array._1(0)(depthIndex)(gridIndex(NetcdfIndex.Y))(gridIndex(NetcdfIndex.X)))
       val velocity = new Velocity(velocityData.head, velocityData(1), velocityData(2))
       if (velocity.isDefined) Some(velocity) else None
     } else {
@@ -35,7 +34,7 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
   }
 
   def getCentroid(index: Array[Int]): GeoCoordinate = {
-    LatLonPointToGeoCoordinateAdaptor.toGeoCoordinate(gcs.getLatLon(index(NetcdfIndex.X), index(NetcdfIndex.Y)))
+    LatLonPointToGeoCoordinateAdaptor.toGeoCoordinate(data.head._2.getLatLon(index(NetcdfIndex.X), index(NetcdfIndex.Y)))
   }
 
   def getInterpolationValues(coordinate: GeoCoordinate, interpolation: InterpolationType): Option[Array[Array[Velocity]]] = {
@@ -85,7 +84,7 @@ class FlowGridWrapper(val gcs: GridCoordSystem, val depths: List[Double], val da
   }
 
   def getVelocity(index: Array[Int]): Option[Velocity] = {
-    val velocityData = data.map(array => array._1(NetcdfIndex.Z)(index(NetcdfIndex.Y))(index(NetcdfIndex.X)))
+    val velocityData = data.map(array => array._1(index(NetcdfIndex.Time))(index(NetcdfIndex.Z))(index(NetcdfIndex.Y))(index(NetcdfIndex.X)))
     val velocity = new Velocity(velocityData.head, velocityData(1), velocityData(2))
     if (velocity.isDefined) Some(velocity) else None
   }

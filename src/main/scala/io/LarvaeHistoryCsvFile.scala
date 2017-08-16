@@ -5,18 +5,18 @@ import java.io.{BufferedWriter, File}
 import biology.Larva
 import grizzled.slf4j.Logging
 
-class LarvaeHistoryCsvFile(larvae: List[List[Larva]], filepath: String) extends Logging {
+class LarvaeHistoryCsvFile(larvae: List[Larva], filepath: String) extends Logging {
 
   val columnHeaders = "id,born,age,stage,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
 
   def write(): Unit = {
     info("Writing " + larvae.size + " larvae")
     var count = 1
-    for (larvaeList <- larvae) {
+    for (larva <- larvae) {
       val bw = new BufferedWriter(new java.io.FileWriter(new File(filepath + "//larvae_log_batch" + count + ".csv")))
       bw.write(columnHeaders)
       bw.newLine()
-      larvaeList.foreach(larva => bw.write(writeCsvRow(larva)))
+      bw.write(writeCsvRow(larva))
       bw.close()
       count += 1
     }

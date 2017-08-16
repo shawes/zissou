@@ -60,7 +60,11 @@ class GisShapeFile() extends Logging {
         val featureBuilder = new SimpleFeatureBuilder(larvaLine)
         featureBuilder.add(writeStageLine(larva.history.toList))
         featureBuilder.add(larva.birthplace)
-        featureBuilder.add(larva.polygon.get.id)
+        if(larva.polygon.isDefined) {
+          featureBuilder.add(larva.polygon.get.id)
+        } else {
+          featureBuilder.add(-1)
+        }
         val feature = featureBuilder.buildFeature(null)
         features.add(feature)
      }

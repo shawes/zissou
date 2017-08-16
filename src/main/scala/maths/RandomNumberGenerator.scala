@@ -1,6 +1,6 @@
 package maths
 
-import org.apache.commons.math3.random.MersenneTwister
+import org.apache.commons.math3.random.{SynchronizedRandomGenerator,Well44497b}
 
 import scala.compat.Platform
 
@@ -18,7 +18,7 @@ trait Random {
 
 object RandomNumberGenerator extends Random {
 
-  private val random = new MersenneTwister(seed)
+  private val random = new SynchronizedRandomGenerator(new Well44497b(seed))
 
   def seed: Long = 82723651
 

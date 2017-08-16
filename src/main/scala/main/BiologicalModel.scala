@@ -23,7 +23,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
-  var fishLarvae: ListBuffer[List[Larva]] = ListBuffer.empty
+  var fishLarvae: ListBuffer[Larva] = ListBuffer.empty
   var pelagicLarvaeCount = 0
   val geometry = new Geometry
 
@@ -32,17 +32,17 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     //debug("Applying biology")
     calculateMortalityRate(iteration)
     spawnLarvae()
-    fishLarvae.par.foreach(fish => processLarva(fish))
+    fishLarvae.par.foreach(fish => biology(fish))
   }
 
   private def processLarva(larvae: List[Larva]): Unit = {
     //debug("Processing the fish")
     val swimmingLarvae: List[Larva] = larvae.filter(fish => fish.isPelagic)
     //debug(larvae.size + " larvae of which these can move: " + swimmingLarvae.size)
-    swimmingLarvae.foreach(reefFish => apply(reefFish))
+    swimmingLarvae.foreach(reefFish => biology(reefFish))
   }
 
-  private def apply(larva: Larva): Unit = {
+  private def biology(larva: Larva): Unit = {
     ageLarvae(larva)
     move(larva)
     settle(larva)
@@ -161,9 +161,9 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def spawnFish(sites: List[SpawningLocation]) = {
-    val freshLarvae = sites.map(site => factory.create(site, clock.now))
-    pelagicLarvaeCount += freshLarvae.flatten.size
-    fishLarvae ++= freshLarvae
+    val spawn = sites.map(site => factory.create(site, clock.now)).flatten
+    pelagicLarvaeCount += spawn.size
+    fishLarvae ++= spawn
   }
 
   def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvaeCount > 0
