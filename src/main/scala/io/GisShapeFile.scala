@@ -63,12 +63,12 @@ class GisShapeFile() extends Logging {
     val  larvaLine:SimpleFeatureType = builder.buildFeatureType();
 
     for (larva <- larvae) {
-      if(RandomNumberGenerator.get*100 < percent) {
+      if(larva.history.size > 1 && RandomNumberGenerator.get*100 < percent) {
         val featureBuilder = new SimpleFeatureBuilder(larvaLine)
         featureBuilder.add(writeStageLine(larva.history.toList))
         featureBuilder.add(larva.birthplace)
         if(larva.polygon.isDefined) {
-          featureBuilder.add(larva.polygon.get.id)
+          featureBuilder.add(larva.polygon)
         } else {
           featureBuilder.add(-1)
         }

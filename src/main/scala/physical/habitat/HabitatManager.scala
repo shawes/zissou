@@ -11,6 +11,7 @@ import org.geotools.data.collection.ListFeatureCollection
 import org.opengis.filter
 
 import physical.GeoCoordinate
+import physical.adaptors._
 
 import scala.collection.mutable.ListBuffer
 
@@ -20,14 +21,14 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   private val habitatReader = new GisShapeFile()
   private val features = habitatReader.read(file)
 
-  private val habitatPolygons: List[GeometryAdaptor] = defineAllPolygons(features)
-
-  private val reefHabitatPolygons: List[GeometryAdaptor] =
-    habitatPolygons.view.filter(x => x.habitat == HabitatType.Reef || x.habitat == HabitatType.Other).force
-  private val bufferedPolygons: List[GeometryAdaptor] = defineAllBufferedPolygons()
-  private val landPolygon: List[GeometryAdaptor] = habitatPolygons.filter(x => x.habitat == HabitatType.Land)
+  // private val habitatPolygons: List[GeometryAdaptor] = defineAllPolygons(features)
+  //
+  // private val reefHabitatPolygons: List[GeometryAdaptor] =
+  //   habitatPolygons.view.filter(x => x.habitat == HabitatType.Reef || x.habitat == HabitatType.Other).force
+  // private val bufferedPolygons: List[GeometryAdaptor] = defineAllBufferedPolygons()
+  // private val landPolygon: List[GeometryAdaptor] = habitatPolygons.filter(x => x.habitat == HabitatType.Land)
   private val geometry = new Geometry
-  info("There are this many polygons " + habitatPolygons.size + " of which this many are reefs " + reefHabitatPolygons.size)
+  // info("There are this many polygons " + habitatPolygons.size + " of which this many are reefs " + reefHabitatPolygons.size)
 
   //for (reef <- reefHabitatPolygons) {
   //  debug("Patch num: " + reef.id)
@@ -39,107 +40,139 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   //private val settlementHabitatsHashTable = defineReefHashTable()
   //private val habitatsHashTable = defineHashTable()
 
+
   def isBuffered: Boolean = buffer.isBuffered
 
-  def getReef(index: Int): HabitatPolygon = habitatPolygons(index)
+  // def getReef(index: Int): HabitatPolygon = habitatPolygons(index)
+  //
+  // def defineAllPolygons(habitats: ListFeatureCollection): List[GeometryAdaptor] = {
+  //   val polys: ListBuffer[GeometryAdaptor] = ListBuffer.empty[GeometryAdaptor]
+  //   val shapes = habitats.features()
+  //   try {
+  //     while (shapes.hasNext) {
+  //       val shape = shapes.next()
+  //       val geometry = SimpleFeatureAdaptor.getGeometry(shape)
+  //       polys += new GeometryAdaptor(geometry, SimpleFeatureAdaptor.getId(shape), SimpleFeatureAdaptor.getHabitatType(shape))
+  //     }
+  //     polys.toList
+  //   } finally {
+  //     shapes.close()
+  //   }
+  // }
 
-  def defineAllPolygons(habitats: ListFeatureCollection): List[GeometryAdaptor] = {
-    val polys: ListBuffer[GeometryAdaptor] = ListBuffer.empty[GeometryAdaptor]
-    val shapes = habitats.features()
-    try {
-      while (shapes.hasNext) {
-        val shape = shapes.next()
-        val geometry = SimpleFeatureAdaptor.getGeometry(shape)
-        polys += new GeometryAdaptor(geometry, SimpleFeatureAdaptor.getId(shape), SimpleFeatureAdaptor.getHabitatType(shape))
-      }
-      polys.toList
-    } finally {
-      shapes.close()
-    }
-  }
 
-
-  /*  /*
-    This method find the closest reef to the point returns null otherwise
-     */
     //TODO: Uses brute-force algorithm, need to change to divide and conquer
-    def getClosestHabitat(coordinate: GeoCoordinate): SimpleFeature = {
-      val location: Point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
-      var shortestDistance: Double = Double.MaxValue
-      var closestReef: SimpleFeature = null
-      val shapes = filteredHabitats.features()
-      while (shapes.hasNext) {
-        val shape = shapes.next()
-        val geometry = SimpleFeatureAdaptor.getGeometry(shape)
-        val distance = geometry.distance(location)
-        if (distance < shortestDistance) {
-          shortestDistance = distance
-          closestReef = shape
+    // def getClosestHabitat(coordinate: GeoCoordinate): SimpleFeature = {
+    //   val location: Point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
+    //   var shortestDistance: Double = Double.MaxValue
+    //   var closestReef: SimpleFeature = null
+    //   val shapes = filteredHabitats.features()
+    //   while (shapes.hasNext) {
+    //     val shape = shapes.next()
+    //     val geometry = SimpleFeatureAdaptor.getGeometry(shape)
+    //     val distance = geometry.distance(location)
+    //     if (distance < shortestDistance) {
+    //       shortestDistance = distance
+    //       closestReef = shape
+    //     }
+    //   }
+    //   closestReef
+    // }
+
+    def getClosestHabitat2(coordinate: GeoCoordinate) : (Int, Int, Double) = {
+      //val geometry = maths.Geometry()
+      val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
+      var smell = (Double.MaxValue,-1)
+      var settle = (Double.MaxValue,-1)
+      var inside = -1
+      var angle = -1.0
+      val iterator = features.features()
+      try {
+        while(iterator.hasNext) {
+          val simpleFeature = iterator.next()
+          val reef = SimpleFeatureAdaptor.getGeometry(simpleFeature)
+          val id = SimpleFeatureAdaptor.getId(simpleFeature)
+          if(reef.contains(point)) {
+            inside = id
+            return (id, -1, -1)
+          } else if(isBuffered) {
+            val distance = geometry.getDistanceBetweenTwoPoints(coordinate, GeometryToGeoCoordinateAdaptor.toGeoCoordinate(reef.getCentroid))/1000
+            if(distance < buffer.settlement && distance < settle._1) {
+              settle = (distance, id)
+            }
+            if(distance < buffer.olfactory && distance < smell._1) {
+              smell = (distance, id)
+              angle = geometry.getAngleBetweenTwoPoints(coordinate, GeometryToGeoCoordinateAdaptor.toGeoCoordinate(reef.getCentroid))
+            }
+          }
         }
-      }
-      closestReef
-    }*/
-
-  //def getReef(index: Int): HabitatPolygon = settlementHabitatsHashTable.get(index).get
-
-  def isCoordinateOverReef(coordinate: GeoCoordinate): Option[Int] = {
-    val inside = reefHabitatPolygons.find(x => x.contains(coordinate))
-    if (inside.nonEmpty) {
-      Some(inside.head.id)
-    } else {
-      None
-    }
-  }
-
-  def isCoordinateOverBuffer(coordinate: GeoCoordinate): Option[Int] = {
-    val inside = bufferedPolygons.find(x => x.contains(coordinate))
-    if (inside.nonEmpty) {
-      Some(inside.head.id)
-    } else {
-      None
-    }
-  }
-
-  def isCoordinateOverBufferLazy(coordinate: GeoCoordinate, isSettlement: Boolean): Option[Int] = {
-    val nearestReefIndex = getIndexOfNearestReef(coordinate)
-    val distance = geometry.getDistanceBetweenTwoPoints(coordinate, reefHabitatPolygons(nearestReefIndex).centroid)/1000
-
-    // val distances = reefHabitatPolygons.map(reef => geometry.getDistanceBetweenTwoPoints(coordinate,reef.centroid)
-    val threshold = if(isSettlement) buffer.settlement else buffer.olfactory
-    debug("Distance is: "+ distance+", threshold is: "+threshold)
-    if (distance < threshold) {
-      Some(nearestReefIndex)
-    } else {
-      None
-    }
-  }
-
-
-  def getIndexOfNearestReef(coordinate: GeoCoordinate): Int = {
-
-    //val point =
-
-    var shortestDistance: Double = Double.MaxValue
-    var closestReefId: Int = reefHabitatPolygons.head.id
-    //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
-
-    for (i <- reefHabitatPolygons.indices) {
-      //val distance = point.distance(reefHabitatPolygons(i).g)
-      //debug("Patch number "+ reefHabitatPolygons(i).id +" is km away "+distance+" with centroid "+reefHabitatPolygons(i).centroid)
-      val geomDist = geometry.getDistanceBetweenTwoPoints(coordinate, reefHabitatPolygons(i).centroid)
-      //debug("Geometry distance is "+ geomDist)
-      if (geomDist < shortestDistance) {
-        shortestDistance = geomDist
-        closestReefId = i
+        (settle._2, smell._2, angle)
+      } finally {
+        iterator.close()
       }
     }
-    debug("The closest reef centroid is: " + reefHabitatPolygons(closestReefId).centroid)
-    closestReefId
-  }
 
-  private def defineAllBufferedPolygons(): List[GeometryAdaptor] = {
-    reefHabitatPolygons.map(reef => new GeometryAdaptor(reef.g.buffer(buffer.settlement / 100), reef.id, reef.habitat))
-  }
+  //
+  // //def getReef(index: Int): HabitatPolygon = settlementHabitatsHashTable.get(index).get
+  //
+  // def isCoordinateOverReef(coordinate: GeoCoordinate): Option[Int] = {
+  //   val inside = reefHabitatPolygons.find(x => x.contains(coordinate))
+  //   if (inside.nonEmpty) {
+  //     Some(inside.head.id)
+  //   } else {
+  //     None
+  //   }
+  // }
+  //
+  // def isCoordinateOverBuffer(coordinate: GeoCoordinate): Option[Int] = {
+  //   val inside = bufferedPolygons.find(x => x.contains(coordinate))
+  //   if (inside.nonEmpty) {
+  //     Some(inside.head.id)
+  //   } else {
+  //     None
+  //   }
+  // }
+  //
+  // def isCoordinateOverBufferLazy(coordinate: GeoCoordinate, isSettlement: Boolean): Option[Int] = {
+  //   val nearestReefIndex = getIndexOfNearestReef(coordinate)
+  //   val distance = geometry.getDistanceBetweenTwoPoints(coordinate, reefHabitatPolygons(nearestReefIndex).centroid)/1000
+  //
+  //   // val distances = reefHabitatPolygons.map(reef => geometry.getDistanceBetweenTwoPoints(coordinate,reef.centroid)
+  //   val threshold = if(isSettlement) buffer.settlement else buffer.olfactory
+  //   debug("Distance is: "+ distance+", threshold is: "+threshold)
+  //   if (distance < threshold) {
+  //     Some(nearestReefIndex)
+  //   } else {
+  //     None
+  //   }
+  // }
+  //
+  //
+  // def getIndexOfNearestReef(coordinate: GeoCoordinate): Int = {
+  //
+  //   //val point =
+  //
+  //   var shortestDistance: Double = Double.MaxValue
+  //   var closestReefId: Int = reefHabitatPolygons.head.id
+  //   //val point = GeometryToGeoCoordinateAdaptor.toPoint(coordinate)
+  //
+  //   for (i <- reefHabitatPolygons.indices) {
+  //     //val distance = point.distance(reefHabitatPolygons(i).g)
+  //     //debug("Patch number "+ reefHabitatPolygons(i).id +" is km away "+distance+" with centroid "+reefHabitatPolygons(i).centroid)
+  //     val geomDist = geometry.getDistanceBetweenTwoPoints(coordinate, reefHabitatPolygons(i).centroid)
+  //     //debug("Geometry distance is "+ geomDist)
+  //     if (geomDist < shortestDistance) {
+  //       shortestDistance = geomDist
+  //       closestReefId = i
+  //     }
+  //   }
+  //   debug("The closest reef centroid is: " + reefHabitatPolygons(closestReefId).centroid)
+  //   closestReefId
+  // }
+  //
+  // private def defineAllBufferedPolygons(): List[GeometryAdaptor] = {
+  //   reefHabitatPolygons.map(reef => new GeometryAdaptor(reef.g.buffer(buffer.settlement / 100), reef.id, reef.habitat))
+  // }
 
 
   /*

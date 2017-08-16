@@ -8,5 +8,5 @@ import physical.habitat.HabitatPolygon
 class TimeCapsule(val age: Int,
                   val stage: OntogenyState,
                   val state: PelagicLarvaeState,
-                  val habitat: Option[HabitatPolygon],
+                  val habitat: Option[Int],
                   val position: GeoCoordinate) {}

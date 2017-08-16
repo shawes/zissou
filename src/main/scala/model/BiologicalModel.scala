@@ -26,17 +26,18 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   //var fishLarvae: ListBuffer[Larva] = ListBuffer.empty
   val pelagicLarvae: ListBuffer[Larva] = ListBuffer.empty
   val stationaryLarvae: ListBuffer[Larva] = ListBuffer.empty
-  val settledLarvae: ListBuffer[Larva] = ListBuffer.empty
-  var pelagicLarvaeCount = 0
+  //val settledLarvae: ListBuffer[Larva] = ListBuffer.empty
+  //var pelagicLarvaeCount = 0
   val geometry = new Geometry
 
 
   def apply(iteration: Int): Unit = {
     //debug("Applying biology")
     calculateMortalityRate(iteration)
+    pelagicLarvae.par.foreach(fish => mortality(fish))
+    refresh()
     spawnLarvae()
     pelagicLarvae.par.foreach(fish => biology(fish))
-    refresh()
   }
 
   def refresh() : Unit = {
@@ -49,9 +50,8 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   private def biology(larva: Larva): Unit = {
     ageLarvae(larva)
     move(larva)
-    settle(larva)
+    sense(larva)
     lifespanCheck(larva)
-    mortalityCheck(larva)
   }
 
   private def move(larva: Larva): Unit = {
@@ -72,21 +72,14 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def swim(larva : Larva) : Option[Velocity] = {
-    if(larva.swimming.isDirected) {
-        habitatManager.isCoordinateOverBufferLazy(larva.position, isSettlement=false) match {
-          case Some(reefIndex) => Some(orientateTowardsReef(larva, reefIndex))
-          case None => None
-        }
+    if(larva.swimming.isDirected && larva.direction != -1) {
+      Some(larva.swimming(larva.direction))
     } else {
       None
     }
   }
 
-  private def orientateTowardsReef(larva : Larva, reefIndex : Int) : Velocity = {
-    val reef = habitatManager.getReef(reefIndex)
-    val angle = geometry.getAngleBetweenTwoPoints(larva.position, reef.centroid)
-    larva.swimming(angle)
-  }
+
 
   private def migrateLarvaVertically(larva: Larva): Unit = {
     if(larva.undergoesDielMigration) {
@@ -105,48 +98,30 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     larva growOlder clock.timeStep.totalSeconds
   }
 
-  private def mortalityCheck(larva: Larva): Unit = {
+  private def mortality(larva: Larva): Unit = {
     if (fish.isMortal && RandomNumberGenerator.get < mortality.getRate) {
       larva.kill()
     }
   }
 
-  private def senseReef(larva : Larva) : Unit = {
+  private def sense(larva : Larva) : Unit = {
     if(larva.inCompetencyWindow) {
-      
-    }
-  }
-
-  private def settle(larva: Larva): Unit = {
-    if (larva.inCompetencyWindow) {
-      if (habitatManager.isBuffered) {
-        val reefIndex = habitatManager.isCoordinateOverBufferLazy(larva.position, isSettlement=true)
-        // = habitatManager.getIndexOfNearestReef(larva.position)
-        if (reefIndex.isDefined) {
-          //debug("Larva is within reef buffer, so settle that bitch")
-          larva.settle(habitatManager.getReef(reefIndex.get), clock.now)
-          pelagicLarvaeCount -= 1
-        //} else {
-        //  val distanceIndex = habitatManager.getIndexOfNearestReef(larva.position)
-        //  val reef = habitatManager.getReef(distanceIndex)
-          //debug("Closest reef is still " + reef.distance(larva.position)/10 + "km away")
-        //}
-      }
-      else {
-        val reefIndex = habitatManager.isCoordinateOverReef(larva.position)
-        if (reefIndex.isDefined) {
-          larva.settle(habitatManager.getReef(reefIndex.get), clock.now)
-          pelagicLarvaeCount -= 1
+      val index = habitatManager.getClosestHabitat2(larva.position)
+      if(index._1 != -1)  {
+        larva.settle(index._1, clock.now)
+      } else {
+        if(index._2 != -1) {
+          larva.changeDirection(index._3)
+        } else {
+          larva.changeDirection(-1)
         }
       }
     }
   }
-}
 
   private def lifespanCheck(larva: Larva): Unit = {
     if (larva.isTooOld) {
       larva.kill()
-      pelagicLarvaeCount -= 1
     }
   }
 

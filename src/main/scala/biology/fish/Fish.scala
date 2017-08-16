@@ -35,16 +35,22 @@ class Fish(
   var fishAge = 0
   var fishSettlementDate: Option[DateTime] = None
   var fishPosition = birthplace.location
-  var fishPolygon: Option[HabitatPolygon] = None //TODO: Think about how this works
+  var fishPolygon: Option[Int] = None //TODO: Think about how this works
   //val pelagicHabitat = Some(new GeometryAdaptor(null, -1, HabitatType.Ocean))
   var lastDielMigration : Option[DielVerticalMigrationType] = None
   private var hasChangedOntogeneticState : Boolean = false
+  
+  var fishDirection : Double = -1
 
   def this() = this(0, 0, 0, null, DateTime.now(), null, null, null, null)
 
   override def settlementDate: DateTime = fishSettlementDate.get
 
   override def changedOntogeneticState : Boolean = hasChangedOntogeneticState
+  
+  override def direction : Double = fishDirection
+  
+  override def changeDirection(angle : Double) = fishDirection = angle
 
   def inCompetencyWindow: Boolean = age < pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion //TODO: Need to code in a better competency window
 
@@ -62,10 +68,10 @@ class Fish(
   def undergoesDielMigration : Boolean = verticalMigrationDiel.probabilities.nonEmpty
 
   def move(location: GeoCoordinate): Unit = {
-    //if(location != fishPosition) {
+    if(location != fishPosition) {
       changeState(PelagicLarvaeState.Pelagic)
       updatePosition(location)
-    //}
+    }
   }
 
   def updatePosition(newPos: GeoCoordinate): Unit = fishPosition = newPos
@@ -75,25 +81,21 @@ class Fish(
   def growOlder(seconds: Int): Unit = {
     val initialOntogeny = getOntogeny
     fishAge += seconds
-    if(age > pelagicLarvalDuration) { 
-      kill() 
-    } else {  
-      val currentOntogeny = getOntogeny
-      if(initialOntogeny == currentOntogeny) {
-        hasChangedOntogeneticState = false
-      } else {
-        hasChangedOntogeneticState = true
-      }
+    val currentOntogeny = getOntogeny
+    if(initialOntogeny == currentOntogeny) {
+      hasChangedOntogeneticState = false
+    } else {
+      hasChangedOntogeneticState = true
     }
   }
 
-  def settle(settlementReef: HabitatPolygon, date: DateTime): Unit = {
-    updateHabitat(settlementReef)
+  def settle(reefId : Int, date: DateTime): Unit = {
+    updateHabitat(reefId)
     fishSettlementDate = Some(date)
     changeState(PelagicLarvaeState.Settled)
   }
 
-  def updateHabitat(newHabitat: HabitatPolygon): Unit = fishPolygon = Some(newHabitat)
+  def updateHabitat(reefId: Int): Unit = fishPolygon = Some(reefId)
 
   def kill(): Unit = {
     changeState(PelagicLarvaeState.Dead)
@@ -104,11 +106,12 @@ class Fish(
     saveState()
   }
 
-  private def saveState() = fishHistory append new TimeCapsule(age, getOntogeny, state, polygon, position)
+  private def saveState() : Unit = 
+    fishHistory append new TimeCapsule(age, getOntogeny, state, polygon, position)
 
   override def position: GeoCoordinate = fishPosition
 
-  override def polygon: Option[HabitatPolygon] = fishPolygon
+  override def polygon: Option[Int] = fishPolygon
 
   override def ontogeneticVerticallyMigrate: Unit = {
     val depth = verticalMigrationOntogenetic.getDepth(getOntogeny)

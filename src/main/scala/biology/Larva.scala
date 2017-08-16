@@ -25,7 +25,7 @@ trait Larva {
 
   def settlementDate: DateTime
 
-  def polygon: Option[physical.habitat.HabitatPolygon]
+  def polygon: Option[Int]
 
   def history: ListBuffer[TimeCapsule]
 
@@ -36,6 +36,8 @@ trait Larva {
   def ontogeny: Ontogeny
 
   def swimming : Swimming
+  
+  def direction : Double
 
   def move(newPosition: GeoCoordinate) : Unit
 
@@ -43,11 +45,11 @@ trait Larva {
 
   def growOlder(seconds: Int) : Unit
 
-  def settle(settlementReef: HabitatPolygon, date: DateTime) : Unit
+  def settle(reefId : Int, date: DateTime) : Unit
 
   def getOntogeny: OntogenyState
 
-  def updateHabitat(newHabitat: HabitatPolygon) : Unit
+  def updateHabitat(reefId : Int) : Unit
 
   def kill() : Unit
 
@@ -70,5 +72,7 @@ trait Larva {
   def undergoesOntogeneticMigration : Boolean
 
   def changedOntogeneticState : Boolean
+  
+  def changeDirection(angle : Double) : Unit
 
 }

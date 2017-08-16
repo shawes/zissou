@@ -24,7 +24,6 @@ class LarvaeHistoryCsvFile(larvae: List[Larva], filepath: String) extends Loggin
 
   private def writeCsvRow(larva: Larva): String = {
     debug(larva.toString)
-    var distance = 0
     val sb = new StringBuilder()
     larva.history.foreach(hist => {
       sb append larva.id + ","
@@ -35,11 +34,9 @@ class LarvaeHistoryCsvFile(larvae: List[Larva], filepath: String) extends Loggin
       sb append larva.birthplace.name + ","
       sb append hist.state + ","
       if(hist.habitat.nonEmpty) {
-        sb append hist.habitat.get.id + ","
-        sb append hist.habitat.get.habitat.toString + ","
+        sb append hist.habitat + ","
       } else {
         sb append "-1,"
-        sb append "ocean,"
       }
       sb append hist.position.latitude + ","
       sb append hist.position.longitude + ","
