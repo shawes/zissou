@@ -44,13 +44,12 @@ class GisShapeFile() extends Logging {
     }
   }
 
-  def write(larvae: List[Larva], shape: ShapeFileType, file: File, percent : Double): Unit = shape match {
+  def write(larvae: Array[Larva], shape: ShapeFileType, file: File, percent : Double): Unit = shape match {
     case ShapeFileType.Line => writeLineShapeFile(larvae, file, percent)
-    case ShapeFileType.Point => writePointShapeFile(larvae, file, percent)
     case _ => throw new scala.IllegalArgumentException()
   }
 
-  private def writeLineShapeFile(larvae: List[Larva], file: File, percent : Double) = {
+  private def writeLineShapeFile(larvae: Array[Larva], file: File, percent : Double) = {
     val features = new java.util.ArrayList[SimpleFeature]
     val builder :SimpleFeatureTypeBuilder = new SimpleFeatureTypeBuilder()
     builder.setName("larva")
@@ -65,7 +64,7 @@ class GisShapeFile() extends Logging {
     for (larva <- larvae) {
       if(larva.history.size > 1 && RandomNumberGenerator.get*100 < percent) {
         val featureBuilder = new SimpleFeatureBuilder(larvaLine)
-        featureBuilder.add(writeStageLine(larva.history.toList))
+        featureBuilder.add(writeStageLine(larva.history.toArray))
         featureBuilder.add(larva.birthplace)
         if(larva.polygon.isDefined) {
           featureBuilder.add(larva.polygon)
@@ -92,16 +91,12 @@ class GisShapeFile() extends Logging {
     createTransaction.close()
   }
 
-  private def writeStageLine(history: List[TimeCapsule]): LineString = {
-///val coordinates = new ListBuffer[Coordinate]()
-    ////if(history.size > 1) {
+  private def writeStageLine(history: Array[TimeCapsule]): LineString = {
     val coordinates = new ListBuffer[Coordinate]()
     for (hist <- history) {
-      //TODO: Remove repeating points
       coordinates += new Coordinate(hist.position.longitude, hist.position.latitude)
     }
     geometryFactory.createLineString(coordinates.toArray)
-  //}
   }
 
   private def createParams(file: File): util.HashMap[String, Serializable] = {
@@ -111,57 +106,10 @@ class GisShapeFile() extends Logging {
     params
   }
 
-  private def createLineSchema(): SimpleFeatureType = {
-    val schema = new SimpleFeatureTypeBuilder()
-    schema.setName("LarvaePaths")
-    schema.setCRS(DefaultGeographicCRS.WGS84)
-    schema.add("Path", classOf[LineString])
-    schema.add("Id", classOf[Integer])
-    schema.buildFeatureType()
-  }
 
-  private def writePointShapeFile(larvae: List[Larva], file: File, percent : Double) = {
-    val features = new java.util.ArrayList[SimpleFeature]
-    val featureBuilder = new SimpleFeatureBuilder(createPointSchema())
-    larvae.foreach(l => l.history.foreach(hist => addPointFeature(featureBuilder, l.id, hist)))
-    val dataStoreFactory: FileDataStoreFactorySpi = new ShapefileDataStoreFactory()
 
-    val params = createParams(file)
-    val newDataStore = dataStoreFactory.createNewDataStore(params)
-    newDataStore.createSchema(createPointSchema())
-    writeFeaturesToShapeFile(features, newDataStore)
-  }
 
-  private def writeFeaturesToShapeFile(features: util.ArrayList[SimpleFeature], dataStore: DataStore): Unit = {
-    val featureType = createLineSchema()
-    val collection = new ListFeatureCollection(featureType, features)
 
-    val transaction = new DefaultTransaction("create")
-    val typeName: String = dataStore.getTypeNames()(0)
-    val featureSource = dataStore.getFeatureSource(typeName)
-
-    val featureStore = featureSource.asInstanceOf[SimpleFeatureStore]
-    featureStore.setTransaction(transaction)
-    featureStore.addFeatures(collection)
-    transaction.commit()
-    transaction.close()
-  }
-
-  private def addPointFeature(featureBuilder: SimpleFeatureBuilder, id: Int, time: TimeCapsule): SimpleFeature = {
-    featureBuilder.add(id)
-    featureBuilder.add(GeometryToGeoCoordinateAdaptor.toPoint(time.position))
-    //featureBuilder.add(time.state == PelagicLarvaeState.Settled)
-    featureBuilder.buildFeature(null)
-  }
-
-  private def createPointSchema(): SimpleFeatureType = {
-    val schema = new SimpleFeatureTypeBuilder()
-    schema.setName("LarvaePaths")
-    schema.setCRS(DefaultGeographicCRS.WGS84)
-    schema.add("the_geom", classOf[Point])
-    schema.add("id", classOf[Integer])
-    schema.buildFeatureType()
-  }
 
 
 

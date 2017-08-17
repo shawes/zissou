@@ -1,6 +1,6 @@
 package biology
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
 import com.github.nscala_time.time.Imports._
 import locals.OntogenyState._
 import locals.PelagicLarvaeState
@@ -27,7 +27,7 @@ trait Larva {
 
   def polygon: Option[Int]
 
-  def history: ListBuffer[TimeCapsule]
+  def history: ArrayBuffer[TimeCapsule]
 
   def position: GeoCoordinate
 
@@ -36,7 +36,7 @@ trait Larva {
   def ontogeny: Ontogeny
 
   def swimming : Swimming
-  
+
   def direction : Double
 
   def move(newPosition: GeoCoordinate) : Unit
@@ -72,7 +72,7 @@ trait Larva {
   def undergoesOntogeneticMigration : Boolean
 
   def changedOntogeneticState : Boolean
-  
+
   def changeDirection(angle : Double) : Unit
 
 }

@@ -2,7 +2,7 @@ package model
 
 import java.io.File
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
 
 import biology._
 import biology.fish._
@@ -24,17 +24,15 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
   //var fishLarvae: ListBuffer[Larva] = ListBuffer.empty
-  val pelagicLarvae: ListBuffer[Larva] = ListBuffer.empty
-  val stationaryLarvae: ListBuffer[Larva] = ListBuffer.empty
+  val pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
+  val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   //val settledLarvae: ListBuffer[Larva] = ListBuffer.empty
   //var pelagicLarvaeCount = 0
   val geometry = new Geometry
 
 
   def apply(iteration: Int): Unit = {
-    //debug("Applying biology")
     calculateMortalityRate(iteration)
-    //pelagicLarvae.foreach(fish => )
     spawnLarvae()
     pelagicLarvae.par.foreach(fish => biology(fish))
     refresh()
@@ -45,8 +43,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     pelagicLarvae.clear()
     pelagicLarvae ++= cull._1
     stationaryLarvae ++= cull._2
-    //info("Pelagic larvae are: " + pelagicLarvae.size)
-    //info("Stationary larvae are: " + stationaryLarvae.size)
   }
 
   private def biology(larva: Larva): Unit = {
@@ -142,6 +138,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     pelagicLarvae ++= spawn
   }
 
-  def canDisperse(time: DateTime): Boolean = spawn.isItSpawningSeason(time) || pelagicLarvae.nonEmpty
+  def canDisperse(time: DateTime): Boolean = (spawn.isItSpawningSeason(time) || pelagicLarvae.nonEmpty)
 
 }

@@ -16,7 +16,7 @@ import com.github.nscala_time.time.Imports._
 import maths.RandomNumberGenerator
 import biology._
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
 
 class Fish(
   val id: Int,
@@ -30,7 +30,7 @@ class Fish(
   val verticalMigrationDiel: VerticalMigrationDiel)
   extends Larva with Logging {
 
-  val fishHistory = ListBuffer.empty[TimeCapsule]
+  val fishHistory = ArrayBuffer.empty[TimeCapsule]
   var fishState = PelagicLarvaeState.Pelagic
   var fishAge = 0
   var fishSettlementDate: Option[DateTime] = None
@@ -39,7 +39,7 @@ class Fish(
   //val pelagicHabitat = Some(new GeometryAdaptor(null, -1, HabitatType.Ocean))
   var lastDielMigration : Option[DielVerticalMigrationType] = None
   private var hasChangedOntogeneticState : Boolean = false
-  
+
   var fishDirection : Double = -1
 
   def this() = this(0, 0, 0, null, DateTime.now(), null, null, null, null)
@@ -47,9 +47,9 @@ class Fish(
   override def settlementDate: DateTime = fishSettlementDate.get
 
   override def changedOntogeneticState : Boolean = hasChangedOntogeneticState
-  
+
   override def direction : Double = fishDirection
-  
+
   override def changeDirection(angle : Double) = fishDirection = angle
 
   def inCompetencyWindow: Boolean = age < pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion //TODO: Need to code in a better competency window
@@ -106,7 +106,7 @@ class Fish(
     saveState()
   }
 
-  private def saveState() : Unit = 
+  private def saveState() : Unit =
     fishHistory append new TimeCapsule(age, getOntogeny, state, polygon, position)
 
   override def position: GeoCoordinate = fishPosition
@@ -136,7 +136,7 @@ class Fish(
     "state:" + state + "," +
     "history:" + history.size
 
-  override def history: ListBuffer[TimeCapsule] = fishHistory
+  override def history: ArrayBuffer[TimeCapsule] = fishHistory
 
   override def state: PelagicLarvaeState = fishState
 

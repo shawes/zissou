@@ -10,7 +10,7 @@ import org.joda.time.DateTime
 import physical.GeoCoordinate
 import biology._
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.ArrayBuffer
 
 class FishFactory(fish: FishConfig, save: Boolean) extends LarvaFactory with Logging {
   val pldDistribution = new NormalDistribution(fish.pelagicLarvalDuration.mean, fish.pelagicLarvalDuration.stdev)
@@ -22,8 +22,8 @@ class FishFactory(fish: FishConfig, save: Boolean) extends LarvaFactory with Log
   //debug("VERT: " + fish.verticalMigrationOntogeneticProbabilities.size)
 
 
-  override def create(site: SpawningLocation, time: DateTime): List[Fish] = {
-    val larvae: ListBuffer[Fish] = ListBuffer.empty
+  override def create(site: SpawningLocation, time: DateTime): Array[Larva] = {
+    val larvae: ArrayBuffer[Fish] = ArrayBuffer.empty
     //for (site <- sites) {
 
     // val larvaeAtSite = new ListBuffer[ReefFish]
@@ -46,13 +46,14 @@ class FishFactory(fish: FishConfig, save: Boolean) extends LarvaFactory with Log
           fish.swimming,
           fish.verticalMigrationOntogeneticProbabilities,
           fish.verticalMigrationDielProbabilities)
+
           larvae += larvalFish
                   // debug("The ontogeny is " + larvalFish.ontogeny.preFlexion + ", " + larvalFish.ontogeny.flexion + ", " + larvalFish.ontogeny.postFlexion)
       }
     //larvae append larvaeAtSite.toList
     //debug("Larvae size is now: " + larvaeCount)
     //}
-    larvae.toList
+    larvae.toArray
   }
 
 

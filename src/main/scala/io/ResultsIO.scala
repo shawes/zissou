@@ -4,7 +4,7 @@ import java.io.File
 
 import biology.Larva
 
-class ResultsIO(larvae: List[Larva], output: OutputFiles, name : String) {
+class ResultsIO(larvae: Array[Larva], output: OutputFiles, name : String) {
 
   val directory = new File(output.path + "//" + name)
   directory.mkdir()

@@ -5,9 +5,9 @@ import java.io.{BufferedWriter, File}
 import biology.Larva
 import grizzled.slf4j.Logging
 
-class LarvaeHistoryCsvFile(larvae: List[Larva], filepath: String) extends Logging {
+class LarvaeHistoryCsvFile(larvae: Array[Larva], filepath: String) extends Logging {
 
-  val columnHeaders = "id,born,age,stage,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
+  val columnHeaders = "id,born,age,stage,pld,birth_place,state,habitat_id,latitude,longitude,depth"
 
   def write(): Unit = {
     info("Writing " + larvae.size + " larvae")
@@ -23,7 +23,6 @@ class LarvaeHistoryCsvFile(larvae: List[Larva], filepath: String) extends Loggin
   }
 
   private def writeCsvRow(larva: Larva): String = {
-    debug(larva.toString)
     val sb = new StringBuilder()
     larva.history.foreach(hist => {
       sb append larva.id + ","
