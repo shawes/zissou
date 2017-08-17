@@ -34,10 +34,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   def apply(iteration: Int): Unit = {
     //debug("Applying biology")
     calculateMortalityRate(iteration)
-    pelagicLarvae.par.foreach(fish => mortality(fish))
-    refresh()
+    //pelagicLarvae.foreach(fish => )
     spawnLarvae()
     pelagicLarvae.par.foreach(fish => biology(fish))
+    refresh()
   }
 
   def refresh() : Unit = {
@@ -45,6 +45,8 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     pelagicLarvae.clear()
     pelagicLarvae ++= cull._1
     stationaryLarvae ++= cull._2
+    //info("Pelagic larvae are: " + pelagicLarvae.size)
+    //info("Stationary larvae are: " + stationaryLarvae.size)
   }
 
   private def biology(larva: Larva): Unit = {
@@ -52,6 +54,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     move(larva)
     sense(larva)
     lifespanCheck(larva)
+    mortality(larva)
   }
 
   private def move(larva: Larva): Unit = {
@@ -78,8 +81,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
       None
     }
   }
-
-
 
   private def migrateLarvaVertically(larva: Larva): Unit = {
     if(larva.undergoesDielMigration) {
