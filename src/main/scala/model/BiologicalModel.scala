@@ -1,9 +1,7 @@
 package model
 
 import java.io.File
-
 import scala.collection.mutable.ArrayBuffer
-
 import biology._
 import biology.fish._
 import com.github.nscala_time.time.Imports._
@@ -23,12 +21,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
-  //var fishLarvae: ListBuffer[Larva] = ListBuffer.empty
-  val pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
+  var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
-  //val settledLarvae: ListBuffer[Larva] = ListBuffer.empty
-  //var pelagicLarvaeCount = 0
   val geometry = new Geometry
+  //private var activeLarvae = 0
 
 
   def apply(iteration: Int): Unit = {
@@ -43,6 +39,9 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     pelagicLarvae.clear()
     pelagicLarvae ++= cull._1
     stationaryLarvae ++= cull._2
+    //stationaryLarvae ++= pelagicLarvae.filter(larva => !larva.isPelagic)
+    //pelagicLarvae = pelagicLarvae.filter(larva => larva.isPelagic)
+
   }
 
   private def biology(larva: Larva): Unit = {
@@ -117,7 +116,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def lifespanCheck(larva: Larva): Unit = {
-    if (larva.isTooOld) {
+    if (larva.isPelagic && larva.isTooOld) {
       larva.kill()
     }
   }
@@ -133,9 +132,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def spawnFish(sites: List[SpawningLocation]) = {
-    val spawn = sites.map(site => factory.create(site, clock.now)).flatten
-    //pelagicLarvaeCount += spawn.size
+    val spawn = sites.flatMap(site => factory.create(site, clock.now))
     pelagicLarvae ++= spawn
+    //activeLarvae += spawn.flatten.size
+
   }
 
   def canDisperse(time: DateTime): Boolean = (spawn.isItSpawningSeason(time) || pelagicLarvae.nonEmpty)

@@ -2,18 +2,12 @@ package biology.fish
 
 import grizzled.slf4j.Logging
 import locals.OntogenyState.OntogenyState
-import locals.SwimmingAbility.SwimmingAbility
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.DielVerticalMigrationType.DielVerticalMigrationType
-import locals.HabitatType
-import locals.{Constants, OntogenyState, PelagicLarvaeState, SwimmingAbility, HabitatType}
+import locals.{Constants, OntogenyState, PelagicLarvaeState}
 import org.joda.time.DateTime
 import physical.GeoCoordinate
-import physical.Velocity
-import physical.habitat.HabitatPolygon
-import physical.habitat.GeometryAdaptor
 import com.github.nscala_time.time.Imports._
-import maths.RandomNumberGenerator
 import biology._
 
 import scala.collection.mutable.ArrayBuffer
