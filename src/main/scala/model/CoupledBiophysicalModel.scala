@@ -33,7 +33,6 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
     info("Simulation run started")
     //var iteration: Int = 1
     var iteration = 1
-    ocean.initialise()
     val stepTimer = new SimpleTimer()
     stepTimer.start()
     while (clock.stillTime && biology.canDisperse(clock.now)) {
