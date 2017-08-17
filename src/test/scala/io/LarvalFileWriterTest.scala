@@ -16,14 +16,14 @@ class LarvalFileWriterTest extends FlatSpec with MockitoSugar with PrivateMethod
 
   it should "initialise with an empty list" in {
     //val mockFile = mock[File]
-    val larvalFileWriter = new LarvaeHistoryCsvFile(Nil, "")
+    val larvalFileWriter = new LarvaeHistoryCsvFile(Array(), "")
     larvalFileWriter should not be null
   }
 
   it should "have the following column headers" in {
-    val headers = "id,born,age,stage,pld,birth_place,state,habitat_id,habitat_type,latitude,longitude,depth"
+    val headers = "id,born,age,stage,pld,birth_place,state,habitat_id,latitude,longitude,depth"
     //val mockFile = mock[File]
-    val larvalFileWriter = new LarvaeHistoryCsvFile(Nil, "")
+    val larvalFileWriter = new LarvaeHistoryCsvFile(Array(), "")
     val result = larvalFileWriter.columnHeaders
     result should equal(headers)
   }
