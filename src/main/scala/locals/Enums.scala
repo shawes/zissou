@@ -79,3 +79,8 @@ object Day extends Enumeration {
   type Day = Value
   val Today, Tomorrow = Value
 }
+
+object Sun extends Enumeration {
+  type Sun = Value
+  val Rising, Setting = Value
+}

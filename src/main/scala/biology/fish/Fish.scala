@@ -5,7 +5,6 @@ import locals.OntogenyState.OntogenyState
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.DielVerticalMigrationType.DielVerticalMigrationType
 import locals.{Constants, OntogenyState, PelagicLarvaeState}
-import org.joda.time.DateTime
 import physical.GeoCoordinate
 import com.github.nscala_time.time.Imports._
 import biology._

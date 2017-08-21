@@ -8,7 +8,6 @@ import com.github.nscala_time.time.Imports._
 import io.{InputFiles, OutputFiles}
 import locals._
 import maths.{ContinuousRange, NormalDistribution}
-import org.joda.time.DateTime
 import physical.flow.{Depth, Flow}
 import physical.habitat.Buffer
 import physical.{GeoCoordinate, TimeStep}
@@ -21,7 +20,7 @@ import scala.language.implicitConversions
  */
 object ConfigMappings {
   implicit def flowConfigToFlow(f: FlowConfig): Flow =
-    new Flow(new Depth(f.depth), new Interval(new DateTime(f.period.start), new DateTime(f.period.end)), f.timeStep)
+    new Flow(new Depth(f.depth), new DateTime(f.period.start) to new DateTime(f.period.end), f.timeStep)
 
   implicit def timeStepConfigToTimeStep(t: TimeStepConfig): TimeStep =
     new TimeStep(t.duration, TimeStepType.withName(t.unit))
@@ -39,7 +38,7 @@ object ConfigMappings {
     new OutputFiles(o.includeLarvaeHistory, ShapeFileType.withName(o.shape), o.saveOutputFilePath, o.percentage)
 
   implicit def releasePeriodConfigMap(r: ReleasePeriodConfig): Interval =
-    new Interval(new DateTime(r.start), new DateTime(r.end))
+    new DateTime(r.start) to new DateTime(r.end)
 
   implicit def spawnConfigMap(s: SpawnConfig): List[SpawningLocation] =
     s.spawningLocation.asScala.map(x => spawningLocationConfigMap(x)).toList

@@ -82,10 +82,11 @@ class FishVerticalMigrationOntogenetic(val probabilities: List[FishVerticalMigra
   }
 
 	private def getProbability(prob: FishVerticalMigrationOntogeneticProbability,
-    ontogeny: OntogenyState): (ContinuousRange, Double) = ontogeny match {
-  		case OntogenyState.Hatching => new Tuple2(prob.depth, prob.hatching)
-  		case OntogenyState.Preflexion => new Tuple2(prob.depth, prob.preFlexion)
-  		case OntogenyState.Flexion => new Tuple2(prob.depth, prob.flexion)
-  		case _ => new Tuple2(prob.depth, prob.postFlexion)
+    ontogeny: OntogenyState): (ContinuousRange, Double) =
+      ontogeny match {
+        case OntogenyState.Hatching => new Tuple2(prob.depth, prob.hatching)
+        case OntogenyState.Preflexion => new Tuple2(prob.depth, prob.preFlexion)
+        case OntogenyState.Flexion => new Tuple2(prob.depth, prob.flexion)
+        case _ => new Tuple2(prob.depth, prob.postFlexion)
 	}
 }

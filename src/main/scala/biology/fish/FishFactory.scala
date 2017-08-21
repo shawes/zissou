@@ -6,7 +6,7 @@ import io.config.FishConfig
 import locals.{Constants, LarvaType}
 import maths.{RandomNumberGenerator, Time}
 import org.apache.commons.math3.distribution.NormalDistribution
-import org.joda.time.DateTime
+import com.github.nscala_time.time.Imports._
 import physical.GeoCoordinate
 import biology._
 

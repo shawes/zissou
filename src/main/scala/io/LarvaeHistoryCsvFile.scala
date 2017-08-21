@@ -27,7 +27,7 @@ class LarvaeHistoryCsvFile(larvae: Array[Larva], filepath: String) extends Loggi
     val sb = new StringBuilder()
     larva.history.foreach(hist => {
       sb append larva.id + ","
-      sb append larva.birthday.toYearMonthDay + ","
+      sb append larva.birthday.toLocalDate.toString + ","
       val age = hist.age.toDouble / Constants.SecondsInDay.toDouble
       sb append f"$age%.2f" + ","
       sb append hist.stage + ","

@@ -1,6 +1,6 @@
 package locals
 
-import org.joda.time.DateTime
+import com.github.nscala_time.time.Imports._
 
 object Constants {
 

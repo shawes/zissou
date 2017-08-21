@@ -2,7 +2,7 @@ package biology
 
 import locals.LarvaType
 import locals.LarvaType.LarvaType
-import org.joda.time.DateTime
+import com.github.nscala_time.time.Imports._
 import io.config.FishConfig
 import biology.fish.FishFactory
 
