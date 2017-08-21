@@ -29,7 +29,7 @@ class Fish(
   var fishAge = 0
   var fishSettlementDate: Option[DateTime] = None
   var fishPosition = birthplace.location
-  var fishPolygon: Option[Int] = None //TODO: Think about how this works
+  var fishPolygon: Int = 0 //TODO: Think about how this works
   //val pelagicHabitat = Some(new GeometryAdaptor(null, -1, HabitatType.Ocean))
   var lastDielMigration : Option[DielVerticalMigrationType] = None
   private var hasChangedOntogeneticState : Boolean = false
@@ -68,7 +68,9 @@ class Fish(
     }
   }
 
-  def updatePosition(newPos: GeoCoordinate): Unit = fishPosition = newPos
+  def updatePosition(newPos: GeoCoordinate): Unit = {
+    fishPosition = newPos
+  }
 
   //def horizontalSwimmingSpeed: Double = 0.0 //TODO: Implement the swimming speed
 
@@ -89,7 +91,9 @@ class Fish(
     changeState(PelagicLarvaeState.Settled)
   }
 
-  def updateHabitat(reefId: Int): Unit = fishPolygon = Some(reefId)
+  def updateHabitat(reefId: Int): Unit = {
+    fishPolygon = reefId
+  }
 
   def kill(): Unit = {
     changeState(PelagicLarvaeState.Dead)
@@ -105,7 +109,7 @@ class Fish(
 
   override def position: GeoCoordinate = fishPosition
 
-  override def polygon: Option[Int] = fishPolygon
+  override def polygon: Int = fishPolygon
 
   override def ontogeneticVerticallyMigrate: Unit = {
     val depth = verticalMigrationOntogenetic.getDepth(getOntogeny)

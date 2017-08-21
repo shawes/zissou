@@ -170,7 +170,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     //val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
     val settleTime = DateTime.now
     fish.settle(116, settleTime)
-    assert(fish.polygon.get == 116)
+    assert(fish.polygon == 116)
     assert(fish.settlementDate == settleTime)
     assert(fish.isSettled)
   }

@@ -38,7 +38,7 @@ class DispersalKernelFile(larvae: Array[Larva], csvFile: File) {
     sb ++= larva.birthplace.name + ","
     sb ++= larva.age + ","
     sb ++= larva.settlementDate + ","
-    sb ++= larva.polygon.get + "\n"
+    sb ++= larva.polygon + "\n"
     sb.toString()
   }
 

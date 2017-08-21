@@ -7,5 +7,5 @@ import physical.GeoCoordinate
 class TimeCapsule(val age: Int,
                   val stage: OntogenyState,
                   val state: PelagicLarvaeState,
-                  val habitat: Option[Int],
+                  val habitat: Int,
                   val position: GeoCoordinate) {}

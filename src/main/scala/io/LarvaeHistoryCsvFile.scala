@@ -3,6 +3,7 @@ package io
 import java.io.{BufferedWriter, File}
 
 import biology.Larva
+import locals.Constants
 import grizzled.slf4j.Logging
 
 class LarvaeHistoryCsvFile(larvae: Array[Larva], filepath: String) extends Logging {
@@ -16,36 +17,36 @@ class LarvaeHistoryCsvFile(larvae: Array[Larva], filepath: String) extends Loggi
     for (larva <- larvae) {
       bw.write(columnHeaders)
       bw.newLine()
-      bw.write(writeCsvRow(larva))
+      bw.write(buildCsvRow(larva))
       //count += 1
     }
     bw.close()
   }
 
-  private def writeCsvRow(larva: Larva): String = {
+  private def buildCsvRow(larva: Larva): String = {
     val sb = new StringBuilder()
     larva.history.foreach(hist => {
       sb append larva.id + ","
-      sb append larva.birthday + ","
-      sb append hist.age + ","
+      sb append larva.birthday.toYearMonthDay + ","
+      val age = hist.age.toDouble / Constants.SecondsInDay.toDouble
+      sb append f"$age%.2f" + ","
       sb append hist.stage + ","
-      sb append larva.pelagicLarvalDuration + ","
+      val pld = larva.pelagicLarvalDuration.toDouble / Constants.SecondsInDay.toDouble
+      sb append f"$pld%.2f" + ","
       sb append larva.birthplace.name + ","
       sb append hist.state + ","
-      if(hist.habitat.nonEmpty) {
-        sb append hist.habitat + ","
-      } else {
-        sb append "-1,"
-      }
-      sb append hist.position.latitude + ","
-      sb append hist.position.longitude + ","
-      sb append hist.position.depth + ",\n"
+      sb append hist.habitat + ","
+      val latitude = hist.position.latitude
+      val longitude = hist.position.longitude
+      val depth = hist.position.depth
+      sb append f"$latitude%.5f" + ","
+      sb append f"$longitude%.5f" + ","
+      sb append f"$depth%.1f" + ",\n"
     })
 
     val csvRow = sb.toString().toLowerCase()
     //debug(csvRow)
     csvRow
-
   }
 
 }
