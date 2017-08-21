@@ -11,6 +11,8 @@ trait Random {
 
   def getPlusMinus: Double
 
+  def getPercent : Double
+
   def coinToss: Boolean
 
   def seed: Long
@@ -36,4 +38,6 @@ object RandomNumberGenerator extends Random {
   }
 
   def coinToss: Boolean = random.nextBoolean()
+
+  def getPercent : Double = get(0,100)
 }

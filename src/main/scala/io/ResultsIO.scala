@@ -19,7 +19,7 @@ class ResultsIO(larvae: Array[Larva], output: OutputFiles, name : String) {
   }
 
   private def writeLarvaeStateChangesToCsvFile() = {
-    val larvaeFileWriter = new LarvaeHistoryCsvFile(larvae, directory.toPath.toString)
+    val larvaeFileWriter = new LarvaeHistoryCsvFile(larvae, directory.toPath.toString, output.percent)
     larvaeFileWriter.write()
     //larvaeFileWriter.writeExcelFile(fishLarvae.flatten, output.saveOutputFilePath)
   }

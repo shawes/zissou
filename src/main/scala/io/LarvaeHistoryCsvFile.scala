@@ -4,21 +4,22 @@ import java.io.{BufferedWriter, File}
 
 import biology.Larva
 import locals.Constants
+import maths.RandomNumberGenerator
 import grizzled.slf4j.Logging
 
-class LarvaeHistoryCsvFile(larvae: Array[Larva], filepath: String) extends Logging {
+class LarvaeHistoryCsvFile(larvae: Array[Larva], filepath: String, percent : Double) extends Logging {
 
   val columnHeaders = "id,born,age,stage,pld,birth_place,state,habitat_id,latitude,longitude,depth"
 
   def write(): Unit = {
     info("Writing " + larvae.size + " larvae")
-    //var count = 1
-    val bw = new BufferedWriter(new java.io.FileWriter(new File(filepath + "//larvae-log-batch.csv")))
+    val bw = new BufferedWriter(new java.io.FileWriter(new File(filepath + "//larvae-log.csv")))
     for (larva <- larvae) {
-      bw.write(columnHeaders)
-      bw.newLine()
-      bw.write(buildCsvRow(larva))
-      //count += 1
+      if(RandomNumberGenerator.getPercent < percent) {
+        bw.write(columnHeaders)
+        bw.newLine()
+        bw.write(buildCsvRow(larva))
+      }
     }
     bw.close()
   }
