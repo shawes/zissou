@@ -1,13 +1,12 @@
 package biology
 
 import com.github.nscala_time.time.Imports._
-import org.joda.time.Interval
 import org.scalatest.FlatSpec
 import physical.GeoCoordinate
 
 class SpawningLocationTest extends FlatSpec {
 
-  val spawningLocation = new SpawningLocation("lizard island", 1000, new GeoCoordinate(1, 2), new Interval(DateTime.now.minusDays(5), DateTime.now.plusDays(1)), 5)
+  val spawningLocation = new SpawningLocation("lizard island", 1000, new GeoCoordinate(1, 2),  DateTime.now.minusDays(5) to DateTime.now.plusDays(1), 5)
 
   "A spawning location" should "be able to construct" in {
     assert(spawningLocation != null)

@@ -7,7 +7,6 @@ import locals.Constants
 import locals.Day._
 import maths.RandomNumberGenerator
 import maths.interpolation.Interpolation
-import org.joda.time.Duration
 import physical.{GeoCoordinate, Velocity}
 
 class FlowController(val reader: FlowFileIterator, var flow: Flow) extends Logging {
@@ -32,9 +31,9 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow) extends Loggi
 
     if (velocityNow.isDefined && velocityFuture.isDefined) {
       val divisor = 1 / timeStep.toDouble
-      val period: Duration = new Duration(future, now)
+      val period  = now to future
 
-      val ratioA = period.toStandardSeconds.getSeconds
+      val ratioA = period.toPeriod.getSeconds
       val ratioB = timeStep - ratioA
 
       Some(velocityNow.get * (ratioA * divisor) + velocityFuture.get * (ratioB * divisor))
