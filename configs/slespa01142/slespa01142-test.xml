@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <simulationVariables>
   <inputFiles>
-    <flowFilePath>test-data/netcdf</flowFilePath>
-    <habitatFilePath>test-data/shape/ALLpatches.shp</habitatFilePath>
+    <flowFilePath>input/netcdf/test</flowFilePath>
+    <habitatFilePath>input/habitat/ALLpatches.shp</habitatFilePath>
   </inputFiles>
   <spawn>
     <spawningLocation>
@@ -14,10 +14,10 @@
         <depth>5</depth>
         <flowId>1</flowId>
       </site>
-      <numberOfLarvae>50</numberOfLarvae>
+      <numberOfLarvae>150</numberOfLarvae>
       <releasePeriod>
-        <start>2011-12-01T00:00:00</start>
-        <end>2011-12-15T00:00:00</end>
+        <start>2010-07-01T00:00:00</start>
+        <end>2010-07-15T00:00:00</end>
       </releasePeriod>
       <interval>1</interval>
     </spawningLocation>
@@ -30,8 +30,8 @@
   </turbulence>
   <fish>
     <ontogeny>
-      <flexion>6</flexion>
       <preFlexion>3</preFlexion>
+      <flexion>6</flexion>
       <postFlexion>9</postFlexion>
     </ontogeny>
     <swimming>
@@ -82,8 +82,8 @@
         </verticalMigrationOntogeneticProbability>
       </verticalMigrationOntogeneticProbabilities>
       <pelagicLarvalDuration>
-        <mean>15.0</mean>
-        <stdev>3.0</stdev>
+        <mean>35.0</mean>
+        <stdev>2.3</stdev>
         <distribution>Normal</distribution>
       </pelagicLarvalDuration>
       <isMortal>false</isMortal>
@@ -92,8 +92,8 @@
     </fish>
     <flow>
       <period>
-        <start>2011-12-01T00:00:00</start>
-        <end>2011-12-30T00:00:00</end>
+        <start>2010-07-01T00:00:00</start>
+        <end>2010-08-31T00:00:00</end>
       </period>
       <timeStep>
         <unit>Hour</unit>
@@ -115,7 +115,7 @@
     <output>
       <includeLarvaeHistory>true</includeLarvaeHistory>
       <shape>Line</shape>
-      <saveOutputFilePath>test-data/output</saveOutputFilePath>
+      <saveOutputFilePath>output</saveOutputFilePath>
       <percentage>25</percentage>
       <logLevel>verbose</logLevel>
     </output>
