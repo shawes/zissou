@@ -4,22 +4,23 @@ import grizzled.slf4j._
 import io.config.ConfigMappings._
 import io.config.FishConfig
 import locals.{Constants, LarvaType}
-import maths.{RandomNumberGenerator, Time}
+import maths.{RandomNumberGenerator}
 import org.apache.commons.math3.distribution.NormalDistribution
 import com.github.nscala_time.time.Imports._
 import physical.GeoCoordinate
 import biology._
+import utilities.Time
 
 import scala.collection.mutable.ArrayBuffer
 
-class FishFactory(fish: FishConfig, save: Boolean) extends LarvaFactory with Logging {
-  val pldDistribution = new NormalDistribution(fish.pelagicLarvalDuration.mean, fish.pelagicLarvalDuration.stdev)
-   val preFlexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fish.ontogeny.preFlexion), Constants.SecondsInDay *0.5)
-   val flexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fish.ontogeny.flexion), Constants.SecondsInDay * 0.5)
-   val postFlexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fish.ontogeny.postFlexion), Constants.SecondsInDay *0.5)
+class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactory with Logging {
+   val pldDistribution = new NormalDistribution(fishParams.pld.distribution.mean,fishParams.pld.distribution.sd)
+   val preFlexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.preFlexion), Constants.SecondsInDay *0.5)
+   val flexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.flexion), Constants.SecondsInDay * 0.5)
+   val postFlexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.postFlexion), Constants.SecondsInDay *0.5)
   var larvaeCount: Int = 0
 
-  //debug("VERT: " + fish.verticalMigrationOntogeneticProbabilities.size)
+  //debug("VERT: " + fishParams.verticalMigrationOntogeneticProbabilities.size)
 
 
   override def create(site: SpawningLocation, time: DateTime): Array[Larva] = {
@@ -43,9 +44,9 @@ class FishFactory(fish: FishConfig, save: Boolean) extends LarvaFactory with Log
           time,
           new FishOntogeny(preFlexionDistribution.sample().toInt,     flexionDistribution.sample().toInt,
           postFlexionDistribution.sample().toInt),
-          fish.swimming,
-          fish.verticalMigrationOntogeneticProbabilities,
-          fish.verticalMigrationDielProbabilities)
+          fishParams.swimming,
+          fishParams.verticalMigrationOntogeneticProbabilities,
+          fishParams.verticalMigrationDielProbabilities)
 
           larvae += larvalFish
                   // debug("The ontogeny is " + larvalFish.ontogeny.preFlexion + ", " + larvalFish.ontogeny.flexion + ", " + larvalFish.ontogeny.postFlexion)

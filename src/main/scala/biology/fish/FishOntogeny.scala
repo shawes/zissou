@@ -3,7 +3,7 @@ package biology.fish
 import locals.OntogenyState
 import locals.OntogenyState.OntogenyState
 import biology.Ontogeny
-import maths.Time
+import utilities.Time
 
 class FishOntogeny(val preFlexion: Int, val flexion: Int, val postFlexion: Int) extends Ontogeny {
 

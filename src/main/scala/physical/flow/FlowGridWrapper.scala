@@ -13,14 +13,14 @@ import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.GeoGrid
 import scala.collection.parallel.mutable._
 
-class FlowGridWrapper(val depths: List[Double], val data: List[(Array[Array[Array[Array[Float]]]],GridCoordSystem)]) extends Logging {
+class FlowGridWrapper(val depths: List[Double], val data: List[List[(Array[Array[Array[Float]]],GridCoordSystem)]]) extends Logging {
 
 
   def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
-    val gridIndex = data.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
+    val gridIndex = data.head.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
     if(gridIndex(0) != -1 && gridIndex(1) != -1) {
       val depthIndex = closestDepthIndex(coordinate.depth)
-      val velocityData = data.map(array => array._1(0)(depthIndex)(gridIndex(NetcdfIndex.Y))(gridIndex(NetcdfIndex.X)))
+      val velocityData = data.head.map(array => array._1(depthIndex)(gridIndex(NetcdfIndex.Y))(gridIndex(NetcdfIndex.X)))
       val velocity = new Velocity(velocityData.head, velocityData(1), velocityData(2))
       if (velocity.isDefined) Some(velocity) else None
     } else {
@@ -33,8 +33,8 @@ class FlowGridWrapper(val depths: List[Double], val data: List[(Array[Array[Arra
     case list => list.indexOf(list.minBy(v => math.abs(v - depth)))
   }
 
-  def getCentroid(index: Array[Int]): GeoCoordinate = {
-    LatLonPointToGeoCoordinateAdaptor.toGeoCoordinate(data.head._2.getLatLon(index(NetcdfIndex.X), index(NetcdfIndex.Y)))
+  def getCentroid(index: (Int,Int,Int,Boolean)): GeoCoordinate = {
+    LatLonPointToGeoCoordinateAdaptor.toGeoCoordinate(data.head.head._2.getLatLon(index._1, index._2))
   }
 
   def getInterpolationValues(coordinate: GeoCoordinate, interpolation: InterpolationType): Option[Array[Array[Velocity]]] = {
@@ -44,33 +44,33 @@ class FlowGridWrapper(val depths: List[Double], val data: List[(Array[Array[Arra
     neighbourhood(numberOfNeighbours, getIndex(coordinate), position._1, position._2)
   }
 
-  def getIndex(coordinate: GeoCoordinate): Array[Int] = {
+  def getIndex(coordinate: GeoCoordinate): (Int,Int,Int,Boolean) = {
     getIndex(coordinate, Today)
   }
 
-  def getIndex(coordinate: GeoCoordinate, day: Day): Array[Int] = {
+  def getIndex(coordinate: GeoCoordinate, day: Day): (Int,Int,Int,Boolean) = {
     //this.synchronized {
-    val indexXY = data.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
+    val indexXY = data.head.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
     val indexZ = closestDepthIndex(coordinate.depth)
     val indexT = timeIndex(day)
     //debug("x="+indexXY(0)+",y="+indexXY(1) +",z="+indexZ+",t="+indexT)
-    Array(indexXY(0), indexXY(1), indexZ, indexT)
+    (indexXY(0), indexXY(1), indexZ, indexT)
   //}
   }
 
-  private def timeIndex(day: Day): Int = day match {
-    case Today => 0
-    case Tomorrow => 1
+  private def timeIndex(day: Day): Boolean = day match {
+    case Today => true
+    case Tomorrow => false
     case _ => throw new RuntimeException("Day not implemented")
   }
 
-  private def neighbourhood(number: Int, gridIndex: Array[Int], startIndexLat: Int, startIndexLon: Int): Option[Array[Array[Velocity]]] = {
+  private def neighbourhood(number: Int, gridIndex: (Int,Int,Int,Boolean), startIndexLat: Int, startIndexLon: Int): Option[Array[Array[Velocity]]] = {
     val neighbourhood = Array.ofDim[Velocity](number, number)
     try {
       for (j <- startIndexLat until (startIndexLat + number)) {
         for (i <- startIndexLon until (startIndexLon + number)) {
           neighbourhood(i - startIndexLon)(j - startIndexLat) =
-            getVelocity(Array(gridIndex(NetcdfIndex.X) + i, gridIndex(NetcdfIndex.Y) + j, gridIndex(NetcdfIndex.Z), 0)).getOrElse(new Velocity(Double.NaN, Double.NaN))
+            getVelocity((gridIndex._1 + i, gridIndex._2 + j, gridIndex._3, true)).getOrElse(new Velocity(Double.NaN, Double.NaN))
         }
       }
       if (neighbourhood.flatten.exists(v => v.isUndefined)) {
@@ -83,16 +83,20 @@ class FlowGridWrapper(val depths: List[Double], val data: List[(Array[Array[Arra
     }
   }
 
-  def getVelocity(index: Array[Int]): Option[Velocity] = {
-    val velocityData = data.map(array => array._1(index(NetcdfIndex.Time))(index(NetcdfIndex.Z))(index(NetcdfIndex.Y))(index(NetcdfIndex.X)))
-    val velocity = new Velocity(velocityData.head, velocityData(1), velocityData(2))
+  def getVelocity(index: (Int,Int,Int,Boolean)): Option[Velocity] = {
+    val buildVelocity = index._4 match {
+      case true => data.head.map(datasets => datasets._1(index._3)(index._2)(index._1))
+      case false => data.last.map(datasets => datasets._1(index._3)(index._2)(index._1))
+    }
+
+    val velocity = new Velocity(buildVelocity.head, buildVelocity(1), buildVelocity(2))
     if (velocity.isDefined) Some(velocity) else None
   }
 
   private def findQuadratCoordinateIsIn(coordinate: GeoCoordinate): QuadrantType = {
     //this.synchronized {
-    val index = data.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
-    val centroid = data.head._2.getLatLon(index(NetcdfIndex.X), index(NetcdfIndex.Y))
+    val index = data.head.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
+    val centroid = data.head.head._2.getLatLon(index(NetcdfIndex.X), index(NetcdfIndex.Y))
 
     if (coordinate.latitude > centroid.getLatitude) {
       if (coordinate.longitude < centroid.getLongitude) {

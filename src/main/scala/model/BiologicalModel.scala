@@ -12,6 +12,7 @@ import io.config.Configuration
 import locals.{DielVerticalMigrationType, LarvaType}
 import maths.{Geometry, RandomNumberGenerator}
 import maths.integration.RungeKuttaIntegration
+import utilities.Time
 import physical.Velocity
 import physical.habitat.HabitatManager
 
@@ -19,7 +20,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   val fish: FishParameters = config.fish
   val factory = LarvaFactory.apply(LarvaType.Fish, config.fish)
-  val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
+  //val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
@@ -27,22 +28,26 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   val geometry = new Geometry
   //private var activeLarvae = 0
 
-
   def apply(iteration: Int): Unit = {
-    calculateMortalityRate(iteration)
     spawnLarvae()
     pelagicLarvae.par.foreach(fish => biology(fish))
     refresh()
   }
 
-  def refresh() : Unit = {
+  def applyMortality() : Unit = {
+    pelagicLarvae.foreach(larva => mortality(larva))
+    refresh()
+  }
+
+  private def refresh() : Unit = {
     val cull = pelagicLarvae.partition(larva => larva.isPelagic)
     pelagicLarvae.clear()
     pelagicLarvae ++= cull._1
     stationaryLarvae ++= cull._2
+    val swimming = pelagicLarvae.size
+    info(s"There are $swimming still.")
     //stationaryLarvae ++= pelagicLarvae.filter(larva => !larva.isPelagic)
     //pelagicLarvae = pelagicLarvae.filter(larva => larva.isPelagic)
-
   }
 
   private def biology(larva: Larva): Unit = {
@@ -50,7 +55,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     move(larva)
     sense(larva)
     lifespanCheck(larva)
-    mortality(larva)
+    //mortality(larva)
   }
 
   private def move(larva: Larva): Unit = {
@@ -96,7 +101,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def mortality(larva: Larva): Unit = {
-    if (fish.isMortal && RandomNumberGenerator.get < mortality.getRate) {
+    val mortality = new MortalityDecay(larva.age, larva.pelagicLarvalDuration)
+    val rate = mortality.getRate
+    //info(s"rate of death is $rate")
+    if(RandomNumberGenerator.get < mortality.getRate) {
       larva.kill()
     }
   }
@@ -121,8 +129,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
       larva.kill()
     }
   }
-
-  private def calculateMortalityRate(iteration: Int) = mortality.calculateMortalityRate(iteration)
 
   private def spawnLarvae(): Unit = {
     val spawningSites = spawn.getSitesWhereFishAreSpawning(clock.now)
