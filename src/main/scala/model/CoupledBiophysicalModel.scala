@@ -43,7 +43,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
         if(config.fish.isMortal) {
           biology.applyMortality()
         }
-        info("Day " + clock.now.toYearMonthDay + " has been completed in " + stepTimer.stop() + " secs")
+        info("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs")
         stepTimer.start()
       }
       iteration += 1

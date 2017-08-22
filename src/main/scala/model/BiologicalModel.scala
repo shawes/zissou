@@ -26,7 +26,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val geometry = new Geometry
-  //private var activeLarvae = 0
 
   def apply(iteration: Int): Unit = {
     spawnLarvae()
