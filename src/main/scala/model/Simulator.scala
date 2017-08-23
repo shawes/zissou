@@ -16,7 +16,7 @@ object Simulator extends App with Logging {
 
   readConfigurationFile match {
     case Some(config) => new CoupledBiophysicalModel(config._1,config._2).run()
-    case None => println("Please supply a valid configuration file.")
+    case None => error("Please supply a valid configuration file.")
   }
 
   private def readConfigurationFile: Option[(Configuration,String)] = {
@@ -32,9 +32,7 @@ object Simulator extends App with Logging {
   }
 
   private def getConfigName(path: String): String = {
-    debug(path)
     val fileName = path.split("/").last
-    debug(fileName)
     fileName.dropRight(fileName.length - fileName.lastIndexOf("."))
   }
 

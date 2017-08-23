@@ -16,7 +16,6 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
   val flow: Flow = config.flow
   val clock = new SimulationClock(flow.period, flow.timeStep)
 
-
   val turbulence: Option[Turbulence] = config.turbulence.applyTurbulence match {
       case true => Some(new Turbulence(config.turbulence.horizontalDiffusionCoefficient,
         config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds, RandomNumberGenerator))
@@ -25,39 +24,57 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
   val ocean = new PhysicalModel(config)
   val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)
   val biology = new BiologicalModel(config, clock, integrator)
+  setConfiguredLogLevel()
 
   def run(): Unit = {
     try {
-    val simulationTimer = new SimpleTimer()
-    simulationTimer.start()
-    info("Simulation run started")
-    //var iteration: Int = 1
-    var iteration = 1
-    val stepTimer = new SimpleTimer()
-    stepTimer.start()
-    while (clock.stillTime && biology.canDisperse(clock.now)) {
-      biology(iteration)
-      clock.tick()
-      if (clock.isMidnight) {
-        ocean.circulate()
-        if(config.fish.isMortal) {
-          biology.applyMortality()
+
+      val simulationTimer = new SimpleTimer()
+      simulationTimer.start()
+      info("Simulation run started")
+      //var iteration: Int = 1
+      var iteration = 1
+      val stepTimer = new SimpleTimer()
+      stepTimer.start()
+      while (clock.stillTime && biology.canDisperse(clock.now)) {
+        biology(iteration)
+        clock.tick()
+        if (clock.isMidnight) {
+          ocean.circulate()
+          if(config.fish.isMortal) {
+            biology.applyMortality()
+          }
+          info("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs")
+          stepTimer.start()
         }
-        info("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs")
-        stepTimer.start()
+        iteration += 1
       }
-      iteration += 1
+      info("Simulation run completed in " + (simulationTimer.stop() / 60.0) + " minutes")
+      ocean.shutdown()
+
+      val resultsWriter = new ResultsIO(biology.stationaryLarvae.toArray, config.output, name)
+      resultsWriter.write()
+
+    } catch {
+      case e : Exception => e.printStackTrace()
+    } finally {
+      ocean.shutdown()
     }
-    info("Simulation run completed in " + (simulationTimer.stop() / 60.0) + " minutes")
-    ocean.shutdown()
-
-    val resultsWriter = new ResultsIO(biology.stationaryLarvae.toArray, config.output, name)
-    resultsWriter.write()
-
-  } catch {
-    case e : Exception => e.printStackTrace()
-  } finally {
-    ocean.shutdown()
   }
-}
+
+  private def setConfiguredLogLevel() : Unit = {
+    config.output.logLevel match {
+      case "debug" => System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug")
+      case "trace" => System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace")
+      case "error" => System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "error")
+      case "off" => System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off")
+      case "all" => System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "all")
+      case _ => System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info")
+    }
+    val logFile = config.output.logFile
+    if(logFile.nonEmpty) {
+      System.setProperty("org.slf4j.simpleLogger.logFile", logFile)
+    }
+  }
+
 }

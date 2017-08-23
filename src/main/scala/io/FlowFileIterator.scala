@@ -126,7 +126,7 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
     val path = netcdfFolder + "/" + prefix
     val files = new File(path).list().filter(p => p.endsWith(NetcdfExtension))
     val filename = path + "/" + files(currentFile)
-    info(s"$filename")
+    info(s"Loading the next file $filename")
     netcdfHandler.openLocalFile(filename)
   }
 
@@ -137,7 +137,7 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
   }
 
   private def getDateFromFileName(filename : String) : DateTime = {
-    info(s"$filename")
+    info(s"Getting date from file name $filename")
     val prefix = filename.split('.')
     val sections = prefix(0).split('_')
     new DateTime(sections(2).toInt, sections(3).toInt, 1, 1, 1)
