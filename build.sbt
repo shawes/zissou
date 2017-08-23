@@ -9,7 +9,10 @@ scalacOptions ++= Seq("-deprecation", "-feature", "-language:implicitConversions
 parallelExecution in Test := false
 
 resolvers += Resolver.sonatypeRepo("public")
+
 assemblyJarName in assembly := "zissou.jar"
+
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", "jdom-info.xml") => MergeStrategy.first
@@ -19,10 +22,9 @@ assemblyMergeStrategy in assembly := {
 }
 
 libraryDependencies ++= Seq(
-  "org.scalactic" %% "scalactic" % "3.0.3",
   "org.scalatest" %% "scalatest" % "3.0.3" % "test",
   "junit" % "junit" % "4.12" % "test",
-  "org.mockito" % "mockito-core" % "2.8.47",
+  "org.mockito" % "mockito-core" % "2.8.47" % "test",
   "com.github.nscala-time" %% "nscala-time" % "2.16.0",
   "org.apache.commons" % "commons-math3" % "3.6.1",
   "org.clapper" %% "grizzled-slf4j" % "1.3.1",
@@ -39,7 +41,7 @@ libraryDependencies ++= Seq(
   "javax.media" % "jai_codec" % "1.1.3" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
   "javax.media" % "jai_imageio" % "1.1" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar",
   "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
-  "org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3"
+  "org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3" % "provided"
 )
 
 
