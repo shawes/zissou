@@ -13,7 +13,7 @@ class GeoCoordinate(val latitude: Double, val longitude: Double, val depth: Doub
 
   //TODO Need to code the epsilon for doubles
   def compare(that: GeoCoordinate): Int = {
-    (this.latitude * that.longitude).toInt - (that.latitude * this.longitude).toInt
+    (this.latitude * this.longitude).toInt - (that.latitude * that.longitude).toInt
   }
 
 

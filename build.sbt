@@ -12,8 +12,6 @@ resolvers += Resolver.sonatypeRepo("public")
 
 assemblyJarName in assembly := "zissou.jar"
 
-assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
-
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", "jdom-info.xml") => MergeStrategy.first
   case x =>
@@ -41,7 +39,7 @@ libraryDependencies ++= Seq(
   "javax.media" % "jai_codec" % "1.1.3" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
   "javax.media" % "jai_imageio" % "1.1" % "provided" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar",
   "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
-  "org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3" % "provided"
+  "org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3"
 )
 
 

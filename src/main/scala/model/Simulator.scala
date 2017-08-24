@@ -4,7 +4,7 @@ import java.io.File
 
 import grizzled.slf4j.Logging
 import io.config.{Configuration, ConfigurationFile}
-import org.scaladebugger.api.utils.JDITools
+//import org.scaladebugger.api.utils.JDITools
 
 object Simulator extends App with Logging {
 

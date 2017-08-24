@@ -110,7 +110,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def sense(larva : Larva) : Unit = {
     if(larva.inCompetencyWindow) {
-      val index = habitatManager.getClosestHabitat2(larva.position)
+      val index = habitatManager.getClosestHabitat4(larva.position)
       if(index._1 != -1)  {
         larva.settle(index._1, clock.now)
       } else {
