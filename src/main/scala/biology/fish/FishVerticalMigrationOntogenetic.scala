@@ -29,6 +29,7 @@ class FishVerticalMigrationOntogenetic(val probabilities: List[FishVerticalMigra
     calculateDepthInRange(currentDepth._1)
   }
 
+  //TODO: Remove the complexity from this method
   private def getDepthRestricted(ontogeny: OntogenyState, depth : Double): Double = {
     val list: ListBuffer[(ContinuousRange, Double)] = ListBuffer.empty[(ContinuousRange, Double)]
     probabilities.foreach(vmp => {

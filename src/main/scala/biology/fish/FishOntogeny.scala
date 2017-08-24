@@ -5,20 +5,11 @@ import locals.OntogenyState.OntogenyState
 import biology.Ontogeny
 import utilities.Time
 
-class FishOntogeny(val preFlexion: Int, val flexion: Int, val postFlexion: Int) extends Ontogeny {
-
-  //def preFlexion() : Int = Time.convertDaysToSeconds(preFlexion)
+class FishOntogeny(val preflexion: Int, val flexion: Int, val postflexion: Int) extends Ontogeny {
   def getState(age: Int): OntogenyState = {
-
-    var state: OntogenyState = OntogenyState.Postflexion
-
-    if (age < preFlexion) {
-      state = OntogenyState.Hatching
-    } else if (age >= preFlexion && age < flexion) {
-      state = OntogenyState.Preflexion
-    } else if (age >= flexion && age < postFlexion) {
-      state = OntogenyState.Flexion
-    }
-    state
+    if (age < preflexion) OntogenyState.Hatching
+    else if (age >= preflexion && age < flexion) OntogenyState.Preflexion
+    else if (age >= flexion && age < postflexion) OntogenyState.Flexion
+    else OntogenyState.Postflexion
   }
 }

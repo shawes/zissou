@@ -11,7 +11,6 @@ import physical.{GeoCoordinate, Velocity}
 
 class FlowController(val reader: FlowFileIterator, var flow: Flow) extends Logging {
 
-
   private var hydrodynamicFlow = reader.next
   flow.dimensions = reader.flow.dimensions
 
@@ -40,19 +39,11 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow) extends Loggi
     } else {
       None
     }
-
   }
-
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, day: Day): Option[Velocity] = {
     val index = hydrodynamicFlow.getIndex(coordinate, day)
     val interpolation = new Interpolation()
-    //debug("The index of the flowGrid is: "+ index)
-    // Move the particle upwards if there is no velocity found at the depth (assuming its not that deep)
-    // while (!flowGrids.head.getVelocity(index).isDefined && index(NetcdfIndex.Z) > 0) {
-    //   index(NetcdfIndex.Z) -= 1
-    // }
-    //debug("The velocity of the flowGrid is: "+ flowGrids.head.getVelocity(index))
     interpolation(coordinate, hydrodynamicFlow, index)
   }
 
@@ -78,6 +69,4 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow) extends Loggi
   private def ensureDepthIsInRange(value: Int): Int = {
     if (value < 0) 0 else if (value > flow.dimensions.cellSize.depth) flow.dimensions.cellSize.depth else value
   }
-
-
 }

@@ -9,6 +9,7 @@ class VerticalMigrationDiel(val probabilities : List[VerticalMigrationDielProbab
 
   def enabled : Boolean = probabilities.nonEmpty
 
+  //TODO: Reduce complexity of this method
   def getDepth(dielMigration : DielVerticalMigrationType) : Double = {
     var cumulativeProb = 0.0
     val number = RandomNumberGenerator.get

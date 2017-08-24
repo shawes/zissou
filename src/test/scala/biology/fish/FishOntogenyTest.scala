@@ -16,7 +16,7 @@ class FishOntogenyTest extends FlatSpec {
   }
 
   it should "have the correct pre-flexion" in {
-    assert(ontogeny.preFlexion == 1000)
+    assert(ontogeny.preflexion == 1000)
   }
 
   it should "have the correct flexion" in {
@@ -24,7 +24,7 @@ class FishOntogenyTest extends FlatSpec {
   }
 
   it should "have the correct post-flexion" in {
-    assert(ontogeny.postFlexion == 3000)
+    assert(ontogeny.postflexion == 3000)
   }
 
   it should "give the ontogeny state as hatching" in {

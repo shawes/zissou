@@ -8,7 +8,6 @@ import locals.{Constants, OntogenyState, PelagicLarvaeState}
 import physical.GeoCoordinate
 import com.github.nscala_time.time.Imports._
 import biology._
-
 import scala.collection.mutable.ArrayBuffer
 
 class Fish(
@@ -28,11 +27,9 @@ class Fish(
   var fishAge = 0
   var fishSettlementDate: Option[DateTime] = None
   var fishPosition = birthplace.location
-  var fishPolygon: Int = 0 //TODO: Think about how this works
-  //val pelagicHabitat = Some(new GeometryAdaptor(null, -1, HabitatType.Ocean))
+  var fishPolygon: Int = 0
   var lastDielMigration : Option[DielVerticalMigrationType] = None
   private var hasChangedOntogeneticState : Boolean = false
-
   var fishDirection : Double = -1
 
   def this() = this(0, 0, 0, null, DateTime.now(), null, null, null, null)
@@ -54,7 +51,7 @@ class Fish(
   override def age: Int = fishAge
 
   def undergoesOntogeneticMigration : Boolean =  {
-    debug("Checking OVM, size is "+ verticalMigrationOntogenetic.probabilities.size)
+    trace("Checking OVM, size is "+ verticalMigrationOntogenetic.probabilities.size)
     verticalMigrationOntogenetic.probabilities.nonEmpty
   }
 
@@ -70,8 +67,6 @@ class Fish(
   def updatePosition(newPos: GeoCoordinate): Unit = {
     fishPosition = newPos
   }
-
-  //def horizontalSwimmingSpeed: Double = 0.0 //TODO: Implement the swimming speed
 
   def growOlder(seconds: Int): Unit = {
     val initialOntogeny = getOntogeny
@@ -138,8 +133,5 @@ class Fish(
   override def state: PelagicLarvaeState = fishState
 
   override def birthday: DateTime = spawned
-
-
-
 
 }
