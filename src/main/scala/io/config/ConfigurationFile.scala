@@ -2,12 +2,8 @@ package io.config
 
 import java.io.File
 import javax.xml.bind.{JAXBContext, JAXBException, UnmarshalException}
-
 import grizzled.slf4j.Logging
 
-/**
-  * Created by steve on 26/01/2016.
-  */
 class ConfigurationFile extends Logging {
 
   def read(file: File): Configuration = {
