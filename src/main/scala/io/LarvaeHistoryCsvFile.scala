@@ -9,7 +9,7 @@ import grizzled.slf4j.Logging
 
 class LarvaeHistoryCsvFile(larvae: Array[Larva], filepath: String, percent : Double) extends Logging {
 
-  val columnHeaders = "id,born,age,stage,pld,birth_place,state,habitat_id,latitude,longitude,depth"
+  val columnHeaders = "id,born,age,stage,pld,birthplace,state,habitat-id,latitude,longitude,depth"
 
   def write(): Unit = {
     info("Writing " + larvae.size + " larvae")

@@ -21,7 +21,7 @@ class LarvaeHistoryCsvFileTest extends FlatSpec with MockitoSugar with PrivateMe
   }
 
   it should "have the following column headers" in {
-    val headers = "id,born,age,stage,pld,birth_place,state,habitat_id,latitude,longitude,depth"
+    val headers = "id,born,age,stage,pld,birthplace,state,habitat-id,latitude,longitude,depth"
     //val mockFile = mock[File]
     val larvalHistoryCsvFile = new LarvaeHistoryCsvFile(Array(), "", 0)
     val result = larvalHistoryCsvFile.columnHeaders

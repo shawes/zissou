@@ -2,16 +2,13 @@ package io
 
 import java.io.{File, Serializable}
 import java.util
-
 import biology.{Larva, TimeCapsule}
-import com.vividsolutions.jts.geom.{Coordinate, LineString, Point}
+import com.vividsolutions.jts.geom.{Coordinate, LineString}
 import maths.RandomNumberGenerator
-
 import locals.ShapeFileType._
 import locals.ShapeFileType
 import org.geotools.data._
 import grizzled.slf4j.Logging
-
 import org.geotools.data.collection.ListFeatureCollection
 import org.geotools.data.shapefile.ShapefileDataStoreFactory
 import org.geotools.data.simple.{SimpleFeatureCollection, SimpleFeatureStore}
@@ -21,7 +18,6 @@ import org.geotools.referencing.crs.DefaultGeographicCRS
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 import org.opengis.filter.Filter
 import org.geotools.factory.CommonFactoryFinder
-import physical.adaptors.GeometryToGeoCoordinateAdaptor
 import scala.collection.JavaConverters._
 
 import scala.collection.mutable.ListBuffer

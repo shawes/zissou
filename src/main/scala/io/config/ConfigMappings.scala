@@ -11,7 +11,6 @@ import maths.{ContinuousRange, NormalDistribution}
 import physical.flow.{Depth, Flow}
 import physical.habitat.Buffer
 import physical.{GeoCoordinate, TimeStep}
-
 import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 
