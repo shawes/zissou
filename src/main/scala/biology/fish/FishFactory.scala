@@ -13,12 +13,12 @@ import utilities.Time
 import scala.collection.mutable.ArrayBuffer
 
 class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactory with Logging {
-  
+
   val pldDistribution = new NormalDistribution(fishParams.pld.distribution.mean,fishParams.pld.distribution.sd)
   val preflexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.preflexion), Constants.SecondsInDay *0.5)
   val flexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.flexion), Constants.SecondsInDay * 0.5)
   val postflexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.postflexion), Constants.SecondsInDay *0.5)
-   
+
   var larvaeCount: Int = 0
 
   override def create(site: SpawningLocation, time: DateTime): Array[Larva] = {
@@ -26,8 +26,16 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
 
     for (i <- 0 until site.numberOfLarvae) {
       larvaeCount += 1
+
       val pld: Double = pldDistribution.sample
-      
+      // Handles case of demersal eggs
+      val preflexion = fishParams.ontogeny.preflexion match {
+        case 0 => 0
+        case _ => preflexionDistribution.sample().toInt
+      }
+      val flexion = flexionDistribution.sample().toInt
+      val postflexion = postflexionDistribution.sample().toInt
+
       val birthLoc = new GeoCoordinate(site.location.latitude +       RandomNumberGenerator.getPlusMinus * Constants.MaxLatitudeShift,
         site.location.longitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift, site.location.depth)
 
@@ -36,8 +44,7 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
                                 Time.convertDaysToSeconds(pld),
                                 new Birthplace(site.title, birthLoc),
                                 time,
-                                new FishOntogeny(preflexionDistribution.sample().toInt,     flexionDistribution.sample().toInt,
-                                postflexionDistribution.sample().toInt),
+                                new FishOntogeny(preflexion, flexion, postflexion),
                                 fishParams.swimming,
                                 fishParams.verticalMigrationOntogeneticProbabilities,
                                 fishParams.verticalMigrationDielProbabilities)
