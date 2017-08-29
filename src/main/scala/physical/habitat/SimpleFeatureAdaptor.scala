@@ -1,8 +1,7 @@
 package physical.habitat
 
 import com.vividsolutions.jts.geom.{Geometry, MultiPolygon}
-import locals.HabitatType.HabitatType
-import locals.{Constants, HabitatType}
+import locals.{Constants, HabitatType, Reef, Other, Ocean}
 import org.opengis.feature.simple.SimpleFeature
 
 object SimpleFeatureAdaptor {
@@ -12,10 +11,12 @@ object SimpleFeatureAdaptor {
 
   def getId(sf: SimpleFeature): Int = sf.getAttribute(Constants.ShapeAttribute.Patch._2).asInstanceOf[Int]
 
-  def getHabitatType(sf: SimpleFeature): HabitatType = try {
-    HabitatType.withName(sf.getAttribute(Constants.ShapeAttribute.Habitat._2).toString)
-  } catch {
-    case ex: NoSuchElementException => HabitatType.Ocean
+  def getHabitatType(sf: SimpleFeature): HabitatType = {
+    sf.getAttribute(Constants.ShapeAttribute.Habitat._2).toString match {
+      case "Reef" => Reef
+      case "Other" => Other
+      case _ => Ocean
+    }
   }
 
 }

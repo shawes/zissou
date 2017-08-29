@@ -1,9 +1,18 @@
 package locals
 
-object HabitatType extends Enumeration {
-  type HabitatType = Value
-  val Beach, Land, Mangrove, Reef, RockyIntertidal, Saltmarsh, Seagrass, SubtidalSand, Ocean, Other = Value
-}
+// Converted to a sealed class
+sealed trait HabitatType
+case object Beach extends HabitatType
+case object Land extends HabitatType
+case object Mangrove extends HabitatType
+case object Reef extends HabitatType
+case object RockyIntertidal extends HabitatType
+case object Saltmarsh extends HabitatType
+case object Seagrass extends HabitatType
+case object SubtidalSand extends HabitatType
+case object Ocean extends HabitatType
+case object Other extends HabitatType
+
 
 object PelagicLarvaeState extends Enumeration {
   type PelagicLarvaeState = Value

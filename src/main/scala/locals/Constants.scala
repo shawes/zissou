@@ -14,6 +14,7 @@ object Constants {
   val MinimumDate = new DateTime(1976,1,1,0,0)
   val EarthsRadius = 6378137.0
 
+  // Need to make this dynamic
   object ShapeAttribute {
     val Geometry = (0, "the_geom")
     val Habitat = (1, "HABITAT")
