@@ -11,7 +11,7 @@ class ConnectivityMatrix(larvae: Array[Larva], csvFile: File) {
     bw.write(columnHeaders)
     bw.newLine()
     val settledLarvae = larvae.filter(larva => larva.isSettled)
-    settledLarvae.foreach(l => bw.write(getCsvLarvaRow(l)))
+    settledLarvae.foreach(settle => bw.write(getCsvLarvaRow(settle)))
     bw.close()
   }
 

@@ -3,7 +3,7 @@ package biology.fish
 import grizzled.slf4j._
 import io.config.ConfigMappings._
 import io.config.FishConfig
-import locals.{Constants, LarvaType, PelagicLarvalDurationType, Random, Fixed}
+import locals.{Constants, LarvaType, Random, Fixed}
 import maths.{RandomNumberGenerator}
 import org.apache.commons.math3.distribution.NormalDistribution
 import com.github.nscala_time.time.Imports._
@@ -50,7 +50,6 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
         case Random => getNonSettlementPeriod()
         case Fixed => pld
       }
-
 
       val larvalFish = new Fish(larvaeCount,
                                 Time.convertDaysToSeconds(pld),

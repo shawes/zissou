@@ -92,13 +92,17 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
 
     val result = centroids.search(coordinate)
     val reef = reefs(indexes(result.insertionPoint))
-    var settle = 0
-    var sense = 0
-    var angle = 0.0
+    var settle = -1
+    var sense = -1
+    var angle = -1.0
+    //val centroid = reef.centroid
+    val distance = geometry.getDistanceBetweenTwoPoints(coordinate, reef.centroid)/1000
+    //debug(s"is $distance less then $buffer.settlement")
+    //debug(s"between $coordinate and $centroid")
 
-    if(reef.contains(coordinate) || reef.isWithinDistance(coordinate, buffer.settlement)) {
+    if(reef.contains(coordinate) || distance < buffer.settlement) {
       settle = reef.id
-    } else if (reef.isWithinDistance(coordinate, buffer.olfactory)) {
+    } else if (distance < buffer.olfactory) {
       angle = reef.direction(coordinate)
       sense = reef.id
     }
@@ -106,6 +110,8 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     (settle,sense,angle)
 
   }
+
+//  def withinDistance : Boolean : (point1 : GeoCoordinate, point2 : GeoCoordinate)
 
 
     //TODO: Uses brute-force algorithm, need to change to divide and conquer
