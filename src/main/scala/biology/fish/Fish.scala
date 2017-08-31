@@ -43,7 +43,7 @@ class Fish(
 
   override def changeDirection(angle : Double) = fishDirection = angle
 
-  def inCompetencyWindow: Boolean = age < pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion //TODO: Need to code in a better competency window
+  def inCompetencyWindow: Boolean = age <= pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion && age > nonSettlementPeriod
 
   def getOntogeny: OntogenyState = ontogeny.getState(age)
 

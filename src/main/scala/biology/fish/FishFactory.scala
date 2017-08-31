@@ -3,7 +3,7 @@ package biology.fish
 import grizzled.slf4j._
 import io.config.ConfigMappings._
 import io.config.FishConfig
-import locals.{Constants, LarvaType}
+import locals.{Constants, LarvaType, PelagicLarvalDurationType, Random, Fixed}
 import maths.{RandomNumberGenerator}
 import org.apache.commons.math3.distribution.NormalDistribution
 import com.github.nscala_time.time.Imports._
@@ -39,6 +39,19 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
       val birthLoc = new GeoCoordinate(site.location.latitude +       RandomNumberGenerator.getPlusMinus * Constants.MaxLatitudeShift,
         site.location.longitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift, site.location.depth)
 
+
+      def getNonSettlementPeriod() : Double = {
+        val settlement = fishParams.pld.nonSettlementPeriod
+        if(settlement < pld) settlement
+        else pld
+      }
+
+      val nonSettlementPeriod : Double = fishParams.pld.pelagicLarvalDurationType match {
+        case Random => getNonSettlementPeriod()
+        case Fixed => pld
+      }
+
+
       val larvalFish = new Fish(larvaeCount,
                                 Time.convertDaysToSeconds(pld),
                                 Time.convertDaysToSeconds(pld),
@@ -48,7 +61,7 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
                                 fishParams.swimming,
                                 fishParams.verticalMigrationOntogeneticProbabilities,
                                 fishParams.verticalMigrationDielProbabilities,
-                                Time.convertDaysToSeconds(fishParams.pld.nonSettlementPeriod))
+                                Time.convertDaysToSeconds(nonSettlementPeriod))
       larvae += larvalFish
     }
     larvae.toArray
