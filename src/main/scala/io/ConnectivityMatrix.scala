@@ -10,17 +10,18 @@ class ConnectivityMatrix(larvae: Array[Larva], csvFile: File) {
     val bw = new BufferedWriter(new java.io.FileWriter(csvFile))
     bw.write(columnHeaders)
     bw.newLine()
-    larvae.filter(larva => larva.isSettled).foreach(settledLarva =>       bw.write(getCsvLarvaRow(settledLarva)))
+    val settledLarvae = larvae.filter(larva => larva.isSettled)
+    settledLarvae.foreach(l => bw.write(getCsvLarvaRow(l)))
     bw.close()
   }
 
   private def getCsvLarvaRow(larva: Larva): String = {
     val sb = new StringBuilder()
     sb ++= larva.id + ","
-    sb ++= larva.birthday + ","
+    sb ++= larva.birthday.toLocalDate.toString + ","
     sb ++= larva.birthplace.name + ","
     sb ++= larva.age + ","
-    sb ++= larva.settlementDate + ","
+    sb ++= larva.settlementDate.toLocalDate.toString + ","
     sb ++= larva.polygon + "\n"
     sb.toString()
   }

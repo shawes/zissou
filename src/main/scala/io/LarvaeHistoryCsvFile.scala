@@ -14,10 +14,10 @@ class LarvaeHistoryCsvFile(larvae: Array[Larva], filepath: String, percent : Dou
   def write(): Unit = {
     info("Writing " + larvae.size + " larvae")
     val bw = new BufferedWriter(new java.io.FileWriter(new File(filepath + "//larvae-log.csv")))
+    bw.write(columnHeaders)
+    bw.newLine()
     for (larva <- larvae) {
       if(RandomNumberGenerator.getPercent < percent) {
-        bw.write(columnHeaders)
-        bw.newLine()
         bw.write(buildCsvRow(larva))
       }
     }

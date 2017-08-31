@@ -51,8 +51,8 @@ class GisShapeFile() extends Logging {
     builder.setName("larva")
     builder.setCRS(DefaultGeographicCRS.WGS84) // <- Coordinate reference system
     builder.add("the_geom", classOf[LineString])
-    builder.add("birth", classOf[String])
-    builder.add("settle",classOf[Integer])
+    //builder.add("birth", classOf[String])
+    //builder.add("settle",classOf[Integer])
 
 
     val  larvaLine:SimpleFeatureType = builder.buildFeatureType();
@@ -61,8 +61,8 @@ class GisShapeFile() extends Logging {
       if(larva.history.size > 1 && RandomNumberGenerator.getPercent < percent) {
         val featureBuilder = new SimpleFeatureBuilder(larvaLine)
         featureBuilder.add(writeStageLine(larva.history.toArray))
-        featureBuilder.add(larva.birthplace)
-        featureBuilder.add(larva.polygon)
+        //featureBuilder.add(larva.birthplace)
+        //featureBuilder.add(larva.polygon)
         val feature = featureBuilder.buildFeature(null)
         features.add(feature)
      }
