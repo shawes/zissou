@@ -47,7 +47,8 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
                                 new FishOntogeny(preflexion, flexion, postflexion),
                                 fishParams.swimming,
                                 fishParams.verticalMigrationOntogeneticProbabilities,
-                                fishParams.verticalMigrationDielProbabilities)
+                                fishParams.verticalMigrationDielProbabilities,
+                                Time.convertDaysToSeconds(fishParams.pld.nonSettlementPeriod))
       larvae += larvalFish
     }
     larvae.toArray

@@ -19,7 +19,7 @@ case class Configuration(
     FishConfig(OntogenyConfig(0, 0, 0), SwimmingConfig("", 0,0,0,false),
       VerticalMigrationOntogeneticConfig(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),
       VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]),
-      PelagicLarvalDurationConfig(0, 0, "", ""), isMortal = false, 0, 0),
+      PelagicLarvalDurationConfig(0, 0, "", "", 0), isMortal = false, 0),
     FlowConfig(PeriodConfig("", ""),
       TimeStepConfig("", 0),
       DepthConfig(average = false, averageOverAllDepths = false, 0)),
@@ -143,9 +143,8 @@ case class FishConfig(ontogeny: OntogenyConfig,
                       verticalMigrationDielProbabilities: VerticalMigrationDielConfig,
                       pelagicLarvalDuration: PelagicLarvalDurationConfig,
                       isMortal: Boolean,
-                      mortalityRate: Double,
-                      nonSettlementPeriod: Int) {
-  private def this() = this(OntogenyConfig(0, 0, 0), SwimmingConfig("",0,0,0,false), VerticalMigrationOntogeneticConfig(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, "", ""), false, 0, 0)
+                      mortalityRate: Double) {
+  private def this() = this(OntogenyConfig(0, 0, 0), SwimmingConfig("",0,0,0,false), VerticalMigrationOntogeneticConfig(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, "", "", 0), false, 0)
 }
 
 @XmlRootElement
@@ -162,8 +161,8 @@ case class SwimmingConfig(ability: String, criticalSwimmingSpeed: Double, inSitu
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-case class PelagicLarvalDurationConfig(mean: Double, stdev: Double, distribution: String, pldType : String) {
-  private def this() = this(0, 0, "","")
+case class PelagicLarvalDurationConfig(mean: Double, stdev: Double, distribution: String, pldType : String, nonSettlementPeriod: Double) {
+  private def this() = this(0, 0, "","", 0)
 }
 
 @XmlRootElement(name = "verticalMigrationOntogeneticProbabilities")

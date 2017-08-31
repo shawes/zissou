@@ -52,7 +52,8 @@ object ConfigMappings {
     new PelagicLarvalDuration(new NormalDistribution(pld.mean, pld.stdev), DistributionType.Normal, pld.pldType match {
       case "Random" => Random
       case "Fixed" => Fixed
-    })
+    },
+    pld.nonSettlementPeriod)
 
   implicit def ontogenyConfigMap(o: OntogenyConfig): FishOntogeny =
     new FishOntogeny(o.preFlexion, o.flexion, o.postFlexion)

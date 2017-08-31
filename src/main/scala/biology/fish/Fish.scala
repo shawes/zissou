@@ -19,7 +19,8 @@ class Fish(
   val fishOntogeny: FishOntogeny,
   val swimming: Swimming,
   val verticalMigrationOntogenetic: FishVerticalMigrationOntogenetic,
-  val verticalMigrationDiel: VerticalMigrationDiel)
+  val verticalMigrationDiel: VerticalMigrationDiel,
+  val nonSettlementPeriod: Int)
   extends Larva with Logging {
 
   val fishHistory = ArrayBuffer.empty[TimeCapsule]
@@ -32,7 +33,7 @@ class Fish(
   private var hasChangedOntogeneticState : Boolean = false
   var fishDirection : Double = -1
 
-  def this() = this(0, 0, 0, null, DateTime.now(), null, null, null, null)
+  def this() = this(0, 0, 0, null, DateTime.now(), null, null, null, null, 0)
 
   override def settlementDate: DateTime = fishSettlementDate.get
 
