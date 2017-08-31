@@ -35,6 +35,8 @@ class Interpolation extends Logging {
                           long: Double, lat: Double): Velocity = interpolation match {
     case Bicubic => bicubicInterpolation(neighbourhood, long, lat)
     case Bilinear => bilinearInterpolation(neighbourhood, long, lat)
+    //case Tricubic => new tricubicInterpolation(neighbourhood, long, lat)
+    //case Trilinear => new trilinearInterpolation(neighbourhood, long, lat)
     case _ => throw new RuntimeException("Undefined interpolation method")
   }
 

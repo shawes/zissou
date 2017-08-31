@@ -7,7 +7,8 @@ import biology.fish._
 import com.github.nscala_time.time.Imports._
 import io.{InputFiles, OutputFiles}
 import locals._
-import maths.{ContinuousRange, NormalDistribution}
+import maths.ContinuousRange
+import org.apache.commons.math3.distribution.NormalDistribution
 import physical.flow.{Depth, Flow}
 import physical.habitat.Buffer
 import physical.{GeoCoordinate, TimeStep}

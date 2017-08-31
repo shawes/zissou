@@ -14,7 +14,7 @@ import scala.collection.mutable.ArrayBuffer
 
 class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactory with Logging {
 
-  val pldDistribution = new NormalDistribution(fishParams.pld.distribution.mean,fishParams.pld.distribution.sd)
+  val pldDistribution = fishParams.pld.distribution
   val preflexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.preflexion), Constants.SecondsInDay *0.5)
   val flexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.flexion), Constants.SecondsInDay * 0.5)
   val postflexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.postflexion), Constants.SecondsInDay *0.5)
