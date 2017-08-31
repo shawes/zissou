@@ -13,6 +13,10 @@ case object SubtidalSand extends HabitatType
 case object Ocean extends HabitatType
 case object Other extends HabitatType
 
+sealed trait PelagicLarvalDurationType
+case object Random extends PelagicLarvalDurationType
+case object Fixed extends PelagicLarvalDurationType
+
 
 object PelagicLarvaeState extends Enumeration {
   type PelagicLarvaeState = Value

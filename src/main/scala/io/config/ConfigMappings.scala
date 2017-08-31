@@ -26,7 +26,7 @@ object ConfigMappings {
     new TimeStep(t.duration, TimeStepType.withName(t.unit))
 
   implicit def bufferConfigMap(b: BufferConfig): Buffer =
-    new Buffer(b.isBuffered, b.settlement, b.olfactory) //TODO: Fix for both sizes
+    new Buffer(b.isBuffered, b.settlement, b.olfactory)
 
   implicit def inputConfigMap(i: InputFilesConfig): InputFiles =
     new InputFiles(i.flowFilePath, i.habitatFilePath, new File(i.flowFilePath).list())
@@ -49,7 +49,10 @@ object ConfigMappings {
   implicit def siteConfigMap(s: SiteConfig): GeoCoordinate = new GeoCoordinate(s.latitude, s.longitude, s.depth)
 
   implicit def pelagicLarvalDurationMap(pld: PelagicLarvalDurationConfig): PelagicLarvalDuration =
-    new PelagicLarvalDuration(new NormalDistribution(pld.mean, pld.stdev), DistributionType.Normal)
+    new PelagicLarvalDuration(new NormalDistribution(pld.mean, pld.stdev), DistributionType.Normal, pld.pldType match {
+      case "Random" => Random
+      case "Fixed" => Fixed
+    })
 
   implicit def ontogenyConfigMap(o: OntogenyConfig): FishOntogeny =
     new FishOntogeny(o.preFlexion, o.flexion, o.postFlexion)
