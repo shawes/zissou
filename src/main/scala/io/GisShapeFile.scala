@@ -46,6 +46,7 @@ class GisShapeFile() extends Logging {
   }
 
   private def writeLineShapeFile(larvae: Array[Larva], file: File, percent : Double) = {
+    //info("Writing shape file")
     val features = new java.util.ArrayList[SimpleFeature]
     val builder :SimpleFeatureTypeBuilder = new SimpleFeatureTypeBuilder()
     builder.setName("larva")
@@ -68,6 +69,7 @@ class GisShapeFile() extends Logging {
      }
     }
 
+
     val dataStoreFactory: FileDataStoreFactorySpi = new ShapefileDataStoreFactory()
     val params = createParams(file)
     val newDataStore = dataStoreFactory.createNewDataStore(params)
@@ -79,8 +81,15 @@ class GisShapeFile() extends Logging {
     val featureStore = featureSource.asInstanceOf[SimpleFeatureStore]
     featureStore.setTransaction(createTransaction)
     featureStore.addFeatures(collection)
+    try {
     createTransaction.commit()
+    info("Finished writing shape file")
+  } catch {
+    case ex : Throwable => error("Error writing the shape file: "+ ex.printStackTrace)
+  } finally {
     createTransaction.close()
+  }
+
   }
 
   private def writeStageLine(history: Array[TimeCapsule]): LineString = {
