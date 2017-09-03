@@ -37,7 +37,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
       stepTimer.start()
       while (clock.stillTime && biology.canDisperse(clock.now)) {
         biology(iteration)
-        clock.tick()
+
         if (clock.isMidnight) {
           ocean.circulate()
           if(config.fish.isMortal) {
@@ -47,6 +47,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
           stepTimer.start()
         }
         iteration += 1
+        clock.tick()
       }
       info("Simulation run completed in " + (simulationTimer.stop() / 60.0) + " minutes")
       ocean.shutdown()
