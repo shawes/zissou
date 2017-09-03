@@ -32,7 +32,6 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
       val simulationTimer = new SimpleTimer()
       simulationTimer.start()
       info("Simulation run started")
-      //var iteration: Int = 1
       var iteration = 1
       val stepTimer = new SimpleTimer()
       stepTimer.start()
@@ -44,7 +43,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
           if(config.fish.isMortal) {
             biology.applyMortality()
           }
-          info("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs")
+          info("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs with " +biology.pelagicLarvae.size + " larvae.")
           stepTimer.start()
         }
         iteration += 1

@@ -38,14 +38,11 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     refresh()
   }
 
-  private def refresh() : Unit = {
+  def refresh() : Unit = {
     val cull = pelagicLarvae.partition(larva => larva.isPelagic)
     pelagicLarvae.clear()
     pelagicLarvae ++= cull._1
     stationaryLarvae ++= cull._2
-    val swimming = pelagicLarvae.size
-    //val notSwimming = stationaryLarvae.size
-    info(s"There are $swimming still.")
     //info(s"Stationary larvae is now $stationaryLarvae.size")
     //stationaryLarvae ++= pelagicLarvae.filter(larva => !larva.isPelagic)
     //pelagicLarvae = pelagicLarvae.filter(larva => larva.isPelagic)
