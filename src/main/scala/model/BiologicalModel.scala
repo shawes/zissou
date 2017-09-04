@@ -2,7 +2,7 @@
 package model
 
 import java.io.File
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import biology._
 import biology.fish._
 import com.github.nscala_time.time.Imports._
@@ -10,6 +10,7 @@ import grizzled.slf4j.Logging
 import io.config.ConfigMappings._
 import io.config.Configuration
 import locals.{DielVerticalMigrationType, LarvaType}
+import locals.Constants.LightWeightException
 import maths.{Geometry, RandomNumberGenerator}
 import maths.integration.RungeKuttaIntegration
 import utilities.Time
@@ -43,9 +44,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     pelagicLarvae.clear()
     pelagicLarvae ++= cull._1
     stationaryLarvae ++= cull._2
-    //info(s"Stationary larvae is now $stationaryLarvae.size")
-    //stationaryLarvae ++= pelagicLarvae.filter(larva => !larva.isPelagic)
-    //pelagicLarvae = pelagicLarvae.filter(larva => larva.isPelagic)
   }
 
   private def biology(larva: Larva): Unit = {
@@ -109,14 +107,14 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def sense(larva : Larva) : Unit = {
     if(larva.inCompetencyWindow) {
-      val index = habitatManager.getClosestHabitat4(larva.position)
-      if(index._1 != -1)  {
+      val index = habitatManager.getClosestHabitat(larva.position)
+      if(index._1 != LightWeightException.NoReefToSettle)  {
         larva.settle(index._1, clock.now)
       } else {
-        if(index._2 != -1) {
+        if(index._2 != LightWeightException.NoReefSensed) {
           larva.changeDirection(index._3)
         } else {
-          larva.changeDirection(-1)
+          larva.changeDirection(LightWeightException.NoSwimmingAngle)
         }
       }
     }

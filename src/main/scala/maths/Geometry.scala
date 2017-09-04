@@ -18,7 +18,7 @@ class Geometry extends Logging {
     val newLatitude  = point.latitude  + (yDistance / Constants.EarthsRadius) * (180 / Math.PI)
     val newLongitude = point.longitude + (xDistance / Constants.EarthsRadius) * (180 / Math.PI) / Math.cos(point.latitude*Math.PI/180)
 
-    new GeoCoordinate(newLatitude, newLongitude, point.depth)
+    new GeoCoordinate(newLatitude, newLongitude, point.depth + zDistance)
   }
 
   /**

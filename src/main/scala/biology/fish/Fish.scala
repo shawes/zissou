@@ -5,6 +5,7 @@ import locals.OntogenyState.OntogenyState
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.DielVerticalMigrationType.DielVerticalMigrationType
 import locals.{Constants, OntogenyState, PelagicLarvaeState}
+import locals.Constants.LightWeightException
 import physical.GeoCoordinate
 import com.github.nscala_time.time.Imports._
 import biology._
@@ -31,7 +32,7 @@ class Fish(
   var fishPolygon: Int = 0
   var lastDielMigration : Option[DielVerticalMigrationType] = None
   private var hasChangedOntogeneticState : Boolean = false
-  var fishDirection : Double = -1
+  var fishDirection : Double = LightWeightException.NoSwimmingAngle
 
   def this() = this(0, 0, 0, null, LocalDateTime.now(), null, null, null, null, 0)
 

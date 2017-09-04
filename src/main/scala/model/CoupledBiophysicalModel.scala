@@ -21,6 +21,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
         config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds, RandomNumberGenerator))
       case false => None
     }
+
   val ocean = new PhysicalModel(config)
   val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)
   val biology = new BiologicalModel(config, clock, integrator)
@@ -48,7 +49,6 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
         clock.tick()
       }
       val time : Double = simulationTimer.stop() / 60.0
-      //if (time > 0) time = time / 60.0
       info(f"Simulation run completed in $time%.2f minutes")
       val still = clock.stillTime
       val disperse = biology.canDisperse(clock.now)
