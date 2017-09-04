@@ -16,7 +16,7 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
   val datasets = new Queue[List[(GridDataset, String)]]
   val grids = new Queue[List[(Array[Array[Array[Float]]], GridCoordSystem)]]
   val depths = List(2.5, 7.5, 12.5, 17.5, 22.7, 28.2, 34.2, 41.0, 48.5, 56.7, 65.7, 75.2, 85.0, 95.0, 105.0) //TODO: Get this info from the netcdf file
-  var currentDate = flow.period.getStart
+  var currentDate = flow.period.getStart.toLocalDate
   var day : Int = currentDate.dayOfMonth.get
   var days = 1
   val netcdfHandler = new NetcdfFileHandler()
@@ -131,14 +131,14 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
     (files, files.indexWhere(file => isFileforDate(currentDate,getDateFromFileName(file))))
   }
 
-  private def getDateFromFileName(filename : String) : DateTime = {
+  private def getDateFromFileName(filename : String) : LocalDate = {
     debug(s"Getting date from file name $filename")
     val prefix = filename.split('.')
     val sections = prefix(0).split('_')
-    new DateTime(sections(2).toInt, sections(3).toInt, 1, 1, 1)
+    new LocalDateTime(sections(2).toInt, sections(3).toInt, 1, 1, 1).toLocalDate
   }
 
-  private def isFileforDate(startDate : DateTime, fileDate : DateTime) : Boolean =  {
+  private def isFileforDate(startDate : LocalDate, fileDate : LocalDate) : Boolean =  {
     startDate.year == fileDate.year && startDate.monthOfYear.get == fileDate.monthOfYear.get
   }
 

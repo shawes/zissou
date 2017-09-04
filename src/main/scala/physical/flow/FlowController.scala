@@ -14,7 +14,7 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow) extends Loggi
   private var hydrodynamicFlow = reader.next
   flow.dimensions = reader.flow.dimensions
 
-  def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Option[Velocity] = {
+  def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: LocalDateTime, now: LocalDateTime, timeStep: Int): Option[Velocity] = {
     if (future == now) {
       getVelocityOfCoordinate(coordinate, Today)
     } else if (future == now.plusSeconds(timeStep)) {
@@ -24,13 +24,13 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow) extends Loggi
     }
   }
 
-  private def derivePartialTimeStepVelocity(coordinate: GeoCoordinate, future: DateTime, now: DateTime, timeStep: Int): Option[Velocity] = {
+  private def derivePartialTimeStepVelocity(coordinate: GeoCoordinate, future: LocalDateTime, now: LocalDateTime, timeStep: Int): Option[Velocity] = {
     val velocityNow = getVelocityOfCoordinate(coordinate, Today)
     val velocityFuture = getVelocityOfCoordinate(coordinate, Tomorrow)
 
     if (velocityNow.isDefined && velocityFuture.isDefined) {
       val divisor = 1 / timeStep.toDouble
-      val period  = now to future
+      val period  = now.toDateTime(DateTimeZone.UTC) to future.toDateTime(DateTimeZone.UTC)
 
       val ratioA = period.toPeriod.getSeconds
       val ratioB = timeStep - ratioA

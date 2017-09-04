@@ -7,7 +7,7 @@ import biology.fish.FishFactory
 import biology.fish.FishParameters
 
 trait LarvaFactory {
-    def create(site: SpawningLocation, time: DateTime) : Array[Larva]
+    def create(site: SpawningLocation, time: LocalDateTime) : Array[Larva]
 }
 
 object LarvaFactory {

@@ -27,7 +27,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val geometry = new Geometry
 
-  def apply(iteration: Int): Unit = {
+  def apply(): Unit = {
     spawnLarvae()
     pelagicLarvae.par.foreach(fish => biology(fish))
     refresh()
@@ -83,9 +83,9 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   private def migrateLarvaVertically(larva: Larva): Unit = {
     if(larva.undergoesDielMigration) {
-      if(clock.isSunRising(larva.position, "Australia/Sydney")) {
+      if(clock.isSunRising(larva.position)) {
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Day)
-      } else if(clock.isSunSetting(larva.position, "Australia/Sydney")) {
+      } else if(clock.isSunSetting(larva.position)) {
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
       }
     }
@@ -131,7 +131,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   private def spawnLarvae(): Unit = {
     val spawningSites = spawn.getSitesWhereFishAreSpawning(clock.now)
     if (spawningSites.nonEmpty) {
-      //trace("Found non-empty spawning site")
       spawnFish(spawningSites)
     }
   }
@@ -139,10 +138,12 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   private def spawnFish(sites: List[SpawningLocation]) = {
     val spawn = sites.flatMap(site => factory.create(site, clock.now))
     pelagicLarvae ++= spawn
-    //activeLarvae += spawn.flatten.size
-
   }
 
-  def canDisperse(time: DateTime): Boolean = (spawn.isItSpawningSeason(time) || pelagicLarvae.nonEmpty)
+  def canDisperse(time: LocalDateTime): Boolean ={
+    val canSpawn = spawn.isItSpawningSeason(time)
+    val pelagic = pelagicLarvae.nonEmpty
+    canSpawn || pelagic
+  }
 
 }

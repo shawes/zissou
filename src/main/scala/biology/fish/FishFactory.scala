@@ -21,7 +21,7 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
 
   var larvaeCount: Int = 0
 
-  override def create(site: SpawningLocation, time: DateTime): Array[Larva] = {
+  override def create(site: SpawningLocation, time: LocalDateTime): Array[Larva] = {
     val larvae: ArrayBuffer[Fish] = ArrayBuffer.empty
 
     for (i <- 0 until site.numberOfLarvae) {

@@ -13,7 +13,7 @@ trait Larva {
 
   def id: Int
 
-  def birthday: DateTime
+  def birthday: LocalDateTime
 
   def age: Int
 
@@ -23,7 +23,7 @@ trait Larva {
 
   def pelagicLarvalDuration: Int
 
-  def settlementDate: DateTime
+  def settlementDate: LocalDateTime
 
   def polygon: Int
 
@@ -45,7 +45,7 @@ trait Larva {
 
   def growOlder(seconds: Int) : Unit
 
-  def settle(reefId : Int, date: DateTime) : Unit
+  def settle(reefId : Int, date: LocalDateTime) : Unit
 
   def getOntogeny: OntogenyState
 

@@ -20,7 +20,7 @@ import scala.language.implicitConversions
  */
 object ConfigMappings {
   implicit def flowConfigToFlow(f: FlowConfig): Flow =
-    new Flow(new Depth(f.depth), new DateTime(f.period.start) to new DateTime(f.period.end), f.timeStep)
+    new Flow(new Depth(f.depth), new DateTime(f.period.start, DateTimeZone.UTC) to new DateTime(f.period.end, DateTimeZone.UTC), f.timeStep)
 
   implicit def timeStepConfigToTimeStep(t: TimeStepConfig): TimeStep =
     new TimeStep(t.duration, TimeStepType.withName(t.unit))
@@ -38,7 +38,7 @@ object ConfigMappings {
     new OutputFiles(o.includeLarvaeHistory, ShapeFileType.withName(o.shape), o.saveOutputFilePath, o.percentage)
 
   implicit def releasePeriodConfigMap(r: ReleasePeriodConfig): Interval =
-    new DateTime(r.start) to new DateTime(r.end)
+    new DateTime(r.start, DateTimeZone.UTC) to new DateTime(r.end, DateTimeZone.UTC)
 
   implicit def spawnConfigMap(s: SpawnConfig): List[SpawningLocation] =
     s.spawningLocation.asScala.map(x => spawningLocationConfigMap(x)).toList

@@ -13,12 +13,12 @@ class SpawningLocationTest extends FlatSpec {
   }
 
   it should "return true if it can spawn" in {
-    val can = spawningLocation.canSpawn(DateTime.now)
+    val can = spawningLocation.canSpawn(LocalDateTime.now)
     assert(can)
   }
 
   it should "return false if it cannot spawn" in {
-    val cannot = !spawningLocation.canSpawn(DateTime.now.plusDays(10))
+    val cannot = !spawningLocation.canSpawn(LocalDateTime.now.plusDays(10))
     assert(cannot)
   }
 

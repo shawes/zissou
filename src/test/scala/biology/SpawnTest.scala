@@ -9,7 +9,7 @@ import scala.collection.mutable._
 class SpawnTest extends FlatSpec {
 
   val spawningLocations = new ListBuffer[SpawningLocation]
-  val date = DateTime.now.minusHours(DateTime.now.getHourOfDay)
+  val date = DateTime.now.minusHours(DateTime.now.getHourOfDay).toLocalDateTime
 
   spawningLocations += new SpawningLocation("lizard island", 1000, new GeoCoordinate(1, 2), new Interval(DateTime.now.minusDays(5), DateTime.now.plusDays(1)), 4)
   spawningLocations += new SpawningLocation("bare island", 576, new GeoCoordinate(4, 7), new Interval(DateTime.now.minusDays(2), DateTime.now.plusDays(5)), 1)

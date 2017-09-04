@@ -32,24 +32,27 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
       val simulationTimer = new SimpleTimer()
       simulationTimer.start()
       info("Simulation run started")
-      var iteration = 1
       val stepTimer = new SimpleTimer()
       stepTimer.start()
       while (clock.stillTime && biology.canDisperse(clock.now)) {
-        biology(iteration)
-
+        biology()
         if (clock.isMidnight) {
           ocean.circulate()
           if(config.fish.isMortal) {
             biology.applyMortality()
           }
-          info("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs with " +biology.pelagicLarvae.size + " larvae.")
+          info("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs with " + biology.pelagicLarvae.size + " larvae.")
           stepTimer.start()
         }
-        iteration += 1
+
         clock.tick()
       }
-      info("Simulation run completed in " + (simulationTimer.stop() / 60.0) + " minutes")
+      val time : Double = simulationTimer.stop() / 60.0
+      //if (time > 0) time = time / 60.0
+      info(f"Simulation run completed in $time%.2f minutes")
+      val still = clock.stillTime
+      val disperse = biology.canDisperse(clock.now)
+      debug(s"Still movin': $still and dispersin': $disperse")
       ocean.shutdown()
 
       val resultsWriter = new ResultsIO(biology.stationaryLarvae.toArray, config.output, name)

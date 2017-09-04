@@ -15,7 +15,7 @@ class Fish(
   val pelagicLarvalDuration: Int,
   val maximumLifeSpan: Int,
   val birthplace: Birthplace,
-  val spawned: DateTime,
+  val spawned: LocalDateTime,
   val fishOntogeny: FishOntogeny,
   val swimming: Swimming,
   val verticalMigrationOntogenetic: FishVerticalMigrationOntogenetic,
@@ -26,16 +26,16 @@ class Fish(
   val fishHistory = ArrayBuffer.empty[TimeCapsule]
   var fishState = PelagicLarvaeState.Pelagic
   var fishAge = 0
-  var fishSettlementDate: Option[DateTime] = None
+  var fishSettlementDate: Option[LocalDateTime] = None
   var fishPosition = birthplace.location
   var fishPolygon: Int = 0
   var lastDielMigration : Option[DielVerticalMigrationType] = None
   private var hasChangedOntogeneticState : Boolean = false
   var fishDirection : Double = -1
 
-  def this() = this(0, 0, 0, null, DateTime.now(), null, null, null, null, 0)
+  def this() = this(0, 0, 0, null, LocalDateTime.now(), null, null, null, null, 0)
 
-  override def settlementDate: DateTime = fishSettlementDate.get
+  override def settlementDate: LocalDateTime = fishSettlementDate.get
 
   override def changedOntogeneticState : Boolean = hasChangedOntogeneticState
 
@@ -82,7 +82,7 @@ class Fish(
     }
   }
 
-  def settle(reefId : Int, date: DateTime): Unit = {
+  def settle(reefId : Int, date: LocalDateTime): Unit = {
     updateHabitat(reefId)
     fishSettlementDate = Some(date)
     changeState(PelagicLarvaeState.Settled)
@@ -135,6 +135,6 @@ class Fish(
 
   override def state: PelagicLarvaeState = fishState
 
-  override def birthday: DateTime = spawned
+  override def birthday: LocalDateTime = spawned
 
 }
