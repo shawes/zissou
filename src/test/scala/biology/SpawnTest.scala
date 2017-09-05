@@ -11,8 +11,8 @@ class SpawnTest extends FlatSpec {
   val spawningLocations = new ListBuffer[SpawningLocation]
   val date = DateTime.now.minusHours(DateTime.now.getHourOfDay).toLocalDateTime
 
-  spawningLocations += new SpawningLocation("lizard island", 1000, new GeoCoordinate(1, 2), new Interval(DateTime.now.minusDays(5), DateTime.now.plusDays(1)), 4)
-  spawningLocations += new SpawningLocation("bare island", 576, new GeoCoordinate(4, 7), new Interval(DateTime.now.minusDays(2), DateTime.now.plusDays(5)), 1)
+  spawningLocations += new SpawningLocation("lizard island", 1000, 202,new GeoCoordinate(1, 2), new Interval(DateTime.now.minusDays(5), DateTime.now.plusDays(1)), 4)
+  spawningLocations += new SpawningLocation("bare island", 576, 199, new GeoCoordinate(4, 7), new Interval(DateTime.now.minusDays(2), DateTime.now.plusDays(5)), 1)
 
   "A spawn" should "be able to construct with no parameters" in {
     val spawn = new Spawn()

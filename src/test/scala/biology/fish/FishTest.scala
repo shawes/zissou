@@ -16,7 +16,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   val id: Int = 1
   val maximumLifespan = 50
   val ontogeny = new FishOntogeny(10, 15, 20)
-  val birthplace = new Birthplace("Adelaide", new GeoCoordinate(10, 150, 15))
+  val birthplace = new Birthplace("Adelaide", 101, new GeoCoordinate(10, 150, 15))
   val pelagicState = PelagicLarvaeState.Pelagic
   val swimming = new Swimming(SwimmingAbility.Directed, 1,2,3, false)
   val ontogeneticVerticalMigration: List[FishVerticalMigrationOntogeneticProbability] =

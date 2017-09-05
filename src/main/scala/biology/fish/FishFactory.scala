@@ -54,7 +54,7 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
       val larvalFish = new Fish(larvaeCount,
                                 Time.convertDaysToSeconds(pld),
                                 Time.convertDaysToSeconds(pld),
-                                new Birthplace(site.title, birthLoc),
+                                new Birthplace(site.title, site.reefId, birthLoc),
                                 time,
                                 new FishOntogeny(preflexion, flexion, postflexion),
                                 fishParams.swimming,

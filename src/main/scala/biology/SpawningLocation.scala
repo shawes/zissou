@@ -5,6 +5,7 @@ import physical.GeoCoordinate
 
 class SpawningLocation(val title: String,
                        val numberOfLarvae: Int,
+                       val reefId : Int,
                        val location: GeoCoordinate,
                        val releasePeriod: Interval,
                        val interval: Int) {

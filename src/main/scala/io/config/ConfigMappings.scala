@@ -44,7 +44,7 @@ object ConfigMappings {
     s.spawningLocation.asScala.map(x => spawningLocationConfigMap(x)).toList
 
   implicit def spawningLocationConfigMap(s: SpawningLocationConfig): SpawningLocation =
-    new SpawningLocation(s.name, s.numberOfLarvae, s.site, s.releasePeriod, s.interval)
+    new SpawningLocation(s.name, s.numberOfLarvae, s.patchNumber, s.site, s.releasePeriod, s.interval)
 
   implicit def siteConfigMap(s: SiteConfig): GeoCoordinate = new GeoCoordinate(s.latitude, s.longitude, s.depth)
 

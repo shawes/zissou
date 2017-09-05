@@ -6,7 +6,7 @@ import physical.GeoCoordinate
 
 class SpawningLocationTest extends FlatSpec {
 
-  val spawningLocation = new SpawningLocation("lizard island", 1000, new GeoCoordinate(1, 2),  DateTime.now.minusDays(5) to DateTime.now.plusDays(1), 5)
+  val spawningLocation = new SpawningLocation("lizard island", 1000, 202,new GeoCoordinate(1, 2),  DateTime.now.minusDays(5) to DateTime.now.plusDays(1), 5)
 
   "A spawning location" should "be able to construct" in {
     assert(spawningLocation != null)
