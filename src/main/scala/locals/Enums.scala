@@ -58,11 +58,6 @@ object SwimmingAbility extends Enumeration {
   val Passive, Directed, Undirected = Value
 }
 
-object ShapeFileType extends Enumeration {
-  type ShapeFileType = Value
-  val Point, Line = Value
-}
-
 object LoggingLevel extends Enumeration {
   type LoggingLevel = Value
   val None, Concise, Verbose = Value

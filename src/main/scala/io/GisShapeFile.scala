@@ -5,8 +5,6 @@ import java.util
 import biology.{Larva, TimeCapsule}
 import com.vividsolutions.jts.geom.{Coordinate, LineString}
 import maths.RandomNumberGenerator
-import locals.ShapeFileType._
-import locals.ShapeFileType
 import org.geotools.data._
 import grizzled.slf4j.Logging
 import org.geotools.data.collection.ListFeatureCollection
@@ -40,9 +38,8 @@ class GisShapeFile() extends Logging {
     }
   }
 
-  def write(larvae: Array[Larva], shape: ShapeFileType, file: File, percent : Double): Unit = shape match {
-    case ShapeFileType.Line => writeLineShapeFile(larvae, file, percent)
-    case _ => throw new scala.IllegalArgumentException()
+  def write(larvae: Array[Larva], file: File, percent : Double): Unit = {
+    writeLineShapeFile(larvae, file, percent)
   }
 
   private def writeLineShapeFile(larvae: Array[Larva], file: File, percent : Double) = {

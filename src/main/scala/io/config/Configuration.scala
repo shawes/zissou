@@ -24,7 +24,7 @@ case class Configuration(
       TimeStepConfig("", 0),
       DepthConfig(average = false, averageOverAllDepths = false, 0)),
     HabitatConfig(BufferConfig(isBuffered = false, 0, 0)),
-    OutputFilesConfig(includeLarvaeHistory = false, "", "", 0, "",""))
+    OutputFilesConfig(includeLarvaeHistory = false, "", 0, "",""))
 }
 
 @XmlRootElement
@@ -127,12 +127,11 @@ case class BufferConfig(isBuffered: Boolean, settlement: Double, olfactory : Dou
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 case class OutputFilesConfig(includeLarvaeHistory: Boolean,
-                             shape: String,
                              saveOutputFilePath: String,
                              percentage: Int,
                              logLevel: String,
                              logFile: String) {
-  private def this() = this(false, "", "", 0, "", "")
+  private def this() = this(false, "", 0, "", "")
 }
 
 @XmlRootElement
