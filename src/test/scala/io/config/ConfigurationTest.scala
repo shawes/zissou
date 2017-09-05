@@ -84,9 +84,8 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
   }
 
   it should "parse the output node" in {
-    val configXml = "<simulationVariables><output><includeLarvaeHistory>true</includeLarvaeHistory><shape>line</shape><saveOutputFilePath>path</saveOutputFilePath><percentage>25</percentage><logLevel>verbose</logLevel></output></simulationVariables>"
+    val configXml = "<simulationVariables><output><includeLarvaeHistory>true</includeLarvaeHistory><saveOutputFilePath>path</saveOutputFilePath><percentage>25</percentage><logLevel>verbose</logLevel></output></simulationVariables>"
     val config = context.createUnmarshaller().unmarshal(new StringReader(configXml)).asInstanceOf[Configuration]
-    assert(config.output.shape == "line")
     assert(config.output.includeLarvaeHistory)
     assert(config.output.logLevel == "verbose")
     assert(config.output.percentage == 25)
