@@ -42,7 +42,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
           if(config.fish.isMortal) {
             biology.applyMortality()
           }
-          info("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs with " + biology.pelagicLarvae.size + " larvae.")
+          debug("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs with " + biology.pelagicLarvae.size + " larvae.")
           stepTimer.start()
         }
 
@@ -66,6 +66,10 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
   }
 
   private def setConfiguredLogLevel() : Unit = {
+    //val logFile = config.output.logFile
+    if(config.output.logFile.nonEmpty) {
+      System.setProperty("org.slf4j.simpleLogger.logFile", config.output.logFile)
+    }
     config.output.logLevel match {
       case "debug" => System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug")
       case "trace" => System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace")
@@ -73,10 +77,6 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
       case "off" => System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "off")
       case "all" => System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "all")
       case _ => System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info")
-    }
-    val logFile = config.output.logFile
-    if(logFile.nonEmpty) {
-      System.setProperty("org.slf4j.simpleLogger.logFile", logFile)
     }
   }
 

@@ -8,8 +8,8 @@ class ResultsIO(larvae: Array[Larva], output: OutputFiles, name : String) {
 
   val directory = new File(output.path + "//" + name)
   directory.mkdir()
-  val shapeFile = new File(directory.toPath + "//larvae-dispersal.shp")
-  val kernelFile = new File(directory.toPath + "//connectivity-matrix.csv")
+  val shapeFile = new File(directory.toPath + "//"+output.prefix+"-dispersal.shp")
+  val connectivityMatrixFile = new File(directory.toPath + "//"+output.prefix+"-connectivity-matrix.csv")
 
   def write(): Unit = {
     writeLarvaeMovementsToShapeFile()
@@ -23,7 +23,7 @@ class ResultsIO(larvae: Array[Larva], output: OutputFiles, name : String) {
   }
 
   private def writeConnectivityMatrix() = {
-    val connectivityMatrix = new ConnectivityMatrix(larvae, kernelFile)
+    val connectivityMatrix = new ConnectivityMatrix(larvae, connectivityMatrixFile)
     connectivityMatrix.write()
   }
 
