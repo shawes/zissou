@@ -10,10 +10,12 @@ class ResultsIO(larvae: Array[Larva], output: OutputFiles, name : String) {
   directory.mkdir()
   val shapeFile = new File(directory.toPath + "//"+output.prefix+"-dispersal.shp")
   val connectivityMatrixFile = new File(directory.toPath + "//"+output.prefix+"-connectivity-matrix.csv")
+  val dispersalKernelFile = new File(directory.toPath + "//"+output.prefix+"-dispersal-kernel.csv")
 
   def write(): Unit = {
     writeLarvaeMovementsToShapeFile()
     writeConnectivityMatrix()
+    writeDispersalKernel()
     if (output.includeLarvaeMovements) writeLarvaeStateChangesToCsvFile()
   }
 
@@ -25,6 +27,11 @@ class ResultsIO(larvae: Array[Larva], output: OutputFiles, name : String) {
   private def writeConnectivityMatrix() = {
     val connectivityMatrix = new ConnectivityMatrix(larvae, connectivityMatrixFile)
     connectivityMatrix.write()
+  }
+
+  private def writeDispersalKernel() = {
+    val dispersalKernel = new DispersalKernel(larvae, dispersalKernelFile)
+    dispersalKernel.write()
   }
 
   private def writeLarvaeMovementsToShapeFile() = {

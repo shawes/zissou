@@ -10,6 +10,7 @@ import physical.GeoCoordinate
 import com.github.nscala_time.time.Imports._
 import biology._
 import scala.collection.mutable.ArrayBuffer
+import maths.Geometry
 
 class Fish(
   val id: Int,
@@ -33,6 +34,8 @@ class Fish(
   var lastDielMigration : Option[DielVerticalMigrationType] = None
   private var hasChangedOntogeneticState : Boolean = false
   var fishDirection : Double = LightWeightException.NoSwimmingAngle
+  var fishDistanceTravelled : Double = 0
+  val geometry = new Geometry()
 
   def this() = this(0, 0, 0, null, LocalDateTime.now(), null, null, null, null, 0)
 
@@ -41,6 +44,8 @@ class Fish(
   override def changedOntogeneticState : Boolean = hasChangedOntogeneticState
 
   override def direction : Double = fishDirection
+
+  override def distanceTravelled : Double = fishDistanceTravelled
 
   override def changeDirection(angle : Double) = fishDirection = angle
 
@@ -70,6 +75,7 @@ class Fish(
 
   def updatePosition(newPos: GeoCoordinate): Unit = {
     fishPosition = newPos
+    fishDistanceTravelled += geometry.getDistanceBetweenTwoPoints(fishPosition, newPos)
   }
 
   def growOlder(seconds: Int): Unit = {

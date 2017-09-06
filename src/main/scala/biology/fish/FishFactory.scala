@@ -15,9 +15,9 @@ import scala.collection.mutable.ArrayBuffer
 class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactory with Logging {
 
   val pldDistribution = fishParams.pld.distribution
-  val preflexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.preflexion), Constants.SecondsInDay *0.5)
+  val preflexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.preflexion), Constants.SecondsInDay * 0.5)
   val flexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.flexion), Constants.SecondsInDay * 0.5)
-  val postflexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.postflexion), Constants.SecondsInDay *0.5)
+  val postflexionDistribution = new NormalDistribution(Time.convertDaysToSeconds(fishParams.ontogeny.postflexion), Constants.SecondsInDay * 0.5)
 
   var larvaeCount: Int = 0
 
@@ -36,9 +36,8 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
       val flexion = flexionDistribution.sample().toInt
       val postflexion = postflexionDistribution.sample().toInt
 
-      val birthLoc = new GeoCoordinate(site.location.latitude +       RandomNumberGenerator.getPlusMinus * Constants.MaxLatitudeShift,
-        site.location.longitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift, site.location.depth)
-
+      // val birthLoc = new GeoCoordinate(site.location.latitude +       RandomNumberGenerator.getPlusMinus * Constants.MaxLatitudeShift,
+      //   site.location.longitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift, site.location.depth + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift)
 
       def getNonSettlementPeriod() : Double = {
         val settlement = fishParams.pld.nonSettlementPeriod
@@ -54,7 +53,7 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
       val larvalFish = new Fish(larvaeCount,
                                 Time.convertDaysToSeconds(pld),
                                 Time.convertDaysToSeconds(pld),
-                                new Birthplace(site.title, site.reefId, birthLoc),
+                                new Birthplace(site.title, site.reefId, site.location),
                                 time,
                                 new FishOntogeny(preflexion, flexion, postflexion),
                                 fishParams.swimming,
