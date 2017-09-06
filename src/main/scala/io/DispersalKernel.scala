@@ -31,7 +31,6 @@ class DispersalKernel(larvae: Array[Larva], csvFile: File) {
   private def columnHeaders: String = "id,born,birthplace,birth-reef,age,settle-reef,distance"
 
   private def calculateDispersalDistance(larva: Larva) : Double = {
-      //larva.history.foldLeft(0.0)(_+getDistance(_,_))
     var distance = 0.0
     var lastPos = larva.birthplace.location
     larva.history.foreach(t => {
@@ -40,8 +39,4 @@ class DispersalKernel(larvae: Array[Larva], csvFile: File) {
     })
     distance
   }
-
-  // private def getDistance(t1 : TimeCapsule, t2 : TimeCapsule) : Double = {
-  //   geometry.getDistanceBetweenTwoPoints(t1.position, t2.position)
-  // }
 }

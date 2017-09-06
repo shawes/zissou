@@ -27,8 +27,6 @@ trait Larva {
 
   def polygon: Int
 
-  def distanceTravelled : Double
-
   def history: ArrayBuffer[TimeCapsule]
 
   def position: GeoCoordinate

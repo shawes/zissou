@@ -34,7 +34,6 @@ class Fish(
   var lastDielMigration : Option[DielVerticalMigrationType] = None
   private var hasChangedOntogeneticState : Boolean = false
   var fishDirection : Double = LightWeightException.NoSwimmingAngle
-  var fishDistanceTravelled : Double = 0
   val geometry = new Geometry()
 
   def this() = this(0, 0, 0, null, LocalDateTime.now(), null, null, null, null, 0)
@@ -45,11 +44,7 @@ class Fish(
 
   override def direction : Double = fishDirection
 
-  override def distanceTravelled : Double = fishDistanceTravelled
-
   override def changeDirection(angle : Double) = fishDirection = angle
-
-  //override def isSettled = fishPolygon > 0
 
   def inCompetencyWindow: Boolean = age <= pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion && age >= nonSettlementPeriod
 
@@ -75,7 +70,6 @@ class Fish(
 
   def updatePosition(newPos: GeoCoordinate): Unit = {
     fishPosition = newPos
-    fishDistanceTravelled += geometry.getDistanceBetweenTwoPoints(fishPosition, newPos)
   }
 
   def growOlder(seconds: Int): Unit = {
