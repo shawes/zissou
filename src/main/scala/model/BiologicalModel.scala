@@ -55,7 +55,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def move(larva: Larva): Unit = {
-    val dampeningFactor: List[Double] = List(1.0)
+    val dampeningFactor: List[Double] = List(1.0, 0.66, 0.33)
     val orientate = swim(larva)
     def moveParticle(larva : Larva, dampeningFactor : List[Double]) : Unit = {
       if(dampeningFactor.nonEmpty) {

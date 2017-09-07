@@ -13,7 +13,7 @@ case class Configuration(
                           @XmlElementWrapper flow: FlowConfig,
                           @XmlElementWrapper habitat: HabitatConfig,
                           @XmlElementWrapper output: OutputFilesConfig) {
-  def this() = this(InputFilesConfig("", ""),
+  def this() = this(InputFilesConfig("", "", 0),
     SpawnConfig(new JArrayList[SpawningLocationConfig]),
     TurbulenceConfig(0, 0, applyTurbulence = false, 0),
     FishConfig(OntogenyConfig(0, 0, 0), SwimmingConfig("", 0,0,0,false),
@@ -31,8 +31,9 @@ case class Configuration(
 @XmlAccessorType(XmlAccessType.FIELD)
 case class InputFilesConfig(
                              flowFilePath: String,
-                             habitatFilePath: String) {
-  private def this() = this("", "")
+                             habitatFilePath: String,
+                           randomSeed : Int) {
+  private def this() = this("", "", 0)
 }
 
 @XmlRootElement

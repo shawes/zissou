@@ -1,8 +1,8 @@
 package maths
 
 import org.apache.commons.math3.random.{SynchronizedRandomGenerator,Well44497b}
-
 import scala.compat.Platform
+import com.github.nscala_time.time.Imports._
 
 trait Random {
   def get: Double
@@ -15,14 +15,16 @@ trait Random {
 
   def coinToss: Boolean
 
-  def seed: Long
+  def setSeed(seed : Int)
 }
 
 object RandomNumberGenerator extends Random {
 
-  private val random = new SynchronizedRandomGenerator(new Well44497b(seed))
+  private var random = new SynchronizedRandomGenerator(new Well44497b(DateTime.now.getMillisOfSecond))
 
-  def seed: Long = 82723651
+  def setSeed(customSeed : Int) {
+    random = new SynchronizedRandomGenerator(new Well44497b(customSeed))
+  }
 
   def get: Double = random.nextDouble
 

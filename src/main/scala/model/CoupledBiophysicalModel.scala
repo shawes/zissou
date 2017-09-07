@@ -13,14 +13,20 @@ import utilities.SimpleTimer
 
 class CoupledBiophysicalModel(val config: Configuration, val name : String) extends Logging {
 
+  if(config.inputFiles.randomSeed.isValidInt) {
+    RandomNumberGenerator.setSeed(config.inputFiles.randomSeed)
+  }
+
   val flow: Flow = config.flow
   val clock = new SimulationClock(flow.period, flow.timeStep)
 
   val turbulence: Option[Turbulence] = config.turbulence.applyTurbulence match {
       case true => Some(new Turbulence(config.turbulence.horizontalDiffusionCoefficient,
-        config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds, RandomNumberGenerator))
+        config.turbulence.verticalDiffusionCoefficient, flow.timeStep.totalSeconds))
       case false => None
     }
+
+
 
   val ocean = new PhysicalModel(config)
   val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)

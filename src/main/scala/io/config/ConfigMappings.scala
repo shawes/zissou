@@ -28,8 +28,10 @@ object ConfigMappings {
   implicit def bufferConfigMap(b: BufferConfig): Buffer =
     new Buffer(b.isBuffered, b.settlement, b.olfactory)
 
-  implicit def inputConfigMap(i: InputFilesConfig): InputFiles =
-    new InputFiles(i.flowFilePath, i.habitatFilePath, new File(i.flowFilePath).list())
+  implicit def inputConfigMap(i: InputFilesConfig): InputFiles = {
+    val seed : Option[Int] = if(i.randomSeed > 0) Some(i.randomSeed) else None
+    new InputFiles(i.flowFilePath, i.habitatFilePath, new File(i.flowFilePath).list(), seed)
+  }
 
   implicit def depthConfigMap(d: DepthConfig): Depth =
     new Depth(d.average, d.averageOverAllDepths, d.maximumDepthForAverage, null)
