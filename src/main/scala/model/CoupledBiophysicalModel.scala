@@ -26,8 +26,6 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
       case false => None
     }
 
-
-
   val ocean = new PhysicalModel(config)
   val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)
   val biology = new BiologicalModel(config, clock, integrator)

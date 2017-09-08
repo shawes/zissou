@@ -17,13 +17,28 @@ class FlowGridWrapper(val depths: List[Double], val data: List[List[(Array[Array
 
 
   def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
-    val gridIndex = data.head.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
-    if(gridIndex(0) != -1 && gridIndex(1) != -1) {
-      val depthIndex = closestDepthIndex(coordinate.depth)
-      val velocityData = data.head.map(array => array._1(depthIndex)(gridIndex(NetcdfIndex.Y))(gridIndex(NetcdfIndex.X)))
-      val velocity = new Velocity(velocityData.head, velocityData(1), velocityData(2))
+    val gridIndex = getIndex(coordinate)
+    val velocity = getVelocityFromGeoGrid(gridIndex)
+    if (velocity.isDefined) Some(velocity) else moveUpDepths(gridIndex)
+  }
+
+  private def getVelocityFromGeoGrid(gridIndex : (Int,Int,Int,Boolean)) : Velocity = {
+    val velocityData = data.head.map(array => array._1(gridIndex._3)(gridIndex._2)(gridIndex._1))
+    new Velocity(velocityData.head, velocityData(1), velocityData(2))
+  }
+
+  private def moveUpDepths(gridIndex : (Int,Int,Int,Boolean)) : Option[Velocity] = {
+    val surfaceVelocity = getVelocityFromGeoGrid((gridIndex._1, gridIndex._2, 0, gridIndex._4))
+    if(surfaceVelocity.isDefined) {
+      var velocity = getVelocityFromGeoGrid(gridIndex)
+      var depthIndex = gridIndex._3
+      while(velocity.isUndefined && depthIndex > 0) {
+        depthIndex -= 1
+        velocity = getVelocityFromGeoGrid((gridIndex._1, gridIndex._2, depthIndex, gridIndex._4))
+      }
       if (velocity.isDefined) Some(velocity) else None
-    } else {
+    }
+    else {
       None
     }
   }
