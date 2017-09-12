@@ -27,5 +27,5 @@ class ConnectivityMatrix(larvae: Array[Larva], csvFile: File) {
     sb.toString()
   }
 
-  private def columnHeaders: String = "id,born,birthplace,birth-reef,age,recruited,settle-reef"
+  private def columnHeaders: String = "id,born,region,source,age,recruited,settle"
 }

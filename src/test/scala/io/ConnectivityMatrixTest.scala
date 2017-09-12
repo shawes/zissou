@@ -12,7 +12,7 @@ class ConnectivityMatrixTest extends FlatSpec with MockitoSugar with PrivateMeth
   }
 
   it should "have the correct column headers for the csv file" in {
-    val ColumnHeaders = "id,born,birthplace,birth-reef,age,recruited,settle-reef"
+    val ColumnHeaders = "id,born,region,source,age,recruited,settle"
     val ConnectivityMatrix = new ConnectivityMatrix(null, null)
     val columns = PrivateMethod[String]('columnHeaders)
     val headers = ConnectivityMatrix invokePrivate columns()
