@@ -23,7 +23,7 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
   val getFileInformation = initialiseFiles()
   var currentFile: Int = getFileInformation._2
   val files = getFileInformation._1
-  val latlonBounds = new LatLonRect(new LatLonPointImpl(-40.0, 142.0), new LatLonPointImpl(-10.0, 180.0))
+  val latlonBounds = new LatLonRect(new LatLonPointImpl(-50.0, 142.0), new LatLonPointImpl(-10.0, 180.0))
   val depthRange: Range = new Range(0, 14)
 
   def next(): FlowGridWrapper = {
