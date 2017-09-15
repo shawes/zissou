@@ -11,6 +11,7 @@ import io.config.ConfigMappings._
 import io.config.Configuration
 import locals.{DielVerticalMigrationType, LarvaType}
 import locals.Constants.LightWeightException
+import locals._
 import maths.{Geometry, RandomNumberGenerator}
 import maths.integration.RungeKuttaIntegration
 import utilities.Time
@@ -87,7 +88,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
       }
     }
-    if(larva.undergoesOntogeneticMigration && larva.changedOntogeneticState) {
+    if(larva.undergoesOntogeneticMigration &&
+      ((larva.ontogeneticVerticallyMigrateType == StageMigration && larva.changedOntogeneticState) || (larva.ontogeneticVerticallyMigrateType == TimestepMigration)
+      || larva.ontogeneticVerticallyMigrateType == DailyMigration && clock.isMidnight)) {
+
       larva.ontogeneticVerticallyMigrate
     }
   }

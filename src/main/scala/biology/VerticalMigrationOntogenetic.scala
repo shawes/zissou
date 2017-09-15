@@ -2,7 +2,7 @@ package biology
 
 import locals.OntogenyState
 import locals.OntogenyState.OntogenyState
-import locals.OntogeneticVerticalMigrationImpl
+import locals._
 import maths.{ContinuousRange, RandomNumberGenerator}
 import scala.collection.mutable.ListBuffer
 
@@ -10,7 +10,14 @@ class VerticalMigrationOntogenetic(val implementation : OntogeneticVerticalMigra
 
   def enabled : Boolean = probabilities.nonEmpty
 
-  def getDepth(ontogeny: OntogenyState): Double = {
+  def getDepth(ontogeny: OntogenyState, currentDepth : Double) : Double = {
+    implementation match {
+      case TimestepMigration => getDepthRestricted(ontogeny, currentDepth)
+      case _ => getDepthRandom(ontogeny)
+    }
+  }
+
+  private def getDepthRandom(ontogeny: OntogenyState): Double = {
     val list: ListBuffer[(ContinuousRange, Double)] = ListBuffer.empty[(ContinuousRange, Double)]
     probabilities.foreach(vmp => {
       list append getProbability(vmp, ontogeny)

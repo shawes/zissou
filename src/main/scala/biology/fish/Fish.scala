@@ -112,7 +112,8 @@ class Fish(
   override def polygon: Int = fishPolygon
 
   override def ontogeneticVerticallyMigrate: Unit = {
-    val depth = verticalMigrationOntogenetic.getDepth(getOntogeny)
+
+    val depth = verticalMigrationOntogenetic.getDepth(getOntogeny, position.depth)
     updatePosition(new GeoCoordinate(position.latitude, position.longitude, depth))
   }
 

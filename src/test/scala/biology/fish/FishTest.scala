@@ -127,7 +127,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     val fish = new Fish(id, pld, maximumLifespan, birthplace, LocalDateTime.now,
       ontogeny, swimming, mockOntogeneticVerticalMigration, new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),0)
     fish.ontogeneticVerticallyMigrate
-    verify(mockOntogeneticVerticalMigration).getDepth(fish.getOntogeny)
+    verify(mockOntogeneticVerticalMigration).getDepth(fish.getOntogeny, 15)
   }
 
     it should "calls diel vertical migration appropriately" in {
