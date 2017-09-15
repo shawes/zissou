@@ -17,6 +17,12 @@ sealed trait PelagicLarvalDurationType
 case object Random extends PelagicLarvalDurationType
 case object Fixed extends PelagicLarvalDurationType
 
+sealed trait OntogeneticVerticalMigrationImpl
+case object StageMigration extends OntogeneticVerticalMigrationImpl
+case object DailyMigration extends OntogeneticVerticalMigrationImpl
+case object TimestepMigration extends OntogeneticVerticalMigrationImpl
+
+
 
 object PelagicLarvaeState extends Enumeration {
   type PelagicLarvaeState = Value

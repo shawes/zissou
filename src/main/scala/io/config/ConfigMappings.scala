@@ -63,7 +63,13 @@ object ConfigMappings {
   implicit def swimmingConfigMap(s: SwimmingConfig): Swimming = new Swimming(SwimmingAbility.withName(s.ability), s.criticalSwimmingSpeed, s.inSituSwimmingPotential, s.endurance, s.reynoldsEffect)
 
   implicit def verticalMigrationOntogeneticConfigMap(vm: VerticalMigrationOntogeneticConfig): FishVerticalMigrationOntogenetic =
-    new FishVerticalMigrationOntogenetic(vm.verticalMigrationOntogeneticProbability.asScala.map(x => verticalMigrationOntogeneticProbabilityConfigMap(x)).toList)
+    new FishVerticalMigrationOntogenetic(
+    vm.implementation match {
+      case "Daily" => DailyMigration
+      case "Timestep" => TimestepMigration
+      case _ => StageMigration
+    },
+    vm.verticalMigrationOntogeneticProbability.asScala.map(x => verticalMigrationOntogeneticProbabilityConfigMap(x)).toList)
 
   implicit def verticalMigrationDielConfigMap(vm: VerticalMigrationDielConfig): VerticalMigrationDiel =
     new VerticalMigrationDiel(vm.verticalMigrationDielProbability.asScala.map(x => verticalMigrationDielProbabilityConfigMap(x)).toList)

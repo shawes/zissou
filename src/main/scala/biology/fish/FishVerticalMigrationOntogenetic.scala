@@ -2,10 +2,11 @@ package biology.fish
 
 import locals.OntogenyState
 import locals.OntogenyState.OntogenyState
+import locals.OntogeneticVerticalMigrationImpl
 import maths.{ContinuousRange, RandomNumberGenerator}
 import scala.collection.mutable.ListBuffer
 
-class FishVerticalMigrationOntogenetic(val probabilities: List[FishVerticalMigrationOntogeneticProbability]) {
+class FishVerticalMigrationOntogenetic(val implementation : OntogeneticVerticalMigrationImpl, val probabilities: List[FishVerticalMigrationOntogeneticProbability]) {
 
   def enabled : Boolean = probabilities.nonEmpty
 

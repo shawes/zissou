@@ -17,7 +17,7 @@ case class Configuration(
     SpawnConfig(new JArrayList[SpawningLocationConfig]),
     TurbulenceConfig(0, 0, applyTurbulence = false, 0),
     FishConfig(OntogenyConfig(0, 0, 0), SwimmingConfig("", 0,0,0,false),
-      VerticalMigrationOntogeneticConfig(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),
+      VerticalMigrationOntogeneticConfig("", new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),
       VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]),
       PelagicLarvalDurationConfig(0, 0, "", "", 0), isMortal = false, 0),
     FlowConfig(PeriodConfig("", ""),
@@ -145,7 +145,7 @@ case class FishConfig(ontogeny: OntogenyConfig,
                       pelagicLarvalDuration: PelagicLarvalDurationConfig,
                       isMortal: Boolean,
                       mortalityRate: Double) {
-  private def this() = this(OntogenyConfig(0, 0, 0), SwimmingConfig("",0,0,0,false), VerticalMigrationOntogeneticConfig(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, "", "", 0), false, 0)
+  private def this() = this(OntogenyConfig(0, 0, 0), SwimmingConfig("",0,0,0,false), VerticalMigrationOntogeneticConfig("", new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, "", "", 0), false, 0)
 }
 
 @XmlRootElement
@@ -169,12 +169,13 @@ case class PelagicLarvalDurationConfig(mean: Double, stdev: Double, distribution
 @XmlRootElement(name = "verticalMigrationOntogeneticProbabilities")
 @XmlAccessorType(XmlAccessType.FIELD)
 case class VerticalMigrationOntogeneticConfig(
+                                    implementation : String,
                                     @XmlElements(
                                       value = Array(new XmlElement(name = "verticalMigrationOntogeneticProbability"))
                                     )
                                     verticalMigrationOntogeneticProbability: java.util.List[VerticalMigrationOntogeneticProbabilityConfig]
                                     ) {
-  private def this() = this(new JArrayList[VerticalMigrationOntogeneticProbabilityConfig])
+  private def this() = this("", new JArrayList[VerticalMigrationOntogeneticProbabilityConfig])
 }
 
 @XmlRootElement
