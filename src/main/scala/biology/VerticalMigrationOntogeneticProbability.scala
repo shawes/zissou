@@ -1,9 +1,8 @@
-package biology.fish
+package biology
 
-import biology.VerticalMigrationProbability
 import maths.ContinuousRange
 
-class FishVerticalMigrationOntogeneticProbability(
+class VerticalMigrationOntogeneticProbability(
   depth: ContinuousRange,
   val hatching: Double,
   val preFlexion: Double,

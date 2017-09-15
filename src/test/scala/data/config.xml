@@ -72,22 +72,22 @@
       </verticalMigrationDielProbability>
     </verticalMigrationDielProbabilities>
     <verticalMigrationOntogeneticProbabilities>
-      <fishVerticalMigrationOntogeneticProbability>
+      <VerticalMigrationOntogeneticProbability>
         <depthStart>3</depthStart>
         <depthFinish>10</depthFinish>
         <hatching>0.8</hatching>
         <preFlexion>0.05</preFlexion>
         <flexion>0.05</flexion>
         <postFlexion>0.05</postFlexion>
-      </fishVerticalMigrationOntogeneticProbability>
-      <fishVerticalMigrationOntogeneticProbability>
+      </VerticalMigrationOntogeneticProbability>
+      <VerticalMigrationOntogeneticProbability>
         <depthStart>10</depthStart>
         <depthFinish>50</depthFinish>
         <hatching>0.2</hatching>
         <preFlexion>0.55</preFlexion>
         <flexion>0.35</flexion>
         <postFlexion>0.55</postFlexion>
-      </fishVerticalMigrationOntogeneticProbability>
+      </VerticalMigrationOntogeneticProbability>
     </verticalMigrationOntogeneticProbabilities>
     <pelagicLarvalDuration>
       <mean>22</mean>

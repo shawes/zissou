@@ -1,4 +1,4 @@
-package biology.fish
+package biology
 
 import locals.OntogenyState
 import locals.OntogenyState.OntogenyState
@@ -6,7 +6,7 @@ import locals.OntogeneticVerticalMigrationImpl
 import maths.{ContinuousRange, RandomNumberGenerator}
 import scala.collection.mutable.ListBuffer
 
-class FishVerticalMigrationOntogenetic(val implementation : OntogeneticVerticalMigrationImpl, val probabilities: List[FishVerticalMigrationOntogeneticProbability]) {
+class VerticalMigrationOntogenetic(val implementation : OntogeneticVerticalMigrationImpl, val probabilities: List[VerticalMigrationOntogeneticProbability]) {
 
   def enabled : Boolean = probabilities.nonEmpty
 
@@ -83,7 +83,7 @@ class FishVerticalMigrationOntogenetic(val implementation : OntogeneticVerticalM
     RandomNumberGenerator.get(depthRange.start, depthRange.end)
   }
 
-	private def getProbability(prob: FishVerticalMigrationOntogeneticProbability,
+	private def getProbability(prob: VerticalMigrationOntogeneticProbability,
     ontogeny: OntogenyState): (ContinuousRange, Double) =
       ontogeny match {
         case OntogenyState.Hatching => new Tuple2(prob.depth, prob.hatching)

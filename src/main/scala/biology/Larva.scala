@@ -1,11 +1,13 @@
 package biology
 
 import scala.collection.mutable.ArrayBuffer
+
 import com.github.nscala_time.time.Imports._
+import locals.DielVerticalMigrationType.DielVerticalMigrationType
+import locals.OntogeneticVerticalMigrationImpl
 import locals.OntogenyState._
 import locals.PelagicLarvaeState
 import locals.PelagicLarvaeState.PelagicLarvaeState
-import locals.DielVerticalMigrationType.DielVerticalMigrationType
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
 
@@ -54,6 +56,8 @@ trait Larva {
   def kill() : Unit
 
   def ontogeneticVerticallyMigrate(): Unit
+
+  def ontogeneticVerticallyMigrateType : OntogeneticVerticalMigrationImpl
 
   def dielVerticallyMigrate(dielMigration : DielVerticalMigrationType) : Unit
 

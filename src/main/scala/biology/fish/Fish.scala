@@ -20,7 +20,7 @@ class Fish(
   val spawned: LocalDateTime,
   val fishOntogeny: FishOntogeny,
   val swimming: Swimming,
-  val verticalMigrationOntogenetic: FishVerticalMigrationOntogenetic,
+  val verticalMigrationOntogenetic: VerticalMigrationOntogenetic,
   val verticalMigrationDiel: VerticalMigrationDiel,
   val nonSettlementPeriod: Int)
   extends Larva with Logging {
@@ -58,6 +58,8 @@ class Fish(
     trace("Checking OVM, size is "+ verticalMigrationOntogenetic.probabilities.size)
     verticalMigrationOntogenetic.probabilities.nonEmpty
   }
+
+  override def ontogeneticVerticallyMigrateType  = verticalMigrationOntogenetic.implementation
 
   def undergoesDielMigration : Boolean = verticalMigrationDiel.probabilities.nonEmpty
 

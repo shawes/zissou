@@ -8,7 +8,7 @@ class FishParameters(
            val name: String,
            val savePositions: Boolean,
            val swimming : Swimming,
-           val verticalMigrationOntogeneticProbabilities: FishVerticalMigrationOntogenetic,
+           val verticalMigrationOntogeneticProbabilities: VerticalMigrationOntogenetic,
            val verticalMigrationDielProbabilities: VerticalMigrationDiel,
            val isMortal: Boolean,
            val mortalityRate: Double) {

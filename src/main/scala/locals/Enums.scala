@@ -1,6 +1,5 @@
 package locals
 
-// Converted to a sealed class
 sealed trait HabitatType
 case object Beach extends HabitatType
 case object Land extends HabitatType
@@ -21,8 +20,6 @@ sealed trait OntogeneticVerticalMigrationImpl
 case object StageMigration extends OntogeneticVerticalMigrationImpl
 case object DailyMigration extends OntogeneticVerticalMigrationImpl
 case object TimestepMigration extends OntogeneticVerticalMigrationImpl
-
-
 
 object PelagicLarvaeState extends Enumeration {
   type PelagicLarvaeState = Value

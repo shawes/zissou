@@ -62,8 +62,8 @@ object ConfigMappings {
 
   implicit def swimmingConfigMap(s: SwimmingConfig): Swimming = new Swimming(SwimmingAbility.withName(s.ability), s.criticalSwimmingSpeed, s.inSituSwimmingPotential, s.endurance, s.reynoldsEffect)
 
-  implicit def verticalMigrationOntogeneticConfigMap(vm: VerticalMigrationOntogeneticConfig): FishVerticalMigrationOntogenetic =
-    new FishVerticalMigrationOntogenetic(
+  implicit def verticalMigrationOntogeneticConfigMap(vm: VerticalMigrationOntogeneticConfig): VerticalMigrationOntogenetic =
+    new VerticalMigrationOntogenetic(
     vm.implementation match {
       case "Daily" => DailyMigration
       case "Timestep" => TimestepMigration
@@ -74,8 +74,8 @@ object ConfigMappings {
   implicit def verticalMigrationDielConfigMap(vm: VerticalMigrationDielConfig): VerticalMigrationDiel =
     new VerticalMigrationDiel(vm.verticalMigrationDielProbability.asScala.map(x => verticalMigrationDielProbabilityConfigMap(x)).toList)
 
-  implicit def verticalMigrationOntogeneticProbabilityConfigMap(prob: VerticalMigrationOntogeneticProbabilityConfig) :  FishVerticalMigrationOntogeneticProbability =
-    new FishVerticalMigrationOntogeneticProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)
+  implicit def verticalMigrationOntogeneticProbabilityConfigMap(prob: VerticalMigrationOntogeneticProbabilityConfig) :  VerticalMigrationOntogeneticProbability =
+    new VerticalMigrationOntogeneticProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)
 
   implicit def verticalMigrationDielProbabilityConfigMap(prob: VerticalMigrationDielProbabilityConfig) : VerticalMigrationDielProbability =
     new VerticalMigrationDielProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.day, prob.night)
