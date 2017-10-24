@@ -16,17 +16,17 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow) extends Loggi
 
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, future: LocalDateTime, now: LocalDateTime, timeStep: Int): Option[Velocity] = {
     if (future == now) {
-      getVelocityOfCoordinate(coordinate, Today)
+      getInterpolatedVelocity(coordinate, Today)
     } else if (future == now.plusSeconds(timeStep)) {
-      getVelocityOfCoordinate(coordinate, Tomorrow)
+      getInterpolatedVelocity(coordinate, Tomorrow)
     } else {
       derivePartialTimeStepVelocity(coordinate, future, now, timeStep)
     }
   }
 
   private def derivePartialTimeStepVelocity(coordinate: GeoCoordinate, future: LocalDateTime, now: LocalDateTime, timeStep: Int): Option[Velocity] = {
-    val velocityNow = getVelocityOfCoordinate(coordinate, Today)
-    val velocityFuture = getVelocityOfCoordinate(coordinate, Tomorrow)
+    val velocityNow = getInterpolatedVelocity(coordinate, Today)
+    val velocityFuture = getInterpolatedVelocity(coordinate, Tomorrow)
 
     if (velocityNow.isDefined && velocityFuture.isDefined) {
       val divisor = 1 / timeStep.toDouble
@@ -41,8 +41,13 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow) extends Loggi
     }
   }
 
-  def getVelocityOfCoordinate(coordinate: GeoCoordinate, day: Day): Option[Velocity] = {
+  def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
+    hydrodynamicFlow.getVelocity(coordinate)
+  }
+
+  private def getInterpolatedVelocity(coordinate: GeoCoordinate, day: Day): Option[Velocity] = {
     val index = hydrodynamicFlow.getIndex(coordinate, day)
+    debug("for coordinate index is: "+ coordinate + ", " + index)
     val interpolation = new Interpolation()
     interpolation(coordinate, hydrodynamicFlow, index)
   }

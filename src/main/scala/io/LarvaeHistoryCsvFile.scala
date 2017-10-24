@@ -17,9 +17,9 @@ class LarvaeHistoryCsvFile(larvae: Array[Larva], filepath: String, percent : Dou
     bw.write(columnHeaders)
     bw.newLine()
     for (larva <- larvae) {
-      if(RandomNumberGenerator.getPercent < percent) {
+      //if(RandomNumberGenerator.getPercent < percent) {
         bw.write(buildCsvRow(larva))
-      }
+      //}
     }
     bw.close()
   }

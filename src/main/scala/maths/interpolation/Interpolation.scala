@@ -15,17 +15,22 @@ class Interpolation extends Logging {
   //TODO: Get dimensions from flow grid
   def apply(coordinate: GeoCoordinate, grid: FlowGridWrapper, index: (Int,Int,Int,Boolean)): Option[Velocity] = {
       val centroid = grid.getCentroid(index)
-      val latitudeDisplacement = (coordinate.latitude - centroid.latitude) * (1.0 / 0.1) + 1.0
-      val longitudeDisplacement = (coordinate.longitude - centroid.longitude) * (1.0 / 0.1) + 1.0
+      debug("Centroid of the grid is: " + centroid)
+      val latitudeDisplacement = math.abs(coordinate.latitude - centroid.latitude) * (1.0 / 0.1) + 1.0
+      val longitudeDisplacement = math.abs(coordinate.longitude - centroid.longitude) * (1.0 / 0.1) + 1.0
+      debug("Latitude : "+latitudeDisplacement + ", long: "+ longitudeDisplacement)
 
       val neighbourhood = grid.getInterpolationValues(coordinate, Bicubic)
       if (neighbourhood.isDefined) {
+        debug("Can bicubic interpolate")
         Some(interpolate(Bicubic, neighbourhood.get, longitudeDisplacement, latitudeDisplacement))
       } else {
         val neighbourhood = grid.getInterpolationValues(coordinate, Bilinear)
         if (neighbourhood.isDefined) {
+          debug("Can only bilnear interpolate")
           Some(interpolate(Bilinear, neighbourhood.get, longitudeDisplacement, latitudeDisplacement))
         } else {
+          debug("No interpolations")
           grid.getVelocity(index)
         }
       }

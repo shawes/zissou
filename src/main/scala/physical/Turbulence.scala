@@ -10,8 +10,8 @@ class Turbulence(horizontalDiffusionCoefficient: Double, verticalDiffusionCoeffi
   def this() = this(0, 0, 0)
 
   def apply(v: Velocity): Velocity = {
-    val horizontal = horizontalTurbulence * RandomNumberGenerator.get
-    val vertical = verticalTurbulence * RandomNumberGenerator.get
+    val horizontal = horizontalTurbulence * RandomNumberGenerator.get(-1,1)
+    val vertical = verticalTurbulence * RandomNumberGenerator.get(-1,1)
     new Velocity(v.u + horizontal, v.v + horizontal, v.w + vertical)
   }
 

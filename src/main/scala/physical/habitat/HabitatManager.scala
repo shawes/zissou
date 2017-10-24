@@ -32,7 +32,6 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
 
   def isBuffered: Boolean = buffer.isBuffered
 
-
   def getReefs(): Array[GeometryAdaptor] = {
     val polys:ArrayBuffer[GeometryAdaptor] = ArrayBuffer.empty[GeometryAdaptor]
     val shapes = features.features()
@@ -66,7 +65,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
 
     val distance = geometry.getDistanceBetweenTwoPoints(coordinate, reef.centroid)/1000
 
-    if(reef.contains(coordinate) || distance < buffer.settlement) {
+    if(distance < buffer.settlement || reef.contains(coordinate)) {
       settle = reef.id
     } else if (distance < buffer.olfactory) {
       angle = reef.direction(coordinate)

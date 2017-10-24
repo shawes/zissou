@@ -18,34 +18,27 @@ class FlowGridWrapper(val depths: List[Double], val data: List[List[(Array[Array
 
   def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
     val gridIndex = getIndex(coordinate)
-    val velocity = getVelocityFromGeoGrid(gridIndex)
-    if (velocity.isDefined) Some(velocity) else moveUpDepths(gridIndex)
+    debug("getVelocity: Index is "+ gridIndex)
+    getVelocity(gridIndex)
   }
 
-  private def getVelocityFromGeoGrid(gridIndex : (Int,Int,Int,Boolean)) : Velocity = {
-    val velocityData = data.head.map(array => array._1(gridIndex._3)(gridIndex._2)(gridIndex._1))
-    new Velocity(velocityData.head, velocityData(1), velocityData(2))
-  }
-
-  private def moveUpDepths(gridIndex : (Int,Int,Int,Boolean)) : Option[Velocity] = {
-    val surfaceVelocity = getVelocityFromGeoGrid((gridIndex._1, gridIndex._2, 0, gridIndex._4))
-    if(surfaceVelocity.isDefined) {
-      var velocity = getVelocityFromGeoGrid(gridIndex)
-      var depthIndex = gridIndex._3
-      while(velocity.isUndefined && depthIndex > 0) {
-        depthIndex -= 1
-        velocity = getVelocityFromGeoGrid((gridIndex._1, gridIndex._2, depthIndex, gridIndex._4))
-      }
-      if (velocity.isDefined) Some(velocity) else None
+  def getVelocity(index: (Int,Int,Int,Boolean)): Option[Velocity] = {
+    val buildVelocity = index._4 match {
+      case true => data.head.map(datasets => readData(datasets._1,index))
+      case false => data.last.map(datasets => readData(datasets._1,index))
     }
-    else {
-      None
-    }
+    val velocity = new Velocity(buildVelocity.head.toDouble, buildVelocity(1).toDouble, buildVelocity(2).toDouble)
+    if (velocity.isDefined) Some(velocity) else None
   }
 
-  private def closestDepthIndex(depth: Double): Int = depths match {
-    case Nil => Int.MaxValue
-    case list => list.indexOf(list.minBy(v => math.abs(v - depth)))
+  private def readData(dataset : Array[Array[Array[Float]]], index: (Int,Int,Int,Boolean)): Float = {
+    dataset(index._3)(index._2)(index._1)
+  }
+
+
+
+  private def closestDepthIndex(depth: Double): Int = {
+    depths.map(v => math.abs(v - depth)).zipWithIndex.min._2
   }
 
   def getCentroid(index: (Int,Int,Int,Boolean)): GeoCoordinate = {
@@ -68,7 +61,9 @@ class FlowGridWrapper(val depths: List[Double], val data: List[List[(Array[Array
     val indexXY = data.head.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
     val indexZ = closestDepthIndex(coordinate.depth)
     val indexT = timeIndex(day)
-    //debug("x="+indexXY(0)+",y="+indexXY(1) +",z="+indexZ+",t="+indexT)
+    debug("Coord is :" + coordinate)
+    debug("x="+indexXY(0)+",y="+indexXY(1) +",z="+indexZ+",t="+indexT)
+    // (x, y, z ,t)
     (indexXY(0), indexXY(1), indexZ, indexT)
   //}
   }
@@ -98,31 +93,27 @@ class FlowGridWrapper(val depths: List[Double], val data: List[List[(Array[Array
     }
   }
 
-  def getVelocity(index: (Int,Int,Int,Boolean)): Option[Velocity] = {
-    val buildVelocity = index._4 match {
-      case true => data.head.map(datasets => datasets._1(index._3)(index._2)(index._1))
-      case false => data.last.map(datasets => datasets._1(index._3)(index._2)(index._1))
-    }
 
-    val velocity = new Velocity(buildVelocity.head, buildVelocity(1), buildVelocity(2))
-    if (velocity.isDefined) Some(velocity) else None
-  }
 
   private def findQuadratCoordinateIsIn(coordinate: GeoCoordinate): QuadrantType = {
     //this.synchronized {
-    val index = data.head.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
-    val centroid = data.head.head._2.getLatLon(index(NetcdfIndex.X), index(NetcdfIndex.Y))
+    val index = getIndex(coordinate)
+    val centroid = data.head.head._2.getLatLon(index._1, index._2)
 
     if (coordinate.latitude > centroid.getLatitude) {
       if (coordinate.longitude < centroid.getLongitude) {
+        debug("TL")
         QuadrantType.TopLeft
       } else {
+        debug("TR")
         QuadrantType.TopRight
       }
     } else {
       if (coordinate.longitude < centroid.getLongitude) {
+        debug("BL")
         QuadrantType.BottomLeft
       } else {
+        debug("BR")
         QuadrantType.BottomRight
       }
     }

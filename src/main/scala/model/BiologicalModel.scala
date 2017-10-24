@@ -16,6 +16,7 @@ import maths.{Geometry, RandomNumberGenerator}
 import maths.integration.RungeKuttaIntegration
 import utilities.Time
 import physical.Velocity
+import physical.GeoCoordinate
 import physical.habitat.HabitatManager
 
 class BiologicalModel(val config: Configuration, clock: SimulationClock, integrator: RungeKuttaIntegration) extends Logging {
@@ -62,7 +63,10 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
       if(dampeningFactor.nonEmpty) {
         integrator.integrate(larva.position, clock.now, orientate, dampeningFactor.head) match {
           case Some(newPosition) => larva.move(newPosition)
-          case None => moveParticle(larva, dampeningFactor.tail)
+          case None => {
+            larva.move(moveParticleUpADepth(larva.position))
+            moveParticle(larva, dampeningFactor.tail)
+          }
         }
       } else {
         larva.move(larva.position)
@@ -70,6 +74,11 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     }
     moveParticle(larva, dampeningFactor)
     migrateLarvaVertically(larva)
+  }
+
+  private def moveParticleUpADepth(position : GeoCoordinate): GeoCoordinate = {
+    if(position.depth > 10) new GeoCoordinate(position.latitude, position.longitude, position.depth - 10)
+    else new GeoCoordinate(position.latitude, position.longitude, 0)
   }
 
   private def swim(larva : Larva) : Option[Velocity] = {
