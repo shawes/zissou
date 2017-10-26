@@ -12,7 +12,8 @@ import utilities.SimpleTimer
 
 
 class CoupledBiophysicalModel(val config: Configuration, val name : String) extends Logging {
-
+  setConfiguredLogLevel()
+  
   if(config.inputFiles.randomSeed.isValidInt) {
     RandomNumberGenerator.setSeed(config.inputFiles.randomSeed)
   }
@@ -29,7 +30,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
   val ocean = new PhysicalModel(config)
   val integrator = new RungeKuttaIntegration(ocean.flowController, turbulence, flow.timeStep.totalSeconds)
   val biology = new BiologicalModel(config, clock, integrator)
-  setConfiguredLogLevel()
+
 
   def run(): Unit = {
     try {
@@ -42,14 +43,13 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
       while (clock.stillTime && biology.canDisperse(clock.now)) {
         biology()
         if (clock.isMidnight) {
-          ocean.circulate()
           if(config.fish.isMortal) {
             biology.applyMortality()
           }
-          debug("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs with " + biology.pelagicLarvae.size + " larvae.")
+          info("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs with " + biology.pelagicLarvae.size + " larvae.")
+          ocean.circulate()
           stepTimer.start()
         }
-
         clock.tick()
       }
       val time : Double = simulationTimer.stop() / 60.0

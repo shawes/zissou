@@ -15,10 +15,8 @@ import scala.collection.parallel.mutable._
 
 class FlowGridWrapper(val depths: List[Double], val data: List[List[(Array[Array[Array[Float]]],GridCoordSystem)]]) extends Logging {
 
-
   def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
     val gridIndex = getIndex(coordinate)
-    debug("getVelocity: Index is "+ gridIndex)
     getVelocity(gridIndex)
   }
 
@@ -57,15 +55,11 @@ class FlowGridWrapper(val depths: List[Double], val data: List[List[(Array[Array
   }
 
   def getIndex(coordinate: GeoCoordinate, day: Day): (Int,Int,Int,Boolean) = {
-    //this.synchronized {
     val indexXY = data.head.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
     val indexZ = closestDepthIndex(coordinate.depth)
     val indexT = timeIndex(day)
-    debug("Coord is :" + coordinate)
-    debug("x="+indexXY(0)+",y="+indexXY(1) +",z="+indexZ+",t="+indexT)
     // (x, y, z ,t)
     (indexXY(0), indexXY(1), indexZ, indexT)
-  //}
   }
 
   private def timeIndex(day: Day): Boolean = day match {
@@ -102,18 +96,14 @@ class FlowGridWrapper(val depths: List[Double], val data: List[List[(Array[Array
 
     if (coordinate.latitude > centroid.getLatitude) {
       if (coordinate.longitude < centroid.getLongitude) {
-        debug("TL")
         QuadrantType.TopLeft
       } else {
-        debug("TR")
         QuadrantType.TopRight
       }
     } else {
       if (coordinate.longitude < centroid.getLongitude) {
-        debug("BL")
         QuadrantType.BottomLeft
       } else {
-        debug("BR")
         QuadrantType.BottomRight
       }
     }

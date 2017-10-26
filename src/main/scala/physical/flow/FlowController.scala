@@ -47,7 +47,6 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow) extends Loggi
 
   private def getInterpolatedVelocity(coordinate: GeoCoordinate, day: Day): Option[Velocity] = {
     val index = hydrodynamicFlow.getIndex(coordinate, day)
-    debug("for coordinate index is: "+ coordinate + ", " + index)
     val interpolation = new Interpolation()
     interpolation(coordinate, hydrodynamicFlow, index)
   }

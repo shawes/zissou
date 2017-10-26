@@ -10,12 +10,9 @@ class PhysicalModel(val config: Configuration) extends Logging {
 
   val flowFile = new FlowFileIterator(config.inputFiles.flowFilePath, config.flow)
   val flowController = new FlowController(flowFile, config.flow)
-  //circulate()
 
   def circulate(): Unit = {
-
       flowController.updateHydrodynamicFlow(flowFile.next())
-    
   }
 
   def shutdown() : Unit = {

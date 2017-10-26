@@ -64,7 +64,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
         integrator.integrate(larva.position, clock.now, orientate, dampeningFactor.head) match {
           case Some(newPosition) => larva.move(newPosition)
           case None => {
-            larva.move(moveParticleUpADepth(larva.position))
             moveParticle(larva, dampeningFactor.tail)
           }
         }
@@ -74,11 +73,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     }
     moveParticle(larva, dampeningFactor)
     migrateLarvaVertically(larva)
-  }
-
-  private def moveParticleUpADepth(position : GeoCoordinate): GeoCoordinate = {
-    if(position.depth > 10) new GeoCoordinate(position.latitude, position.longitude, position.depth - 10)
-    else new GeoCoordinate(position.latitude, position.longitude, 0)
   }
 
   private def swim(larva : Larva) : Option[Velocity] = {
