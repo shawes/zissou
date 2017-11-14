@@ -4,7 +4,7 @@ import grizzled.slf4j.Logging
 import locals.OntogenyState.OntogenyState
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.DielVerticalMigrationType.DielVerticalMigrationType
-import locals.{Constants, OntogenyState, PelagicLarvaeState}
+import locals.{Constants, OntogenyState, PelagicLarvaeState, DielVerticalMigrationType}
 import locals.Constants.LightWeightException
 import physical.GeoCoordinate
 import com.github.nscala_time.time.Imports._
@@ -32,6 +32,7 @@ class Fish(
   var fishPosition = birthplace.location
   var fishPolygon: Int = 0
   var lastDielMigration : Option[DielVerticalMigrationType] = None
+  var nightDepth : Double = -1
   private var hasChangedOntogeneticState : Boolean = false
   var fishDirection : Double = LightWeightException.NoSwimmingAngle
   val geometry = new Geometry()
@@ -119,8 +120,17 @@ class Fish(
 
   override def dielVerticallyMigrate(dielMigration : DielVerticalMigrationType) : Unit = {
     if(!lastDielMigration.isDefined || lastDielMigration.get != dielMigration) {
-      val depth = verticalMigrationDiel.getDepth(dielMigration)
-      val newDepth = new GeoCoordinate(position.latitude, position.longitude, depth)
+      var newDepth = position
+      if(undergoesOntogeneticMigration && dielMigration == DielVerticalMigrationType.Day) {
+        val depth = verticalMigrationDiel.getDepth(dielMigration)
+        nightDepth = position.depth
+        newDepth = new GeoCoordinate(position.latitude, position.longitude, depth)
+      } else if(undergoesOntogeneticMigration && dielMigration == DielVerticalMigrationType.Night) {
+        if(nightDepth >= 0) newDepth = new GeoCoordinate(position.latitude, position.longitude, nightDepth)
+      } else {
+        val depth = verticalMigrationDiel.getDepth(dielMigration)
+        val newDepth = new GeoCoordinate(position.latitude, position.longitude, depth)
+      }
       updatePosition(newDepth)
       lastDielMigration = Some(dielMigration)
    }

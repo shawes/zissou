@@ -89,7 +89,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Day)
       } else if(clock.isSunSetting(larva.position)) {
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
-      }
+      } 
     }
     if(larva.undergoesOntogeneticMigration &&
       ((larva.ontogeneticVerticallyMigrateType == StageMigration && larva.changedOntogeneticState) || (larva.ontogeneticVerticallyMigrateType == TimestepMigration)
