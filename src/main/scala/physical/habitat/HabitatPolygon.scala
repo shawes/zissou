@@ -13,7 +13,7 @@ trait HabitatPolygon {
   //def coordinates: Array[GeoCoordinate]
   def contains(coordinate: GeoCoordinate): Boolean
   def distance(coordinate: GeoCoordinate): Double
-  def isWithinDistance(coordinate: GeoCoordinate, distance: Double): Boolean
+  def isWithinBuffer(coordinate: GeoCoordinate, buffer: Double): Boolean
   def direction(coordinate : GeoCoordinate) : Double
 }
 

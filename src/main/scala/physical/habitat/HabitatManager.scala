@@ -5,7 +5,7 @@ import java.io.File
 import grizzled.slf4j.Logging
 import io.GisShapeFile
 import locals.HabitatType
-import locals.Constants.LightWeightException
+import locals.Constants._
 import maths.Geometry
 import org.geotools.data.simple.SimpleFeatureCollection
 import org.geotools.data.collection.ListFeatureCollection
@@ -64,10 +64,12 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     var angle : Double = LightWeightException.NoSwimmingAngle
 
     val distance = geometry.getDistanceBetweenTwoPoints(coordinate, reef.centroid)/1000
+    val distance2 = reef.distance(coordinate) * scala.math.Pi/180 * EarthsRadius * 111.32
 
-    if(distance < buffer.settlement || reef.contains(coordinate)) {
+    if(reef.isWithinBuffer(coordinate, buffer.settlement)) {
+      info(s"between $coordinate and $reef.centroid is distance1 $distance and distance2 $distance2")
       settle = reef.id
-    } else if (distance < buffer.olfactory) {
+    } else if (reef.isWithinBuffer(coordinate, buffer.olfactory)) {
       angle = reef.direction(coordinate)
       sense = reef.id
     }
