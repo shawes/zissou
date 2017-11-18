@@ -20,7 +20,8 @@ assemblyMergeStrategy in assembly := {
 }
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.0.3" % "test",
+  "org.scalactic" %% "scalactic" % "3.0.4",
+  "org.scalatest" %% "scalatest" % "3.0.4" % "test",
   "junit" % "junit" % "4.12" % "test",
   "org.mockito" % "mockito-core" % "2.8.47" % "test",
   "com.github.nscala-time" %% "nscala-time" % "2.16.0",
