@@ -117,8 +117,6 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
 
     grids.enqueue((data,day))
 
-
-      //info("FLOW DATA: there are "+ grids.size+" grids of days ids: " + grids.head._2 +", "+grids.last._2 +", datasets size is  "+ datasets.size)
   }
 
   // Get two grids that occur in the same file

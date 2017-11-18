@@ -45,7 +45,7 @@ class Fish(
 
   override def direction : Double = fishDirection
 
-  override def changeDirection(angle : Double) = fishDirection = angle
+  override def changeDirection(angle : Double) : Double = fishDirection = angle
 
   def inCompetencyWindow: Boolean = age <= pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion && age >= nonSettlementPeriod
 
@@ -56,11 +56,11 @@ class Fish(
   override def age: Int = fishAge
 
   def undergoesOntogeneticMigration : Boolean =  {
-    trace("Checking OVM, size is "+ verticalMigrationOntogenetic.probabilities.size)
+    trace("Checking OVM, size is " + verticalMigrationOntogenetic.probabilities.size)
     verticalMigrationOntogenetic.probabilities.nonEmpty
   }
 
-  override def ontogeneticVerticallyMigrateType  = verticalMigrationOntogenetic.implementation
+  override def ontogeneticVerticallyMigrateType : OntogeneticVerticalMigrationImpl  = verticalMigrationOntogenetic.implementation
 
   def undergoesDielMigration : Boolean = verticalMigrationDiel.probabilities.nonEmpty
 

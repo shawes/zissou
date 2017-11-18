@@ -5,8 +5,7 @@ import locals.DistributionType.DistributionType
 import locals.PelagicLarvalDurationType
 
 class PelagicLarvalDuration(
-  val distribution: NormalDistribution, 
-  val distributionType: DistributionType, 
-  val pelagicLarvalDurationType : PelagicLarvalDurationType, 
+  val distribution: NormalDistribution,
+  val distributionType: DistributionType,
+  val pelagicLarvalDurationType : PelagicLarvalDurationType,
   val nonSettlementPeriod : Double) {}
-  

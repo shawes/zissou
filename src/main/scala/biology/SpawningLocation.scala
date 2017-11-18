@@ -12,9 +12,10 @@ class SpawningLocation(val title: String,
 
   def canSpawn(date: LocalDateTime): Boolean = releasePeriod.contains(date.toDateTime(DateTimeZone.UTC))
 
-
   def timeToSpawn(date : LocalDateTime) : Boolean = {
-    releasePeriod.contains(date.toDateTime(DateTimeZone.UTC)) && ((releasePeriod.getStart() to date.toDateTime(DateTimeZone.UTC)).toPeriod.getDays % interval == 0)
+    releasePeriod.contains(date.toDateTime(DateTimeZone.UTC)) &&
+    ((releasePeriod.getStart() to date.toDateTime(DateTimeZone.UTC)).toPeriod.getDays
+    % interval == 0)
   }
 
   override def toString : String = s"Site: $title, with $numberOfLarvae larvae"

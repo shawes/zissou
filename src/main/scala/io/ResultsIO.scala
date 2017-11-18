@@ -8,9 +8,9 @@ class ResultsIO(larvae: Array[Larva], output: OutputFiles, name : String) {
 
   val directory = new File(output.path + "//" + name)
   directory.mkdir()
-  val shapeFile = new File(directory.toPath + "//"+output.prefix+"-dispersal.shp")
-  val connectivityMatrixFile = new File(directory.toPath + "//"+output.prefix+"-connectivity-matrix.csv")
-  val dispersalKernelFile = new File(directory.toPath + "//"+output.prefix+"-dispersal-kernel.csv")
+  val shapeFile = new File(directory.toPath + "//" + output.prefix + "-dispersal.shp")
+  val connectivityMatrixFile = new File(directory.toPath + "//" + output.prefix + "-connectivity-matrix.csv")
+  val dispersalKernelFile = new File(directory.toPath + "//" + output.prefix + "-dispersal-kernel.csv")
 
   def write(): Unit = {
     writeLarvaeMovementsToShapeFile()

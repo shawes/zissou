@@ -35,15 +35,14 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
       }
       val flexion = flexionDistribution.sample().toInt
       val postflexion = postflexionDistribution.sample().toInt
-
-      // val birthLoc = new GeoCoordinate(site.location.latitude +       RandomNumberGenerator.getPlusMinus * Constants.MaxLatitudeShift,
-      //   site.location.longitude + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift, site.location.depth + RandomNumberGenerator.getPlusMinus * Constants.MaxLongitudeShift)
-      val birthLocation = new GeoCoordinate(site.location.latitude, site.location.longitude, RandomNumberGenerator.get(0,site.location.depth))
+      val birthLocation = new GeoCoordinate(site.location.latitude,
+                                            site.location.longitude,
+                                            RandomNumberGenerator.get(0,site.location.depth))
 
       def getNonSettlementPeriod() : Double = {
         val settlement = fishParams.pld.nonSettlementPeriod
-        if(settlement < pld) settlement
-        else pld
+        if(settlement < pld) { settlement }
+        else { pld }
       }
 
       val nonSettlementPeriod : Double = fishParams.pld.pelagicLarvalDurationType match {
