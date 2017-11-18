@@ -4,7 +4,7 @@ import grizzled.slf4j.Logging
 import locals.OntogenyState.OntogenyState
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import locals.DielVerticalMigrationType.DielVerticalMigrationType
-import locals.{Constants, OntogenyState, PelagicLarvaeState, DielVerticalMigrationType}
+import locals.{Constants, OntogenyState, PelagicLarvaeState, DielVerticalMigrationType, OntogeneticVerticalMigrationImpl}
 import locals.Constants.LightWeightException
 import physical.GeoCoordinate
 import com.github.nscala_time.time.Imports._
@@ -45,7 +45,7 @@ class Fish(
 
   override def direction : Double = fishDirection
 
-  override def changeDirection(angle : Double) : Double = fishDirection = angle
+  override def changeDirection(angle : Double) : Unit = fishDirection = angle
 
   def inCompetencyWindow: Boolean = age <= pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion && age >= nonSettlementPeriod
 
@@ -129,7 +129,7 @@ class Fish(
         if(nightDepth >= 0) newDepth = new GeoCoordinate(position.latitude, position.longitude, nightDepth)
       } else {
         val depth = verticalMigrationDiel.getDepth(dielMigration)
-        val newDepth = new GeoCoordinate(position.latitude, position.longitude, depth)
+        newDepth = new GeoCoordinate(position.latitude, position.longitude, depth)
       }
       updatePosition(newDepth)
       lastDielMigration = Some(dielMigration)

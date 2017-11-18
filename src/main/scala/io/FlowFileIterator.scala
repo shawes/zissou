@@ -111,12 +111,11 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
       getGeoGridsFromWithinMonth(latlonBounds, timeRange, depthRange)
     }
 
-     val data = subset.map(grid => (grid.readDataSlice(0,-1,-1,-1).copyToNDJavaArray().asInstanceOf[Array[Array[Array[Float]]]], grid.getCoordinateSystem()))
+    val data = subset.map(grid => (grid.readDataSlice(0,-1,-1,-1).copyToNDJavaArray().asInstanceOf[Array[Array[Array[Float]]]], grid.getCoordinateSystem()))
 
-     if(grids.size > 1) grids.dequeue
+    if(grids.size > 1) grids.dequeue
 
     grids.enqueue((data,day))
-
   }
 
   // Get two grids that occur in the same file
