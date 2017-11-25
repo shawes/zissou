@@ -63,11 +63,7 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     var sense : Int = LightWeightException.NoReefSensed
     var angle : Double = LightWeightException.NoSwimmingAngle
 
-    val distance = geometry.getDistanceBetweenTwoPoints(coordinate, reef.centroid)/1000
-    val distance2 = reef.distance(coordinate) * scala.math.Pi/180 * EarthsRadius * 111.32
-
     if(reef.isWithinBuffer(coordinate, buffer.settlement)) {
-      debug(s"between $coordinate and $reef.centroid is distance1 $distance and distance2 $distance2")
       settle = reef.id
     } else if (reef.isWithinBuffer(coordinate, buffer.olfactory)) {
       angle = reef.direction(coordinate)
