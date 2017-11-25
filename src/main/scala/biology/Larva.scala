@@ -37,11 +37,12 @@ trait Larva {
   def ontogeneticVerticallyMigrate(): Unit
   def ontogeneticVerticallyMigrateType : OntogeneticVerticalMigrationImpl
   def dielVerticallyMigrate(dielMigration : DielVerticalMigrationType) : Unit
-  def inCompetencyWindow: Boolean
-  def isTooOld: Boolean = age > maximumLifeSpan
-  def isPelagic: Boolean = state == PelagicLarvaeState.Pelagic
-  def isDead: Boolean = state == PelagicLarvaeState.Dead
-  def isSettled: Boolean = state == PelagicLarvaeState.Settled
+  def inOlfactoryCompetencyWindow: Boolean
+  def inSettlementCompetencyWindow : Boolean
+  def isTooOld : Boolean = age > maximumLifeSpan
+  def isPelagic : Boolean = state == PelagicLarvaeState.Pelagic
+  def isDead : Boolean = state == PelagicLarvaeState.Dead
+  def isSettled : Boolean = state == PelagicLarvaeState.Settled
   def undergoesDielMigration : Boolean
   def undergoesOntogeneticMigration : Boolean
   def changedOntogeneticState : Boolean

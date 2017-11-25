@@ -27,7 +27,10 @@ class FishFactory(fishParams: FishParameters, save: Boolean) extends LarvaFactor
     for (i <- 0 until site.numberOfLarvae) {
       larvaeCount += 1
 
-      val pld: Double = pldDistribution.sample
+      val pld: Double = fishParams.pld.pelagicLarvalDurationType match {
+        case Random => pldDistribution.getMean
+        case Fixed => pldDistribution.sample
+      }
       // Handles case of demersal eggs
       val preflexion = fishParams.ontogeny.preflexion match {
         case 0 => 0

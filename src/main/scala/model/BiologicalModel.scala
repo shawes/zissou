@@ -29,6 +29,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val geometry = new Geometry
+  val mortality = new MortalityConstant(config.fish.mortalityRate)
 
   def apply(): Unit = {
     spawnLarvae()
@@ -89,7 +90,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Day)
       } else if(clock.isSunSetting(larva.position)) {
         larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
-      } 
+      }
     }
     if(larva.undergoesOntogeneticMigration &&
       ((larva.ontogeneticVerticallyMigrateType == StageMigration && larva.changedOntogeneticState) || (larva.ontogeneticVerticallyMigrateType == TimestepMigration)
@@ -104,21 +105,18 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def mortality(larva: Larva): Unit = {
-    val mortality = new MortalityDecay(larva.age, larva.pelagicLarvalDuration)
-    val rate = mortality.getRate
-    //info(s"rate of death is $rate")
     if(RandomNumberGenerator.get < mortality.getRate) {
       larva.kill()
     }
   }
 
   private def sense(larva : Larva) : Unit = {
-    if(larva.inCompetencyWindow) {
+    if(larva.inOlfactoryCompetencyWindow || larva.inSettlementCompetencyWindow) {
       val index = habitatManager.getClosestHabitat(larva.position)
-      if(index._1 != LightWeightException.NoReefToSettle)  {
+      if(index._1 != LightWeightException.NoReefToSettle && larva.inSettlementCompetencyWindow)  {
         larva.settle(index._1, clock.now)
       } else {
-        if(index._2 != LightWeightException.NoReefSensed) {
+        if(index._2 != LightWeightException.NoReefSensed && larva.inOlfactoryCompetencyWindow) {
           larva.changeDirection(index._3)
         } else {
           larva.changeDirection(LightWeightException.NoSwimmingAngle)
