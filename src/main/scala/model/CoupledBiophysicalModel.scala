@@ -13,7 +13,7 @@ import utilities.SimpleTimer
 
 class CoupledBiophysicalModel(val config: Configuration, val name : String) extends Logging {
   setConfiguredLogLevel()
-  
+
   if(config.inputFiles.randomSeed.isValidInt) {
     RandomNumberGenerator.setSeed(config.inputFiles.randomSeed)
   }
@@ -47,8 +47,8 @@ class CoupledBiophysicalModel(val config: Configuration, val name : String) exte
             biology.applyMortality()
           }
           info("Day " + clock.now.toLocalDate + " has been completed in " + stepTimer.stop() + " secs with " + biology.pelagicLarvae.size + " larvae.")
-          ocean.circulate()
           stepTimer.start()
+          ocean.circulate()
         }
         clock.tick()
       }

@@ -30,15 +30,17 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
 
   def next(): FlowGridWrapper = {
     if(grids.isEmpty) {
+      info("Initial check")
       checkIfEndOfMonthLoadNextFile()
-      checkIfInitialFlow()
+      loadInitialFlowData()
       incrementDayCounter()
     } else {
       incrementDayCounter()
       clearOldGrid()
       checkIfEndOfMonthLoadNextFile()
-      //info("Loading the next flow timestep for day: " + day + " of days " + days)
+      info("Loading the next flow timestep for day: " + day + " of days " + days)
       getNextFlowData()
+      info("Loaded")
     }
     new FlowGridWrapper(depths, grids.map(grid => grid._1.toList).toList)
   }
@@ -57,14 +59,14 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
     netcdfHandler.shutdown()
   }
 
-  private def checkIfInitialFlow() : Unit = {
-    if(datasets.isEmpty) {
+  private def loadInitialFlowData() : Unit = {
+
       val firstday : ListBuffer[(GridDataset, String)] = ListBuffer.empty
       variables.foreach(variable => firstday += ((loadNextFlowFile(variable), variable)))
       datasets.enqueue(firstday.toList)
       getDaysInDataset()
       //info(s"Current file is $currentFile")
-    }
+
     val day1 = getGeoGridsFromWithinMonth(latlonBounds, new Range(day-1, day-1), depthRange)
     val day2 = getGeoGridsFromWithinMonth(latlonBounds, new Range(day, day), depthRange)
 
@@ -90,6 +92,7 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
 
   private def checkIfEndOfMonthLoadNextFile() : Unit = {
     if (endOfMonth(day) && hasNext) {
+      info("End of month")
       val nextDayData = ListBuffer.empty[(GridDataset, String)]
       variables.foreach(variable => nextDayData += ((loadNextFlowFile(variable), variable)))
       if(datasets.size > 1) {
@@ -110,12 +113,14 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
       val timeRange: Range = new Range(day, day)
       getGeoGridsFromWithinMonth(latlonBounds, timeRange, depthRange)
     }
+    info("Loaded grids")
 
     val data = subset.map(grid => (grid.readDataSlice(0,-1,-1,-1).copyToNDJavaArray().asInstanceOf[Array[Array[Array[Float]]]], grid.getCoordinateSystem()))
+    info("Read data")
 
     if(grids.size > 1) grids.dequeue
-
     grids.enqueue((data,day))
+    info("Queued data")
   }
 
   // Get two grids that occur in the same file
