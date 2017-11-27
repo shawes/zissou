@@ -10,8 +10,8 @@ class ConnectivityMatrix(larvae: Array[Larva], csvFile: File) {
     val bw = new BufferedWriter(new java.io.FileWriter(csvFile))
     bw.write(columnHeaders)
     bw.newLine()
-    val settledLarvae = larvae.filter(larva => larva.isSettled)
-    settledLarvae.foreach(settle => bw.write(getCsvLarvaRow(settle)))
+    //val settledLarvae = larvae.filter(larva => larva.isSettled)
+    larvae.foreach(larva => bw.write(getCsvLarvaRow(larva)))
     bw.close()
   }
 
