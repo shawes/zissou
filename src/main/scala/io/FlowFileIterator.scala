@@ -7,50 +7,52 @@ import grizzled.slf4j._
 import physical.flow.{Flow, FlowGridWrapper}
 import ucar.ma2.Range
 import ucar.nc2.dt.GridCoordSystem
-import ucar.nc2.dt.grid.{GeoGrid, GridDataset}
+import ucar.nc2.dt.grid.{GridDataset}
 import ucar.unidata.geoloc.{LatLonPointImpl, LatLonRect}
 
 class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging {
   val NetcdfExtension = ".nc"
   val variables = List("u", "v", "w") //TODO: Put this into the config file
-  val datasets = new Queue[List[(GridDataset, String)]]
-  val grids = new Queue[(List[(Array[Array[Array[Float]]], GridCoordSystem)],Int)]
-  //val grids = new Queue[List[GeoGrid]]
+  var dataset : List[(GridDataset, String)] = List.empty
+  val grids = new Queue[(List[(Array[Array[Array[Float]]], GridCoordSystem)],Int, Int)]
   val depths = List(2.5, 7.5, 12.5, 17.5, 22.7, 28.2, 34.2, 41.0, 48.5, 56.7, 65.7, 75.2, 85.0, 95.0, 105.0) //TODO: Get this info from the netcdf file
-  var currentDate = flow.period.getStart.toLocalDate
-  var day : Int = currentDate.dayOfMonth.get
-  var days = 0
   val netcdfHandler = new NetcdfFileHandler()
   val getFileInformation = initialiseFiles()
   var currentFile: Int = getFileInformation._2
   val files = getFileInformation._1
   val latlonBounds = new LatLonRect(new LatLonPointImpl(-50.0, 142.0), new LatLonPointImpl(-10.0, 180.0))
   val depthRange: Range = new Range(0, 14)
-  //checkIfInitialFlow()
+
+  initialFlowData()
+
+
+  private def initialFlowData() : Unit = {
+    readMonth()
+    val startDay : Int = flow.period.getStart.toLocalDate.dayOfMonth.get
+    val day1 = readDay(startDay, latlonBounds, depthRange)
+    val day2 = readDay(startDay + 1,latlonBounds, depthRange)
+    grids.enqueue((day1,startDay, getDaysInMonth))
+    grids.enqueue((day2,startDay + 1, getDaysInMonth))
+  }
 
   def next(): FlowGridWrapper = {
-    if(grids.isEmpty) {
-      info("Initial check")
-      checkIfEndOfMonthLoadNextFile()
-      loadInitialFlowData()
-      incrementDayCounter()
-    } else {
-      incrementDayCounter()
-      clearOldGrid()
-      checkIfEndOfMonthLoadNextFile()
-      info("Loading the next flow timestep for day: " + day + " of days " + days)
-      getNextFlowData()
-      info("Loaded")
-    }
+    clearYesterday()
+    if (isEndOfMonth && hasNext) readMonth()
+    getNextFlowData()
     new FlowGridWrapper(depths, grids.map(grid => grid._1.toList).toList)
   }
 
   def hasNext: Boolean = currentFile < files.size - 1
 
   def closeAllOpenDatasets(): Unit = {
-    if (datasets.nonEmpty) {
-      datasets.foreach(dataset => dataset.head._1.close())
-      datasets.clear()
+    if (dataset.nonEmpty) {
+      dataset.foreach(dataset => dataset._1.close())
+    }
+  }
+
+  private def clearYesterday() : Unit = {
+    if(grids.size == 2)  {
+      grids.dequeue
     }
   }
 
@@ -59,107 +61,41 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
     netcdfHandler.shutdown()
   }
 
-  private def loadInitialFlowData() : Unit = {
+  private def readDay(dayOfMonth : Int, latlonBounds: LatLonRect, depthRange: Range) : List[(Array[Array[Array[Float]]], GridCoordSystem)] = {
 
-      val firstday : ListBuffer[(GridDataset, String)] = ListBuffer.empty
-      variables.foreach(variable => firstday += ((loadNextFlowFile(variable), variable)))
-      datasets.enqueue(firstday.toList)
-      getDaysInDataset()
-      //info(s"Current file is $currentFile")
+    val day = dataset.map(dataset =>
+      dataset._1.findGridByName(dataset._2).subset(new Range(dayOfMonth-1, dayOfMonth-1), depthRange, latlonBounds, 0, 0, 0)).toList
 
-    val day1 = getGeoGridsFromWithinMonth(latlonBounds, new Range(day-1, day-1), depthRange)
-    val day2 = getGeoGridsFromWithinMonth(latlonBounds, new Range(day, day), depthRange)
+    day.map(grid => (grid.readDataSlice(0,-1,-1,-1).copyToNDJavaArray().asInstanceOf[Array[Array[Array[Float]]]], grid.getCoordinateSystem()))
 
-     val data1 = day1.map(grid => (grid.readDataSlice(0,-1,-1,-1).copyToNDJavaArray().asInstanceOf[Array[Array[Array[Float]]]], grid.getCoordinateSystem()))
-
-     val data2 = day2.map(grid => (grid.readDataSlice(0,-1,-1,-1).copyToNDJavaArray().asInstanceOf[Array[Array[Array[Float]]]], grid.getCoordinateSystem()))
-
-     grids.enqueue((data1,day))
-     grids.enqueue((data2,day+1))
-
-     getDaysInDataset()
-
-     //info("INIT FLOW DATA: there are "+ grids.size +" grids of days ids: " + grids.head._2 +", "+grids.last._2)
   }
 
-  private def clearOldGrid() : Unit = {
-    if(startOfMonth && datasets.size == 2) {
-      val old = datasets.dequeue
-      old.map(file => file._1.close())
-    }
-    getDaysInDataset()
-  }
-
-  private def checkIfEndOfMonthLoadNextFile() : Unit = {
-    if (endOfMonth(day) && hasNext) {
-      info("End of month")
-      val nextDayData = ListBuffer.empty[(GridDataset, String)]
-      variables.foreach(variable => nextDayData += ((loadNextFlowFile(variable), variable)))
-      if(datasets.size > 1) {
-        val old = datasets.dequeue
-        old.map(file => file._1.close())
-      }
-      datasets.enqueue(nextDayData.toList)
-      getDaysInDataset()
-      currentFile += 1
-    }
-
+  private def readMonth() : Unit = {
+    val nextDayData = ListBuffer.empty[(GridDataset, String)]
+    variables.foreach(variable => nextDayData += ((loadNextFlowFile(variable), variable)))
+    closeAllOpenDatasets()
+    dataset = nextDayData.toList
+    currentFile += 1
   }
 
   private def getNextFlowData() : Unit = {
-    val subset = if (endOfMonth(day)) {
-      getGeoGridsFromAcrossMonths(latlonBounds, depthRange)
-    } else {
-      val timeRange: Range = new Range(day, day)
-      getGeoGridsFromWithinMonth(latlonBounds, timeRange, depthRange)
-    }
-    info("Loaded grids")
-
-    val data = subset.map(grid => (grid.readDataSlice(0,-1,-1,-1).copyToNDJavaArray().asInstanceOf[Array[Array[Array[Float]]]], grid.getCoordinateSystem()))
-    info("Read data")
-
-    if(grids.size > 1) grids.dequeue
-    grids.enqueue((data,day))
-    info("Queued data")
+    val nextDay = readDay(getNextDayOfMonth, latlonBounds, depthRange)
+    grids.enqueue((nextDay,getNextDayOfMonth, getDaysInMonth))
   }
 
-  // Get two grids that occur in the same file
-  private def getGeoGridsFromWithinMonth(latlonBounds: LatLonRect, timeRange: Range, depthRange: Range): List[GeoGrid] = {
-    getDaysInDataset()
-    datasets.head.map(dataset => dataset._1.findGridByName(dataset._2).subset(timeRange, depthRange, latlonBounds, 0, 0, 0)).toList
-  }
-
-  // Gets the last grid from one file and the first from the next file
-  private def getGeoGridsFromAcrossMonths(latlonBounds: LatLonRect, depthRange: Range): List[GeoGrid] =  {
-    //info("Datasets size is  "+ datasets.size)
-    datasets.last.map(dataset => dataset._1.findGridByName(dataset._2).subset(new Range(0, 0), depthRange, latlonBounds, 0, 0, 0)).toList
-  }
-
-  private def endOfMonth(day : Int): Boolean = day == days
-  private def startOfMonth: Boolean = day == 1
-
-  private def incrementDayCounter(): Unit = {
-    if(day < days) {
-      day += 1
-    } else {
-      //info("day is "+day+", and days is"+days)
-      day = 1
-      getDaysInDataset()
-    }
-  }
 
   private def loadNextFlowFile(prefix: String): GridDataset = {
     val path = netcdfFolder + "/" + prefix
-    val files = new File(path).list().filter(p => p.endsWith(NetcdfExtension))
+    val files = new File(path).list().filter(p => p.endsWith(NetcdfExtension)).sorted
     val filename = path + "/" + files(currentFile)
-    //info(s"Loading the next file $filename")
     netcdfHandler.openLocalFile(filename)
   }
 
   private def initialiseFiles(): (Array[String], Int) = {
     val path = netcdfFolder + "/" + "u"
-    val files = new File(path).list().filter(p => p.endsWith(NetcdfExtension))
-    (files, files.indexWhere(file => isFileforDate(currentDate,getDateFromFileName(file))))
+    val files = new File(path).list().filter(p => p.endsWith(NetcdfExtension)).sorted
+    files.foreach(f => info(s"$f"))
+    (files, files.indexWhere(file => isFileforDate(flow.period.getStart.toLocalDate,getDateFromFileName(file))))
   }
 
   private def getDateFromFileName(filename : String) : LocalDate = {
@@ -173,11 +109,17 @@ class FlowFileIterator(val netcdfFolder: String, val flow: Flow) extends Logging
     startDate.year == fileDate.year && startDate.monthOfYear.get == fileDate.monthOfYear.get
   }
 
-  private def getDaysInDataset() : Unit = {
-    val grid = datasets.head.head._1.findGridByName(datasets.head.head._2)
-    val shape = grid.getShape
-    //info("Number of days in month is " + shape(0))
-    days = shape(0)
+  private def getDayOfMonth : Int = grids.front._2
+
+  private def getNextDayOfMonth: Int = isEndOfMonth match {
+    case true => 1
+    case false => getDayOfMonth + 1
   }
+
+
+  private def getDaysInMonth: Int = dataset.head._1.getCalendarDateEnd.getDayOfMonth()
+
+  private def isEndOfMonth: Boolean = getDayOfMonth == grids.front._3
+
 
 }
