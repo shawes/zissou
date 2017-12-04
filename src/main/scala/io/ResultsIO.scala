@@ -38,7 +38,7 @@ class ResultsIO(larvae: Array[Larva], output: OutputFiles, name : String) {
 
   private def writeLarvaeMovementsToShapeFile() = {
     val shapeFileWriter = new GisShapeFile()
-    shapeFileWriter.write(settledLarvae, shapeFileAll, output.percent)
-    shapeFileWriter.write(settledLarvae, shapeFileSettled, output.percent)
+    shapeFileWriter.write(larvae, shapeFileAll, output.percent)
+    shapeFileWriter.write(settledLarvae, shapeFileSettled, 100)
   }
 }
