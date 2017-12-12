@@ -23,7 +23,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
 
   val fish: FishParameters = config.fish
   val factory = LarvaFactory.apply(LarvaType.Fish, config.fish)
-  //val mortality = new MortalityDecay(config.fish.pelagicLarvalDuration.mean)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
@@ -54,7 +53,6 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     move(larva)
     sense(larva)
     lifespanCheck(larva)
-    //mortality(larva)
   }
 
   private def move(larva: Larva): Unit = {

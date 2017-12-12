@@ -17,8 +17,8 @@ class TurbulenceTest extends FlatSpec with MockitoSugar with PrivateMethodTester
   it should "initialise the correct horizontal turbulence" in {
     //val mockRandom = mock[Random]
     //when(mockRandom.get).thenReturn(4)
-    val turbulence = new Turbulence(1.0, 2.0, 3)
-    val h_turb_cal: Double = Math.pow((2.0 * 1.0) / 3, 0.5)
+    val turbulence = new Turbulence(300, 15, 3600)
+    val h_turb_cal: Double = Math.pow((2.0 * 300) / 3600, 0.5)
     turbulence.horizontalTurbulence should equal(h_turb_cal)
   }
 

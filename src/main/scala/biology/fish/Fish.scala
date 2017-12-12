@@ -137,7 +137,7 @@ class Fish(
       }
       updatePosition(newDepth)
       lastDielMigration = Some(dielMigration)
-   }
+    }
   }
 
   override def toString: String =
