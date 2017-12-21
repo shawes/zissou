@@ -12,9 +12,9 @@ class Swimming(val ability: SwimmingAbility,
                val reynoldsEffect: Boolean) {
 
   def apply(angle : Double): Velocity = {
-    val speed = criticalSwimmingSpeed * inSituSwimmingPotential * endurance
-    val uOrientated = speed * math.cos(angle) * RandomNumberGenerator.get
-    val vOrientated = speed * math.sin(angle) * RandomNumberGenerator.get
+    val speed = criticalSwimmingSpeed * RandomNumberGenerator.get(inSituSwimmingPotential,1) * endurance
+    val uOrientated = speed * math.cos(angle)
+    val vOrientated = speed * math.sin(angle)
     new Velocity(uOrientated, vOrientated, 0)
   }
 
