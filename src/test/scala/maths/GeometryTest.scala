@@ -13,7 +13,7 @@ class GeometryTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     val expectedLoc = new GeoCoordinate(51.00089832,0.001427437)
     val velocity = new Velocity(100,100,0)
     val swim = new Velocity(0,0,0)
-    val result = geometry.translatePoint(currentLoc,velocity,1,swim)
+    val result = geometry.translatePoint(currentLoc,velocity,1,swim, false)
     assert(result.latitude - expectedLoc.latitude < 0.001)
     assert(result.longitude - expectedLoc.longitude < 0.001)
   }
@@ -23,7 +23,7 @@ class GeometryTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     val expectedLoc = new GeoCoordinate(51.00089832,0.001427437)
     val velocity = new Velocity(100,100,0)
     val swim = new Velocity(0,0,0)
-    val result = geometry.translatePoint2(currentLoc,velocity,1,swim)
+    val result = geometry.translatePointApproximation(currentLoc,velocity,1,swim, false)
     assert(result.latitude - expectedLoc.latitude < 0.001)
     assert(result.longitude - expectedLoc.longitude < 0.001)
   }
@@ -33,7 +33,7 @@ class GeometryTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
     val expectedLoc = new GeoCoordinate(51.00089832,0.001427437)
     val velocity = new Velocity(100,100,0)
     val swim = new Velocity(0,0,0)
-    val result = geometry.translatePoint3(currentLoc,velocity,1,swim)
+    val result = geometry.translatePointPecision(currentLoc,velocity,1,swim, false)
     assert(result.latitude - expectedLoc.latitude < 0.001)
     assert(result.longitude - expectedLoc.longitude < 0.001)
   }

@@ -22,7 +22,7 @@ case class Configuration(
       PelagicLarvalDurationConfig(0, 0, "", "", 0), isMortal = false, 0),
     FlowConfig(PeriodConfig("", ""),
       TimeStepConfig("", 0),
-      DepthConfig(average = false, averageOverAllDepths = false, 0)),
+      DepthConfig(average = false, averageOverAllDepths = false, 0), false),
     HabitatConfig(BufferConfig(isBuffered = false, 0, 0)),
     OutputFilesConfig(includeLarvaeHistory = false, "", 0, "","",""))
 }
@@ -91,8 +91,9 @@ case class TurbulenceConfig(
 case class FlowConfig(
                        @XmlElementWrapper period: PeriodConfig,
                        @XmlElementWrapper timeStep: TimeStepConfig,
-                       @XmlElementWrapper depth: DepthConfig) {
-  private def this() = this(PeriodConfig("", ""), TimeStepConfig("", 0), DepthConfig(average = false, averageOverAllDepths = false, 0))
+                       @XmlElementWrapper depth: DepthConfig,
+                       includeVerticalVelocity: Boolean) {
+  private def this() = this(PeriodConfig("", ""), TimeStepConfig("", 0), DepthConfig(average = false, averageOverAllDepths = false, 0), true)
 }
 
 @XmlRootElement

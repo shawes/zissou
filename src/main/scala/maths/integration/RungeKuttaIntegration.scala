@@ -35,7 +35,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Option[Turbulence]
 
             if(turbulence.isDefined) integratedVelocity = turbulence.get.apply(integratedVelocity)
 
-            val point = geometry.translatePoint(coordinate, integratedVelocity, timeStep, swimming.getOrElse(new Velocity(0, 0, 0)))
+            val point = geometry.translatePoint(coordinate, integratedVelocity, timeStep, swimming.getOrElse(new Velocity(0, 0, 0)), flow.flow.includeVerticalVelocity)
 
             if(flow.getVelocity(point).isDefined) Some(point)
             else tryMovingLarvaeUp(point, 10.0)
@@ -68,7 +68,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Option[Turbulence]
                                          partialTimeStep: Int, time: LocalDateTime, swimming: Option[Velocity]): RungeKuttaStepDerivative = {
     if (velocity.isDefined) {
       val normalisedTime = partialTimeStep - timeStep
-      val newCoordinate = geometry.translatePoint(coordinate, velocity.get, partialTimeStep, swimming.getOrElse(new Velocity(0,0,0)))
+      val newCoordinate = geometry.translatePoint(coordinate, velocity.get, partialTimeStep, swimming.getOrElse(new Velocity(0,0,0)), flow.flow.includeVerticalVelocity)
       val newVelocity = flow.getVelocityOfCoordinate(newCoordinate, time.plusSeconds(normalisedTime), time, partialTimeStep)
       new RungeKuttaStepDerivative(newVelocity, newCoordinate)
     } else {

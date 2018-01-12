@@ -7,13 +7,13 @@ import grizzled.slf4j.Logging
 class Geometry extends Logging {
 
   def translatePoint(point: GeoCoordinate, velocity: Velocity,
-                     timeStep: Int, swimming: Velocity): GeoCoordinate  = {
+                     timeStep: Int, swimming: Velocity, includeVerticalVelocity : Boolean): GeoCoordinate  = {
 
     if (velocity.isUndefined) return point
 
     val xDistance = (velocity.u + swimming.u) * timeStep
     val yDistance = (velocity.v + swimming.v) * timeStep
-    val zDistance = velocity.w * timeStep
+    val zDistance = if(includeVerticalVelocity) velocity.w * timeStep else 0
 
     val newLatitude  = point.latitude  + (yDistance / Constants.EarthsRadius) * (180 / Math.PI)
     val newLongitude = point.longitude + (xDistance / Constants.EarthsRadius) * (180 / Math.PI) / Math.cos(point.latitude*Math.PI/180)
@@ -21,14 +21,14 @@ class Geometry extends Logging {
     new GeoCoordinate(newLatitude, newLongitude, ceilingDepth(point.depth + zDistance))
   }
 
-  def translatePoint2(point: GeoCoordinate, velocity: Velocity,
-                     timeStep: Int, swimming: Velocity): GeoCoordinate  = {
+  def translatePointApproximation(point: GeoCoordinate, velocity: Velocity,
+                     timeStep: Int, swimming: Velocity, includeVerticalVelocity : Boolean): GeoCoordinate  = {
 
     if (velocity.isUndefined) return point
 
     val xDistance = (velocity.u + swimming.u) * timeStep
     val yDistance = (velocity.v + swimming.v) * timeStep
-    val zDistance = velocity.w * timeStep
+    val zDistance = if(includeVerticalVelocity) velocity.w * timeStep else 0
 
   val kmLatitude = (-0.00000344188 * math.pow(point.latitude, 3)) + (0.000466 * math.pow(point.latitude, 2)) + (-0.001537 * point.latitude) + 110.572356
   val kmLongitude = (0.000068 * Math.pow(point.latitude, 3)) + (-0.020724 * Math.pow(point.latitude, 2)) + (0.08253 * point.latitude) + 110.806595
@@ -38,14 +38,14 @@ class Geometry extends Logging {
 
 }
 
-def translatePoint3(point: GeoCoordinate, velocity: Velocity,
-                   timeStep: Int, swimming: Velocity): GeoCoordinate  = {
+def translatePointPecision(point: GeoCoordinate, velocity: Velocity,
+                   timeStep: Int, swimming: Velocity, includeVerticalVelocity : Boolean): GeoCoordinate  = {
 
   if (velocity.isUndefined) return point
 
   val xDistance = (velocity.u + swimming.u) * timeStep
   val yDistance = (velocity.v + swimming.v) * timeStep
-  val zDistance = velocity.w * timeStep
+  val zDistance = if(includeVerticalVelocity) velocity.w * timeStep else 0
   val longitudeInRadians = Math.toRadians(point.longitude)
   val latitudeInRadians = Math.toRadians(point.latitude)
   //rln1=deg2rad*lon_old

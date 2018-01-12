@@ -20,7 +20,7 @@ import scala.language.implicitConversions
  */
 object ConfigMappings {
   implicit def flowConfigToFlow(f: FlowConfig): Flow =
-    new Flow(new Depth(f.depth), new DateTime(f.period.start, DateTimeZone.UTC) to new DateTime(f.period.end, DateTimeZone.UTC), f.timeStep)
+    new Flow(new Depth(f.depth), new DateTime(f.period.start, DateTimeZone.UTC) to new DateTime(f.period.end, DateTimeZone.UTC), f.timeStep, f.includeVerticalVelocity)
 
   implicit def timeStepConfigToTimeStep(t: TimeStepConfig): TimeStep =
     new TimeStep(t.duration, TimeStepType.withName(t.unit))
