@@ -30,6 +30,7 @@ class GisShapeFile() extends Logging {
       val ff = CommonFactoryFinder.getFilterFactory2()
       val filters : ListBuffer[Filter] = ListBuffer.empty
       filters += ff.equals(ff.property("HABITAT"), ff.literal("Reef"))
+      filters += ff.equals(ff.property("HABITAT"), ff.literal("Rocky intertidal"))
       filters += ff.equals(ff.property("HABITAT"), ff.literal("Other"))
       val features = store.getFeatureSource.getFeatures(ff.or(filters.asJava))
       new ListFeatureCollection(DataUtilities.collection(features))
