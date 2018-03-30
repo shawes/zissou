@@ -1,7 +1,7 @@
 package physical.habitat
 
 import com.vividsolutions.jts.geom.{Geometry, MultiPolygon}
-import locals.{Constants, HabitatType, Reef, Other, Ocean}
+import locals.{Constants, HabitatType, Reef, Other, RockyIntertidal, Ocean}
 import org.opengis.feature.simple.SimpleFeature
 
 object SimpleFeatureAdaptor {
@@ -15,6 +15,7 @@ object SimpleFeatureAdaptor {
     sf.getAttribute(Constants.ShapeAttribute.Habitat._2).toString match {
       case "Reef" => Reef
       case "Other" => Other
+      case "Rocky intertidal" => RockyIntertidal
       case _ => Ocean
     }
   }
