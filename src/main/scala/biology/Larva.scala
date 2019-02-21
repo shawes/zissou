@@ -47,5 +47,5 @@ trait Larva {
   def undergoesOntogeneticMigration : Boolean
   def changedOntogeneticState : Boolean
   def changeDirection(angle : Double) : Unit
-
+  def canSwim() : Boolean
 }

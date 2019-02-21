@@ -75,7 +75,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def swim(larva : Larva) : Option[Velocity] = {
-    if(larva.swimming.isDirected && larva.direction != -1) {
+    if(larva.swimming.isDirected && larva.canSwim && larva.direction != -1) {
       Some(larva.swimming(larva.direction))
     } else {
       None

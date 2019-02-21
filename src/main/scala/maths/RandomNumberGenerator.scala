@@ -13,6 +13,8 @@ trait Random {
 
   def getPercent : Double
 
+  def getAngle : Double
+
   def coinToss: Boolean
 
   def setSeed(seed : Int)
@@ -42,4 +44,6 @@ object RandomNumberGenerator extends Random {
   def coinToss: Boolean = random.nextBoolean()
 
   def getPercent : Double = get(0,100)
+
+  def getAngle : Double = get(0,360)
 }

@@ -10,7 +10,7 @@ import physical.GeoCoordinate
 import com.github.nscala_time.time.Imports._
 import biology._
 import scala.collection.mutable.ArrayBuffer
-import maths.Geometry
+import maths.{Geometry, RandomNumberGenerator}
 
 class Fish(
   val id: Int,
@@ -45,13 +45,21 @@ class Fish(
 
   override def direction : Double = fishDirection
 
-  override def changeDirection(angle : Double) : Unit = fishDirection = angle
+  override def changeDirection(angle : Double) : Unit = {
+      if(angle != LightWeightException.NoSwimmingAngle) {
+          fishDirection = angle
+      } else {
+          fishDirection = RandomNumberGenerator.getAngle
+        }
+  }
 
   def inOlfactoryCompetencyWindow: Boolean = age <= pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion && swimming.isDirected
 
   def inSettlementCompetencyWindow: Boolean = age >= nonSettlementPeriod
 
   //def canSmell : Boolean = swimming.isDirected && inOlfactoryCompetencyWindow
+  //
+  def canSwim : Boolean = ontogeny.getState(age) == OntogenyState.Flexion || ontogeny.getState(age) == OntogenyState.Postflexion
 
   def getOntogeny: OntogenyState = ontogeny.getState(age)
 
