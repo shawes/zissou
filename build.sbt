@@ -20,19 +20,20 @@ assemblyMergeStrategy in assembly := {
 }
 
 libraryDependencies ++= Seq(
-  "org.scalactic" %% "scalactic" % "3.0.5",
-  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+  "org.scalactic" %% "scalactic" % "3.0.6",
+  "org.scalatest" %% "scalatest" % "3.0.6" % "test",
   "junit" % "junit" % "4.12" % "test",
-  "org.mockito" % "mockito-core" % "2.17.0" % "test",
+  "org.mockito" % "mockito-core" % "2.24.5" % "test",
   "com.github.nscala-time" %% "nscala-time" % "2.22.0",
   "org.apache.commons" % "commons-math3" % "3.6.1",
-  "org.clapper" %% "grizzled-slf4j" % "1.3.2",
+  "org.clapper" %% "grizzled-slf4j" % "1.3.3",
   "org.slf4j" % "slf4j-api" % "1.7.25",
   "org.slf4j" % "slf4j-simple" % "1.7.25",
-  "edu.ucar" % "netcdf4" % "4.6.11",
-  "edu.ucar" % "cdm" % "4.6.11",
-  "org.geotools" % "gt-shapefile" % "19.0",
-  "org.geotools" % "gt-main" % "19.0",
+  "edu.ucar" % "netcdf4" % "4.6.13",
+  "edu.ucar" % "cdm" % "4.6.13",
+  "org.geotools" % "gt-shapefile" % "21.0",
+  "org.geotools" % "gt-main" % "21.0",
+  "com.vividsolutions" %"jts-core" % "1.14.0",
   "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
   "javax.media" % "jai_codec" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
   "javax.media" % "jai_imageio" % "1.1" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar",
@@ -64,8 +65,8 @@ libraryDependencies := {
 }
 
 resolvers ++= Seq(
-  "Open Source Geospatial Foundation Repository" at "http://download.osgeo.org/webdav/geotools/",
-  "OpenGeo Maven Repository" at "http://repo.opengeo.org",
+  "Locationtech-releases" at "https://repo.locationtech.org/content/groups/releases",
+  "OpenGeo Maven Repository" at "http://repo.boundlessgeo.com/main/",
   "Unidata Releases" at "https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/",
   "Artima Maven Repository" at "http://repo.artima.com/releases"
 )

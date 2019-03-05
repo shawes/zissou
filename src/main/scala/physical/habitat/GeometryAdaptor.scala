@@ -1,7 +1,7 @@
 package physical.habitat
 
-import com.vividsolutions.jts.geom.Geometry
-import com.vividsolutions.jts.algorithm.Angle
+import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.algorithm.Angle
 import org.geotools.referencing.GeodeticCalculator
 import locals.HabitatType
 import physical.GeoCoordinate
@@ -9,7 +9,7 @@ import physical.adaptors.GeometryToGeoCoordinateAdaptor
 import grizzled.slf4j.Logging
 import org.geotools.referencing.crs.DefaultGeographicCRS
 import org.geotools.geometry.jts._
-import com.vividsolutions.jts.operation.distance.DistanceOp
+import org.locationtech.jts.operation.distance.DistanceOp
 
 class GeometryAdaptor(val g: Geometry, val id: Int, val habitat: HabitatType) extends HabitatPolygon with Ordered[GeometryAdaptor] with Logging {
 
@@ -30,7 +30,7 @@ class GeometryAdaptor(val g: Geometry, val id: Int, val habitat: HabitatType) ex
 
   def intersects(coordinate: GeoCoordinate): Boolean = g.intersects(GeometryToGeoCoordinateAdaptor.toPoint(coordinate))
 
-  def isWithinBuffer(coordinate: GeoCoordinate, buffer: Double): Boolean = 
+  def isWithinBuffer(coordinate: GeoCoordinate, buffer: Double): Boolean =
      distance(coordinate) < buffer
 
   def direction(coordinate : GeoCoordinate) : Double = {
