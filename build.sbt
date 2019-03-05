@@ -2,7 +2,7 @@ name := "zissou"
 
 version := "1.0"
 
-scalaVersion := "2.12.5"
+scalaVersion := "2.12.8"
 
 scalacOptions ++= Seq("-deprecation", "-feature", "-language:implicitConversions")
 
