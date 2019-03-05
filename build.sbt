@@ -29,11 +29,8 @@ libraryDependencies ++= Seq(
   "org.clapper" %% "grizzled-slf4j" % "1.3.2",
   "org.slf4j" % "slf4j-api" % "1.7.25",
   "org.slf4j" % "slf4j-simple" % "1.7.25",
-  //"org.slf4j" % "slf4j-jdk14" % "latest.integration",
   "edu.ucar" % "netcdf4" % "4.6.11",
   "edu.ucar" % "cdm" % "4.6.11",
-  //"edu.ucar" % "opendap" % "latest.integration",
-  //"org.scala-lang" % "scala-library" % "2.12.3",
   "org.geotools" % "gt-shapefile" % "19.0",
   "org.geotools" % "gt-main" % "19.0",
   "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
@@ -52,9 +49,9 @@ libraryDependencies := {
     // if Scala 2.12+ is used, use scala-swing 2.x
     case Some((2, scalaMajor)) if scalaMajor >= 12 =>
       libraryDependencies.value ++ Seq(
-        "org.scala-lang.modules" %% "scala-xml" % "1.1.0",
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0",
-        "org.scala-lang.modules" %% "scala-swing" % "2.0.3")
+        "org.scala-lang.modules" %% "scala-xml" % "1.1.1",
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
+        "org.scala-lang.modules" %% "scala-swing" % "2.1.0")
     case Some((2, scalaMajor)) if scalaMajor >= 11 =>
       libraryDependencies.value ++ Seq(
         "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
