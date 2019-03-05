@@ -1,6 +1,6 @@
 package physical.habitat
 
-import com.vividsolutions.jts.geom.{Geometry, MultiPolygon}
+import org.locationtech.jts.geom.{Geometry, MultiPolygon}
 import locals.{Constants, HabitatType, Reef, Other, RockyIntertidal, Ocean}
 import org.opengis.feature.simple.SimpleFeature
 

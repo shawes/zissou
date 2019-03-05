@@ -1,7 +1,7 @@
 package physical.flow
 
 import locals.{InterpolationType, QuadrantType}
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.GeoGrid

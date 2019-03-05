@@ -4,7 +4,7 @@ import java.io.StringReader
 import javax.xml.bind.JAXBContext
 
 import org.scalatest.FlatSpec
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 
 class ConfigurationTest extends FlatSpec with MockitoSugar {
 
