@@ -16,7 +16,7 @@ case class Configuration(
   def this() = this(InputFilesConfig("", "", 0),
     SpawnConfig(new JArrayList[SpawningLocationConfig]),
     TurbulenceConfig(0, 0, applyTurbulence = false, 0),
-    FishConfig(OntogenyConfig(0, 0, 0), SwimmingConfig("", 0,0,0,false),
+    FishConfig(OntogenyConfig(0, 0, 0), SwimmingConfig("", 0,0,0,false,0),
       VerticalMigrationOntogeneticConfig("", new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),
       VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]),
       PelagicLarvalDurationConfig(0, 0, "", "", 0), isMortal = false, 0),
@@ -146,7 +146,7 @@ case class FishConfig(ontogeny: OntogenyConfig,
                       pelagicLarvalDuration: PelagicLarvalDurationConfig,
                       isMortal: Boolean,
                       mortalityRate: Double) {
-  private def this() = this(OntogenyConfig(0, 0, 0), SwimmingConfig("",0,0,0,false), VerticalMigrationOntogeneticConfig("", new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, "", "", 0), false, 0)
+  private def this() = this(OntogenyConfig(0, 0, 0), SwimmingConfig("",0,0,0,false,0), VerticalMigrationOntogeneticConfig("", new JArrayList[VerticalMigrationOntogeneticProbabilityConfig]),VerticalMigrationDielConfig(new JArrayList[VerticalMigrationDielProbabilityConfig]), PelagicLarvalDurationConfig(0, 0, "", "", 0), false, 0)
 }
 
 @XmlRootElement
@@ -157,8 +157,8 @@ case class OntogenyConfig(preFlexion: Int, flexion: Int, postFlexion: Int) {
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-case class SwimmingConfig(ability: String, criticalSwimmingSpeed: Double, inSituSwimmingPotential: Double, endurance: Double, reynoldsEffect: Boolean) {
-  private def this() = this(null, 0, 0, 0, false)
+case class SwimmingConfig(ability: String, criticalSwimmingSpeed: Double, inSituSwimmingPotential: Double, endurance: Double, reynoldsEffect: Boolean, ageMaxSpeedReached: Int) {
+  private def this() = this(null, 0, 0, 0, false, 0)
 }
 
 @XmlRootElement
