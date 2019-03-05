@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.5" % "test",
   "junit" % "junit" % "4.12" % "test",
   "org.mockito" % "mockito-core" % "2.17.0" % "test",
-  "com.github.nscala-time" %% "nscala-time" % "2.18.0",
+  "com.github.nscala-time" %% "nscala-time" % "2.22.0",
   "org.apache.commons" % "commons-math3" % "3.6.1",
   "org.clapper" %% "grizzled-slf4j" % "1.3.2",
   "org.slf4j" % "slf4j-api" % "1.7.25",
