@@ -2,7 +2,7 @@ package biology
 
 import maths.ContinuousRange
 import org.scalatest.FlatSpec
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 
 class FishVerticalMigrationOntogeneticProbabilityTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
