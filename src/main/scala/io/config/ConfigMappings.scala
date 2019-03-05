@@ -60,7 +60,7 @@ object ConfigMappings {
   implicit def ontogenyConfigMap(o: OntogenyConfig): FishOntogeny =
     new FishOntogeny(o.preFlexion, o.flexion, o.postFlexion)
 
-  implicit def swimmingConfigMap(s: SwimmingConfig): Swimming = new Swimming(SwimmingAbility.withName(s.ability), s.criticalSwimmingSpeed, s.inSituSwimmingPotential, s.endurance, s.reynoldsEffect, s.ageMaxSpeedReached)
+  implicit def swimmingConfigMap(s: SwimmingConfig): Swimming = new Swimming(SwimmingAbility.withName(s.ability), s.criticalSwimmingSpeed, s.inSituSwimmingPotential, s.endurance, s.reynoldsEffect, s.ageMaxSpeedReached, s.hatchSwimmingSpeed)
 
   implicit def verticalMigrationOntogeneticConfigMap(vm: VerticalMigrationOntogeneticConfig): VerticalMigrationOntogenetic =
     new VerticalMigrationOntogenetic(

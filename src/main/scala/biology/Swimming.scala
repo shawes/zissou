@@ -10,7 +10,8 @@ class Swimming(val ability: SwimmingAbility,
                val inSituSwimmingPotential: Double,
                val endurance: Double,
                val reynoldsEffect: Boolean,
-               val ageMaxSpeedReached: Int) {
+               val ageMaxSpeedReached: Int,
+               val hatchSwimmingSpeed : Double) {
 
   def apply(angle : Double): Velocity = {
     val speed = criticalSwimmingSpeed * RandomNumberGenerator.get(inSituSwimmingPotential,1) * endurance
@@ -32,6 +33,10 @@ class Swimming(val ability: SwimmingAbility,
     } else {
       criticalSwimmingSpeed
     }
+  }
+
+  private def getSpeedStaaterman2012(age : Int, pld : Int) : Double = {
+    hatchSwimmingSpeed + Math.pow(10,Math.log(age)/Math.log(pld)*Math.log(criticalSwimmingSpeed-hatchSwimmingSpeed))
   }
 
   def isDirected: Boolean = ability == SwimmingAbility.Directed
