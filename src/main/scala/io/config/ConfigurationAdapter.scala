@@ -8,6 +8,6 @@ class ConfigurationAdapter {
   }
 
   def toConfiguration(variables: SimulationVariables) : Configuration = {
-    new Configuration()
+    null
   }
 }

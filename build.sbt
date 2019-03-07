@@ -40,7 +40,11 @@ libraryDependencies ++= Seq(
   "javax.media" % "jai_codec" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
   "javax.media" % "jai_imageio" % "1.1" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar",
   "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
-  "org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3"
+  "org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3",
+  "io.circe" %% "circe-core" % "0.10.0",
+  "io.circe" %% "circe-generic"% "0.10.0",
+  "io.circe" %% "circe-parser" % "0.10.0",
+  "io.circe" %% "circe-yaml" % "0.8.0"
 )
 
 
