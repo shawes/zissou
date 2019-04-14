@@ -5,7 +5,7 @@ package io.config
 
 case class Configuration(inputFiles: InputFilesConfig, spawn: SpawnConfig, turbulence: TurbulenceConfig, fish: FishConfig, flow: FlowConfig, habitat: HabitatConfig, output: OutputFilesConfig)
 
-case class InputFilesConfig(flowFilePath: String, habitatFilePath: String, randomSeed : Int)
+case class InputFilesConfig(pathNetcdfFiles: String, pathHabitatShapeFile: String, randomSeed : Int)
 
 case class SpawningLocationConfig(name: String, patchNumber: Int, site: SiteConfig,numberOfLarvae: Int, releasePeriod: ReleasePeriodConfig, interval: Int)
 

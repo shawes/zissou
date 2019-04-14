@@ -12,8 +12,8 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
 
   private val configYAML = """
       inputFiles:
-        flowFilePath: test1
-        habitatFilePath: test2
+        pathNetcdfFiles: test1
+        pathHabitatShapeFile: test2
         randomSeed: 1234
       spawn:
         spawningLocation:
@@ -137,16 +137,17 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
         logFile: test.log
   """
 
-  "The configuration case class" should "parse the YAML file without error" in {
+  "The configuration case class" should "parse the YAML file into a configuration object" in {
     val json = yaml.parser.parse(configYAML)
     val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    assert(config.isInstanceOf[Configuration])
   }
 
   it should "parse the input files YAML" in {
     val json = yaml.parser.parse(configYAML)
     val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
-    assert(config.inputFiles.flowFilePath == "test1")
-    assert(config.inputFiles.habitatFilePath == "test2")
+    assert(config.inputFiles.pathNetcdfFiles == "test1")
+    assert(config.inputFiles.pathHabitatShapeFile == "test2")
     assert(config.inputFiles.randomSeed == 1234)
   }
 
@@ -164,7 +165,7 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
     assert(actual.site.depth == 5)
     assert(actual.releasePeriod.start == "2010-07-01")
     assert(actual.releasePeriod.end == "2011-07-01")
- }
+  }
 
   it should "parse the turbulence YAML" in {
     val json = yaml.parser.parse(configYAML)
@@ -175,66 +176,62 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
     assert(config.turbulence.interval == 1)
   }
 
-  //
-  // it should "parse the flow node" in {
-  //   val configXml = "<simulationVariables><flow><period><start>1996-12-01T00:00:00</start><end>1997-07-30T00:00:00</end></period><timeStep><unit>Hour</unit><duration>2</duration></timeStep><depth><average>true</average><averageOverAllDepths>true</averageOverAllDepths><maximumDepthForAverage>10</maximumDepthForAverage></depth></flow></simulationVariables>"
-  //   val config = context.createUnmarshaller().unmarshal(new StringReader(configXml)).asInstanceOf[Configuration]
-  //   assert(config.flow.period.start == "1996-12-01T00:00:00")
-  //   assert(config.flow.period.end == "1997-07-30T00:00:00")
-  //   assert(config.flow.timeStep.duration == 2)
-  //   assert(config.flow.timeStep.unit == "Hour", "TimeStep unit was not parsed")
-  //   assert(config.flow.depth.average)
-  //   assert(config.flow.depth.averageOverAllDepths)
-  //   assert(config.flow.depth.maximumDepthForAverage == 10)
-  // }
-  //
-  // it should "parse the habitat node" in {
-  //   val configXml = "<simulationVariables><habitat><buffer><isBuffered>true</isBuffered><settlement>25</settlement><olfactory>41</olfactory></buffer></habitat></simulationVariables>"
-  //   val config = context.createUnmarshaller().unmarshal(new StringReader(configXml)).asInstanceOf[Configuration]
-  //   assert(config.habitat.buffer.settlement == 25)
-  //   assert(config.habitat.buffer.olfactory == 41)
-  //   assert(config.habitat.buffer.isBuffered)
-  // }
-  //
-  // it should "parse the output node" in {
-  //   val configXml = "<simulationVariables><output><includeLarvaeHistory>true</includeLarvaeHistory><saveOutputFilePath>path</saveOutputFilePath><percentage>25</percentage><logLevel>verbose</logLevel></output></simulationVariables>"
-  //   val config = context.createUnmarshaller().unmarshal(new StringReader(configXml)).asInstanceOf[Configuration]
-  //   assert(config.output.includeLarvaeHistory)
-  //   assert(config.output.logLevel == "verbose")
-  //   assert(config.output.percentage == 25)
-  //   assert(config.output.saveOutputFilePath == "path")
-  // }
-  //
-  // it should "parse the fish node" in {
-  //   val configXml = "<simulationVariables><fish> <ontogeny> <flexion>518400</flexion> <preFlexion>172800</preFlexion> <postFlexion>691200</postFlexion> </ontogeny> <swimming> <ability>Directed</ability> <criticalSwimmingSpeed>10.0</criticalSwimmingSpeed> <inSituSwimmingPotential>0.5</inSituSwimmingPotential> <endurance>0.4</endurance> <reynoldsEffect>true</reynoldsEffect> </swimming> <verticalMigrationDielProbabilities> <verticalMigrationDielProbability> <depthStart>0</depthStart> <depthFinish>50</depthFinish> <day>0.1</day> <night>0.9</night> </verticalMigrationDielProbability> <verticalMigrationDielProbability> <depthStart>50</depthStart> <depthFinish>100</depthFinish> <day>0.5</day> <night>0.5</night> </verticalMigrationDielProbability> </verticalMigrationDielProbabilities> <verticalMigrationOntogeneticProbabilities> <verticalMigrationOntogeneticProbability> <depthStart>3</depthStart> <depthFinish>10</depthFinish> <hatching>0.8</hatching> <preFlexion>0.05</preFlexion> <flexion>0.05</flexion> <postFlexion>0.05</postFlexion> </verticalMigrationOntogeneticProbability> <verticalMigrationOntogeneticProbability> <depthStart>10</depthStart> <depthFinish>50</depthFinish> <hatching>0.2</hatching> <preFlexion>0.55</preFlexion> <flexion>0.35</flexion> <postFlexion>0.55</postFlexion> </verticalMigrationOntogeneticProbability> </verticalMigrationOntogeneticProbabilities> <pelagicLarvalDuration> <mean>22</mean> <stdev>1.1</stdev> <distribution>Normal</distribution> </pelagicLarvalDuration> <isMortal>true</isMortal> <mortalityRate>0.26</mortalityRate> </fish></simulationVariables>"
-  //   val config = context.createUnmarshaller().unmarshal(new StringReader(configXml)).asInstanceOf[Configuration]
-  //   assert(config.fish.ontogeny.flexion == 518400)
-  //   assert(config.fish.ontogeny.preFlexion == 172800)
-  //   assert(config.fish.ontogeny.postFlexion == 691200)
-  //   assert(config.fish.swimming.ability == "Directed")
-  //   assert(config.fish.swimming.criticalSwimmingSpeed == 10.0)
-  //   assert(config.fish.swimming.inSituSwimmingPotential == 0.5)
-  //   assert(config.fish.swimming.endurance == 0.4)
-  //   assert(config.fish.swimming.reynoldsEffect)
-  //   assert(config.fish.verticalMigrationOntogeneticProbabilities.verticalMigrationOntogeneticProbability.size() == 2)
-  //   val ontogeneticVerticalMigrationPattern = config.fish.verticalMigrationOntogeneticProbabilities.verticalMigrationOntogeneticProbability.get(0)
-  //   assert(ontogeneticVerticalMigrationPattern.depthStart == 3)
-  //   assert(ontogeneticVerticalMigrationPattern.depthFinish == 10)
-  //   assert(ontogeneticVerticalMigrationPattern.flexion == 0.05)
-  //   assert(ontogeneticVerticalMigrationPattern.preFlexion == 0.05)
-  //   assert(ontogeneticVerticalMigrationPattern.postFlexion == 0.05)
-  //   assert(ontogeneticVerticalMigrationPattern.hatching == 0.8)
-  //   assert(config.fish.verticalMigrationDielProbabilities.verticalMigrationDielProbability.size() == 2)
-  //   val dielVerticalMigrationPattern = config.fish.verticalMigrationDielProbabilities.verticalMigrationDielProbability.get(1)
-  //   assert(dielVerticalMigrationPattern.depthStart == 50)
-  //   assert(dielVerticalMigrationPattern.depthFinish == 100)
-  //   assert(dielVerticalMigrationPattern.day == 0.5)
-  //   assert(dielVerticalMigrationPattern.night == 0.5)
-  //   assert(config.fish.pelagicLarvalDuration.distribution == "Normal")
-  //   assert(config.fish.pelagicLarvalDuration.mean == 22)
-  //   assert(config.fish.pelagicLarvalDuration.stdev == 1.1)
-  //   assert(config.fish.isMortal)
-  //   assert(config.fish.mortalityRate == 0.26)
-  // }
+  it should "parse the output YAML" in {
+    val json = yaml.parser.parse(configYAML)
+    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    assert(!config.output.includeLarvaeHistory)
+    assert(config.output.saveOutputFilePath == "test3")
+    assert(config.output.percentage == 5)
+    assert(config.output.prefix == "test4")
+    assert(config.output.logLevel == "info")
+    assert(config.output.logFile == "test.log")
+  }
 
+  it should "parse the habitat YAML" in {
+    val json = yaml.parser.parse(configYAML)
+    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    assert(config.habitat.buffer.isBuffered)
+    assert(config.habitat.buffer.settlement == 10)
+    assert(config.habitat.buffer.olfactory == 10)
+  }
+
+  it should "parse the flow YAML" in {
+    val json = yaml.parser.parse(configYAML)
+    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    assert(config.flow.includeVerticalVelocity)
+    assert(config.flow.period.start == "2010-07-01")
+    assert(config.flow.period.end == "2011-08-31")
+    assert(config.flow.timeStep.unit == "Hour")
+    assert(config.flow.timeStep.duration == 2)
+    assert(!config.flow.depth.average)
+    assert(!config.flow.depth.averageOverAllDepths)
+    assert(config.flow.depth.maximumDepthForAverage == 5)
+  }
+
+  it should "parse the ovm YAML" in {
+    val json = yaml.parser.parse(configYAML)
+    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    assert(config.fish.verticalMigrationOntogeneticProbabilities.implementation == "Stage")
+    assert(config.fish.verticalMigrationOntogeneticProbabilities.verticalMigrationOntogeneticProbability.size == 3)
+    val ontogenyProb = config.fish.verticalMigrationOntogeneticProbabilities.verticalMigrationOntogeneticProbability(0)
+
+    assert(ontogenyProb.depthStart == 0)
+    assert(ontogenyProb.depthFinish == 5)
+    assert(ontogenyProb.hatching == 0)
+    assert(ontogenyProb.preFlexion == 0.4)
+    assert(ontogenyProb.flexion == 0.35)
+    assert(ontogenyProb.postFlexion == 0.05)
+  }
+
+  it should "parse the diel YAML" in {
+    val json = yaml.parser.parse(configYAML)
+    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    assert(config.fish.verticalMigrationDielProbabilities.verticalMigrationDielProbability.size == 4)
+    val dielProb = config.fish.verticalMigrationDielProbabilities.verticalMigrationDielProbability(0)
+
+    assert(dielProb.depthStart == 0)
+    assert(dielProb.depthFinish == 25)
+    assert(dielProb.day == 0.1)
+    assert(dielProb.night == 0.3)
+  }
 }

@@ -30,7 +30,7 @@ object ConfigMappings {
 
   implicit def inputConfigMap(i: InputFilesConfig): InputFiles = {
     val seed : Option[Int] = if(i.randomSeed > 0) Some(i.randomSeed) else None
-    new InputFiles(i.flowFilePath, i.habitatFilePath, new File(i.flowFilePath).list(), seed)
+    new InputFiles(i.pathNetcdfFiles, i.pathHabitatShapeFile, new File(i.pathNetcdfFiles).list(), seed)
   }
 
   implicit def depthConfigMap(d: DepthConfig): Depth =

@@ -8,7 +8,7 @@ import physical.flow.FlowController
 
 class PhysicalModel(val config: Configuration) extends Logging {
 
-  val flowFile = new FlowFileIterator(config.inputFiles.flowFilePath, config.flow)
+  val flowFile = new FlowFileIterator(config.inputFiles.pathNetcdfFiles, config.flow)
   val flowController = new FlowController(flowFile, config.flow)
 
   def circulate(): Unit = {
