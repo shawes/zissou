@@ -12,8 +12,8 @@ import grizzled.slf4j._
 class ConfigurationFile extends Logging {
 
   def read(file: String): Configuration = {
-    val config = getClass.getClassLoader.getResourceAsStream(file)
-    val json = parser.parse(new InputStreamReader(config))
+    val config = scala.io.Source.fromFile(file).mkString
+    val json = parser.parse(config)
     json
       .leftMap(err => err: Error)
       .flatMap(_.as[Configuration])
