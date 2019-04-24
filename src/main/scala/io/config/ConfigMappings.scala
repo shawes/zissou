@@ -30,7 +30,7 @@ object ConfigMappings {
 
   implicit def inputConfigMap(i: InputFilesConfig): InputFiles = {
     val seed : Option[Int] = if(i.randomSeed > 0) Some(i.randomSeed) else None
-    new InputFiles(i.flowFilePath, i.habitatFilePath, new File(i.flowFilePath).list(), seed)
+    new InputFiles(i.pathNetcdfFiles, i.pathHabitatShapeFile, new File(i.pathNetcdfFiles).list(), seed)
   }
 
   implicit def depthConfigMap(d: DepthConfig): Depth =
@@ -43,7 +43,7 @@ object ConfigMappings {
     new DateTime(r.start, DateTimeZone.UTC) to new DateTime(r.end, DateTimeZone.UTC)
 
   implicit def spawnConfigMap(s: SpawnConfig): List[SpawningLocation] =
-    s.spawningLocation.asScala.map(x => spawningLocationConfigMap(x)).toList
+    s.spawningLocation.map(x => spawningLocationConfigMap(x)).toList
 
   implicit def spawningLocationConfigMap(s: SpawningLocationConfig): SpawningLocation =
     new SpawningLocation(s.name, s.numberOfLarvae, s.patchNumber, s.site, s.releasePeriod, s.interval)
@@ -69,10 +69,10 @@ object ConfigMappings {
       case "Timestep" => TimestepMigration
       case _ => StageMigration
     },
-    vm.verticalMigrationOntogeneticProbability.asScala.map(x => verticalMigrationOntogeneticProbabilityConfigMap(x)).toList)
+    vm.verticalMigrationOntogeneticProbability.map(x => verticalMigrationOntogeneticProbabilityConfigMap(x)).toList)
 
   implicit def verticalMigrationDielConfigMap(vm: VerticalMigrationDielConfig): VerticalMigrationDiel =
-    new VerticalMigrationDiel(vm.verticalMigrationDielProbability.asScala.map(x => verticalMigrationDielProbabilityConfigMap(x)).toList)
+    new VerticalMigrationDiel(vm.verticalMigrationDielProbability.map(x => verticalMigrationDielProbabilityConfigMap(x)).toList)
 
   implicit def verticalMigrationOntogeneticProbabilityConfigMap(prob: VerticalMigrationOntogeneticProbabilityConfig) :  VerticalMigrationOntogeneticProbability =
     new VerticalMigrationOntogeneticProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.hatching, prob.preFlexion, prob.flexion, prob.postFlexion)

@@ -24,7 +24,7 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   val fish: FishParameters = config.fish
   val factory = LarvaFactory.apply(LarvaType.Fish, config.fish)
   val spawn = new Spawn(config.spawn)
-  var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.habitatFilePath), config.habitat.buffer, Array("Reef", "Other"))
+  var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.pathHabitatShapeFile), config.habitat.buffer, Array("Reef", "Other"))
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val geometry = new Geometry

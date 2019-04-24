@@ -20,10 +20,10 @@ class SimulationVariables(val fish: FishParameters,
     <SimulationVariables>
       <InputFiles>
         <FlowFilePath>
-          {inputs.flowFilePath}
+          {inputs.pathNetcdfFiles}
         </FlowFilePath>
         <HabitatFilePath>
-          {inputs.habitatFilePath}
+          {inputs.pathHabitatShapeFile}
         </HabitatFilePath>
       </InputFiles>
       <Spawn>

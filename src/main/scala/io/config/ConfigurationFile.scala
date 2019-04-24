@@ -1,30 +1,27 @@
 package io.config
 
 import java.io.File
-import javax.xml.bind.{JAXBContext, JAXBException, UnmarshalException}
-import grizzled.slf4j.Logging
+import java.io.InputStreamReader
+import io.circe.yaml.parser
+import cats.syntax.either._
+import io.circe._
+import io.circe.generic.auto._
+import io.circe.yaml
+import grizzled.slf4j._
 
 class ConfigurationFile extends Logging {
 
-  def read(file: File): Configuration = {
-    try {
-      val context = JAXBContext.newInstance(classOf[Configuration])
-      context.createUnmarshaller().unmarshal(file).asInstanceOf[Configuration]
-    } catch {
-      case ex: UnmarshalException => error("Un-marshalling configuration failed" + ex.printStackTrace())
-        new Configuration()
-      case ex: JAXBException => error("Un-marshalling configuration failed" + ex.printStackTrace())
-        new Configuration()
-    }
+  def read(file: String): Configuration = {
+    val config = scala.io.Source.fromFile(file).mkString
+    val json = parser.parse(config)
+    json
+      .leftMap(err => err: Error)
+      .flatMap(_.as[Configuration])
+      .valueOr(throw _)
   }
 
-  def write(config: Configuration, file: File) : Unit = {
-    try {
-      val context = JAXBContext.newInstance(classOf[Configuration])
-      context.createMarshaller.marshal(config, file)
-    } catch {
-      case ex: JAXBException => error("Marshalling configuration failed" + ex.printStackTrace())
-    }
+  def write() = {
+    // Nothing yet
   }
 
 }
