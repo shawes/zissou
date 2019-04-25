@@ -14,7 +14,7 @@ class Fish(
     val id: String,
     val pelagicLarvalDuration: Int,
     val maximumLifeSpan: Int,
-    val birthplace: Birthplace,
+    override val birthplace: Birthplace,
     val spawned: LocalDateTime,
     override val hatching: Int,
     override val preflexion: Int,
@@ -28,17 +28,22 @@ class Fish(
     with Swimming
     with OntogenyFish {
 
-  val fishHistory = ArrayBuffer.empty[TimeCapsule]
-  var fishState: PelagicLarvaeState = Pelagic
-  var fishAge = 0
+  override val history = ArrayBuffer.empty[TimeCapsule]
+  //var fishState: PelagicLarvaeState = Pelagic
+  //var fishAge = 0
   var fishSettlementDate: Option[LocalDateTime] = None
-  var fishPosition = birthplace.location
+  override var position = birthplace.location
   var fishPolygon: Int = 0
   var lastDielMigration: Option[DielVerticalMigrationType] = None
   var nightDepth: Double = -1
   private var hasChangedOntogeneticState: Boolean = false
   var fishDirection: Double = NoSwimmingAngleException
   val geometry = new Geometry()
+  //override val history: ArrayBuffer[TimeCapsule] = fishHistory
+
+  //override def state: PelagicLarvaeState = fishState
+
+  override val birthday: LocalDateTime = spawned
 
   override def settlementDate: LocalDateTime = fishSettlementDate.get
 
@@ -70,7 +75,7 @@ class Fish(
 
   //override def ontogeny: OntogenyFish = fishOntogeny
 
-  override def age: Int = fishAge
+  //override def age: Int = fishAge
 
   def undergoesOntogeneticMigration: Boolean = {
     trace(
@@ -79,27 +84,26 @@ class Fish(
     verticalMigrationOntogenetic.probabilities.nonEmpty
   }
 
-  override def ontogeneticVerticallyMigrateType
-      : OntogeneticVerticalMigrationImpl =
+  def ontogeneticVerticallyMigrateType: OntogeneticVerticalMigrationImpl =
     verticalMigrationOntogenetic.implementation
 
   def undergoesDielMigration: Boolean =
     verticalMigrationDiel.probabilities.nonEmpty
 
   def move(location: GeoCoordinate): Unit = {
-    if (location != fishPosition) {
+    if (location != position) {
       changeState(Pelagic)
       updatePosition(location)
     }
   }
 
   def updatePosition(newPos: GeoCoordinate): Unit = {
-    fishPosition = newPos
+    position = newPos
   }
 
   def growOlder(seconds: Int): Unit = {
     val initialOntogeny = getOntogeny
-    fishAge += seconds
+    age += seconds
     val currentOntogeny = getOntogeny
     if (initialOntogeny == currentOntogeny) {
       hasChangedOntogeneticState = false
@@ -123,12 +127,12 @@ class Fish(
   }
 
   private def changeState(newState: PelagicLarvaeState): Unit = {
-    fishState = newState
+    state = newState
     saveState()
   }
 
   private def saveState(): Unit =
-    fishHistory append new TimeCapsule(
+    history append new TimeCapsule(
       age,
       getOntogeny,
       state,
@@ -136,11 +140,11 @@ class Fish(
       position
     )
 
-  override def position: GeoCoordinate = fishPosition
+  //override def position: GeoCoordinate = fishPosition
 
   override def polygon: Int = fishPolygon
 
-  override def ontogeneticVerticallyMigrate: Unit = {
+  def ontogeneticVerticallyMigrate: Unit = {
 
     val depth =
       verticalMigrationOntogenetic.getDepth(getOntogeny, position.depth)
@@ -149,7 +153,7 @@ class Fish(
     )
   }
 
-  override def dielVerticallyMigrate(
+  def dielVerticallyMigrate(
       dielMigration: DielVerticalMigrationType
   ): Unit = {
     if (!lastDielMigration.isDefined || lastDielMigration.get != dielMigration) {
@@ -181,11 +185,5 @@ class Fish(
       "birthplace:" + birthplace.name + "," +
       "state:" + state + "," +
       "history:" + history.size
-
-  override def history: ArrayBuffer[TimeCapsule] = fishHistory
-
-  override def state: PelagicLarvaeState = fishState
-
-  override def birthday: LocalDateTime = spawned
 
 }

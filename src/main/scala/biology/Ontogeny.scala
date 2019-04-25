@@ -3,14 +3,14 @@ package biology
 import locals._
 
 trait Ontogeny {
-  var hatching: Int
+  val hatching: Int
   def getState(age: Int): OntogeneticState
 }
 
 trait OntogenyFish extends Ontogeny {
-  var preflexion: Int
-  var flexion: Int
-  var postflexion: Int
+  val preflexion: Int
+  val flexion: Int
+  val postflexion: Int
   def getState(age: Int): OntogeneticState = {
     if (age < preflexion) Hatching
     else if (age >= preflexion && age < flexion) Preflexion
