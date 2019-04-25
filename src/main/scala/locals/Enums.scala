@@ -19,12 +19,41 @@ case object Fixed extends PelagicLarvalDurationType
 sealed trait OntogeneticVerticalMigrationImpl
 case object StageMigration extends OntogeneticVerticalMigrationImpl
 case object DailyMigration extends OntogeneticVerticalMigrationImpl
-case object TimestepMigration extends OntogeneticVerticalMigrationImpl
+case object TimeStepMigration extends OntogeneticVerticalMigrationImpl
 
-object PelagicLarvaeState extends Enumeration {
-  type PelagicLarvaeState = Value
-  val Pelagic, Dead, Settled = Value
-}
+sealed trait DielVerticalMigrationType
+case object Day extends DielVerticalMigrationType
+case object Night extends DielVerticalMigrationType
+
+sealed trait LarvaType
+case object Fish extends LarvaType
+
+sealed trait PelagicLarvaeState
+case object Pelagic extends PelagicLarvaeState
+case object Dead extends PelagicLarvaeState
+case object Settled extends PelagicLarvaeState
+
+sealed trait OntogeneticState
+case object Hatching extends OntogeneticState
+case object Preflexion extends OntogeneticState
+case object Flexion extends OntogeneticState
+case object Postflexion extends OntogeneticState
+
+sealed trait InterpolationTime
+case object InterpolateToday extends InterpolationTime
+case object InterpolateTomorrow extends InterpolationTime
+
+sealed trait InterpolationType
+case object Bilinear extends InterpolationType
+case object Bicubic extends InterpolationType
+case object TriLinear extends InterpolationType
+case object Tricubic extends InterpolationType
+
+sealed trait QuadrantLocation
+case object TopLeft extends QuadrantLocation
+case object TopRight extends QuadrantLocation
+case object BottomLeft extends QuadrantLocation
+case object BottomRight extends QuadrantLocation
 
 object Direction extends Enumeration {
   type Direction = Value
@@ -39,11 +68,6 @@ object TimeStepType extends Enumeration {
 object OntogeneticVerticalMigrationType extends Enumeration {
   type OntogeneticVerticalMigrationType = Value
   val Random, Restricted, StageBased = Value
-}
-
-object DielVerticalMigrationType extends Enumeration {
-  type DielVerticalMigrationType = Value
-  val Day, Night = Value
 }
 
 object DistributionType extends Enumeration {
@@ -64,31 +88,6 @@ object SwimmingAbility extends Enumeration {
 object LoggingLevel extends Enumeration {
   type LoggingLevel = Value
   val None, Concise, Verbose = Value
-}
-
-object OntogenyState extends Enumeration {
-  type OntogenyState = Value
-  val Hatching, Preflexion, Flexion, Postflexion = Value
-}
-
-object LarvaType extends Enumeration {
-  type LarvaType = Value
-  val Fish = Value
-}
-
-object QuadrantType extends Enumeration {
-  type QuadrantType = Value
-  val TopLeft, TopRight, BottomLeft, BottomRight = Value
-}
-
-object InterpolationType extends Enumeration {
-  type InterpolationType = Value
-  val Bilinear, TriLinear, Bicubic, Tricubic = Value
-}
-
-object Day extends Enumeration {
-  type Day = Value
-  val Today, Tomorrow = Value
 }
 
 object Sun extends Enumeration {

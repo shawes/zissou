@@ -1,21 +1,20 @@
 package biology
 
-import locals.OntogenyState
-import locals.OntogenyState.OntogenyState
+import locals._
 
 trait Ontogeny {
-  var hatching : Int
-  def getState(age: Int): OntogenyState
+  var hatching: Int
+  def getState(age: Int): OntogeneticState
 }
 
 trait OntogenyFish extends Ontogeny {
-  var preflexion : Int
-  var flexion : Int
-  var postflexion : Int
-  def getState(age: Int): OntogenyState = {
-    if (age < preflexion) OntogenyState.Hatching
-    else if (age >= preflexion && age < flexion) OntogenyState.Preflexion
-    else if (age >= flexion && age < postflexion) OntogenyState.Flexion
-    else OntogenyState.Postflexion
+  var preflexion: Int
+  var flexion: Int
+  var postflexion: Int
+  def getState(age: Int): OntogeneticState = {
+    if (age < preflexion) Hatching
+    else if (age >= preflexion && age < flexion) Preflexion
+    else if (age >= flexion && age < postflexion) Flexion
+    else Postflexion
   }
 }

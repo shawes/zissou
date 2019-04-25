@@ -6,9 +6,8 @@ import io.circe.yaml.parser
 import cats.syntax.either._
 import io.circe._
 import io.circe.generic.auto._
-import io.circe.yaml
 import grizzled.slf4j._
-
+import io.circe.yaml
 class ConfigurationFile extends Logging {
 
   def read(file: String): Configuration = {

@@ -1,4 +1,3 @@
-
 package model
 
 import java.io.File
@@ -10,9 +9,8 @@ import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
 import io.config.ConfigMappings._
 import io.config.Configuration
-import locals.{DielVerticalMigrationType, LarvaType}
-import locals.Constants.LightWeightException
 import locals._
+import locals.Constants.LightWeightException._
 import maths.{Geometry, RandomNumberGenerator}
 import maths.integration.RungeKuttaIntegration
 import utilities.Time
@@ -20,16 +18,24 @@ import physical.Velocity
 import physical.GeoCoordinate
 import physical.habitat.HabitatManager
 
-class BiologicalModel(val config: Configuration, clock: SimulationClock, integrator: RungeKuttaIntegration) extends Logging {
+class BiologicalModel(
+    val config: Configuration,
+    clock: SimulationClock,
+    integrator: RungeKuttaIntegration
+) extends Logging {
 
-  val fish: FishParameters = config.fish
-  val factory = LarvaeFactory.apply(LarvaType.Fish, config.fish)
+  //val fish: FishParameters = config.fish
+  val factory = LarvaeFactory.apply(Fish, config.larva)
   val spawn = new Spawn(config.spawn)
-  var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.pathHabitatShapeFile), config.habitat.buffer, Array("Reef", "Other"))
+  var habitatManager: HabitatManager = new HabitatManager(
+    new File(config.inputFiles.pathHabitatShapeFile),
+    config.habitat.buffer,
+    Array("Reef", "Other")
+  )
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val geometry = new Geometry
-  val mortality = new MortalityConstant(config.fish.mortalityRate)
+  val mortality = new MortalityConstant(config.larva.mortalityRate)
 
   def apply(): Unit = {
     spawnLarvae()
@@ -37,12 +43,12 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     refresh()
   }
 
-  def applyMortality() : Unit = {
+  def applyMortality(): Unit = {
     pelagicLarvae.foreach(larva => mortality(larva))
     refresh()
   }
 
-  def refresh() : Unit = {
+  def refresh(): Unit = {
     val cull = pelagicLarvae.partition(larva => larva.isPelagic)
     pelagicLarvae.clear()
     pelagicLarvae ++= cull._1
@@ -59,9 +65,14 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   private def move(larva: Larva): Unit = {
     val dampeningFactor: List[Double] = List(1.0)
     val orientate = swim(larva)
-    def moveParticle(larva : Larva, dampeningFactor : List[Double]) : Unit = {
-      if(dampeningFactor.nonEmpty) {
-        integrator.integrate(larva.position, clock.now, orientate, dampeningFactor.head) match {
+    def moveParticle(larva: Larva, dampeningFactor: List[Double]): Unit = {
+      if (dampeningFactor.nonEmpty) {
+        integrator.integrate(
+          larva.position,
+          clock.now,
+          orientate,
+          dampeningFactor.head
+        ) match {
           case Some(newPosition) => larva.move(newPosition)
           case None => {
             moveParticle(larva, dampeningFactor.tail)
@@ -75,11 +86,13 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
     migrateLarvaVertically(larva)
   }
 
-  private def swim(larva : Larva) : Option[Velocity] = {
+  private def swim(larva: Larva): Option[Velocity] = {
     larva.horizontalSwimming match {
       case Some(swimming) => {
-        if(swimming.isDirected && larva.canSwim && larva.direction != -1) {
-          Some(swimming(new HorizontalSwimmingVariables(larva.direction,0,0,0)))
+        if (swimming.isDirected && larva.canSwim && larva.direction != -1) {
+          Some(
+            swimming(new HorizontalSwimmingVariables(larva.direction, 0, 0, 0))
+          )
         } else {
           None
         }
@@ -89,19 +102,19 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def migrateLarvaVertically(larva: Larva): Unit = {
-    if(larva.undergoesDielMigration) {
-      if(clock.isSunRising(larva.position)) {
-        larva.diel(DielVerticalMigrationType.Day)
-      } else if(clock.isSunSetting(larva.position)) {
-        larva.diel(DielVerticalMigrationType.Night)
+    if (larva.undergoesDielMigration) {
+      if (clock.isSunRising(larva.position)) {
+        //larva.diel(Day)
+      } else if (clock.isSunSetting(larva.position)) {
+        //larva.diel(Night)
       }
     }
-    if(larva.undergoesOntogeneticMigration &&
-      ((larva.ontogeneticVerticallyMigrateType == StageMigration && larva.changedOntogeneticState) || (larva.ontogeneticVerticallyMigrateType == TimestepMigration)
-      || larva.ontogeneticVerticallyMigrateType == DailyMigration && clock.isMidnight)) {
+    //if (larva.undergoesOntogeneticMigration &&
+    //((larva.ontogeneticVerticallyMigrateType == StageMigration && larva.changedOntogeneticState) || (larva.ontogeneticVerticallyMigrateType == TimeStepMigration)
+    //|| larva.ontogeneticVerticallyMigrateType == DailyMigration && clock.isMidnight)) {
 
-      larva.ovm
-    }
+    larva.ovm
+    //}
   }
 
   private def ageLarvae(larva: Larva): Unit = {
@@ -109,21 +122,21 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def mortality(larva: Larva): Unit = {
-    if(RandomNumberGenerator.get < mortality.getRate) {
+    if (RandomNumberGenerator.get < mortality.getRate) {
       larva.kill()
     }
   }
 
-  private def sense(larva : Larva) : Unit = {
-    if(larva.inOlfactoryCompetencyWindow || larva.inSettlementCompetencyWindow) {
+  private def sense(larva: Larva): Unit = {
+    if (larva.inOlfactoryCompetencyWindow || larva.inSettlementCompetencyWindow) {
       val index = habitatManager.getClosestHabitat(larva.position)
-      if(index._1 != LightWeightException.NoReefToSettle && larva.inSettlementCompetencyWindow)  {
+      if (index._1 != NoReefToSettleException && larva.inSettlementCompetencyWindow) {
         larva.settle(index._1, clock.now)
       } else {
-        if(index._2 != LightWeightException.NoReefSensed && larva.inOlfactoryCompetencyWindow) {
+        if (index._2 != NoReefSensedException && larva.inOlfactoryCompetencyWindow) {
           larva.changeDirection(index._3)
         } else {
-          larva.changeDirection(LightWeightException.NoSwimmingAngle)
+          larva.changeDirection(NoSwimmingAngleException)
         }
       }
     }
@@ -143,11 +156,15 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def spawnFish(sites: List[SpawningLocation]) = {
-    val spawn = sites.flatMap(site => factory.create(site, clock.now))
+    val spawn = sites.flatMap(
+      site =>
+        for (i <- 1 to site.numberOfLarvae)
+          yield factory.create(site, clock.now)
+    )
     pelagicLarvae ++= spawn
   }
 
-  def canDisperse(time: LocalDateTime): Boolean ={
+  def canDisperse(time: LocalDateTime): Boolean = {
     val canSpawn = spawn.isItSpawningSeason(time)
     val pelagic = pelagicLarvae.nonEmpty
     canSpawn || pelagic

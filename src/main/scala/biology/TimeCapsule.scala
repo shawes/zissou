@@ -1,11 +1,12 @@
 package biology
 
-import locals.OntogenyState.OntogenyState
-import locals.PelagicLarvaeState.PelagicLarvaeState
+import locals._
 import physical.GeoCoordinate
 
-class TimeCapsule(val age: Int,
-                  val stage: OntogenyState,
-                  val state: PelagicLarvaeState,
-                  val habitat: Int,
-                  val position: GeoCoordinate) {}
+class TimeCapsule(
+    val age: Int,
+    val stage: OntogeneticState,
+    val state: PelagicLarvaeState,
+    val habitat: Int,
+    val position: GeoCoordinate
+) {}

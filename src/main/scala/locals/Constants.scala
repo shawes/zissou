@@ -11,7 +11,7 @@ object Constants {
   val MaxLongitudeShift = 0.005
   val LarvaeCapacityAtSite = 10000
   val Ocean = -27
-  val MinimumDate = new DateTime(1976,1,1,0,0)
+  val MinimumDate = new DateTime(1976, 1, 1, 0, 0)
   val EarthsRadius = 6378137.0
 
   // Need to make this dynamic
@@ -28,12 +28,12 @@ object Constants {
   }
 
   object LightWeightException {
-    val NoReefToSettle = -100
-    val UndefinedVelocity = -200
-    val UndefinedCoordinate = -300
-    val CoordinateNotFound = -400
-    val NoReefSensed = -500
-    val NoSwimmingAngle = -600
+    val NoReefToSettleException = -100
+    val UndefinedVelocityException = -200
+    val UndefinedCoordinateException = -300
+    val CoordinateNotFoundException = -400
+    val NoReefSensedException = -500
+    val NoSwimmingAngleException = -600
   }
 
   object Interpolation {
@@ -48,6 +48,5 @@ object Constants {
     val Z = 2
     val Time = 3
   }
-
 
 }

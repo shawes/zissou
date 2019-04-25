@@ -1,18 +1,17 @@
 package biology
 
-import locals.LarvaType
-import locals.LarvaType.LarvaType
+import locals._
 import com.github.nscala_time.time.Imports._
-import biology.fish.FishSpawner
-import biology.fish.FishConfig
+import biology.fish.FishFactory
+import io.config.LarvaConfig
 
 trait LarvaeFactory {
-    def create(site: SpawningLocation, time: LocalDateTime) : Array[Larva]
+  def create(site: SpawningLocation, time: LocalDateTime): Larva
 }
 
 object LarvaeFactory {
-  def apply(s: LarvaType, config : FishConfig) = s match {
-      case LarvaType.Fish => new FishSpawner(config, false)
-      case _ => null
-    }
+  def apply(s: LarvaType, config: LarvaConfig) = s match {
+    case Fish => new FishFactory(config)
+    case _    => null
   }
+}

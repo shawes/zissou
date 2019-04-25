@@ -1,6 +1,6 @@
 package physical.habitat
 
-import com.vividsolutions.jts.geom.Polygon
+import org.locationtech.jts.geom.Polygon
 
 class Habitat {
   var habitatPolygons: Array[Polygon] = Array.empty[Polygon]

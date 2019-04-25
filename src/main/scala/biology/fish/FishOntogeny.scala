@@ -1,8 +1,5 @@
 package biology.fish
 
-import locals.OntogenyState
-import locals.OntogenyState.OntogenyState
+import locals._
 import biology.Ontogeny
 import utilities.Time
-
-

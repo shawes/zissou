@@ -1,23 +1,25 @@
 package biology.swimming
 
-import locals.DielVerticalMigrationType
-import locals.DielVerticalMigrationType.DielVerticalMigrationType
+import locals._
 
 import maths.{ContinuousRange, RandomNumberGenerator}
 
-class VerticalMigrationDiel(val probabilities : List[VerticalMigrationDielProbability]) {
+class VerticalMigrationDiel(
+    val probabilities: List[VerticalMigrationDielProbability]
+) {
 
-  def enabled : Boolean = probabilities.nonEmpty
+  def enabled: Boolean = probabilities.nonEmpty
 
   //TODO: Reduce complexity of this method
-  def getDepth(dielMigration : DielVerticalMigrationType) : Double = {
+  def getDepth(dielMigration: DielVerticalMigrationType): Double = {
     var cumulativeProb = 0.0
     val number = RandomNumberGenerator.get
     val iterator = probabilities.iterator
-    var currentDepth: (ContinuousRange, Double) = new Tuple2(new ContinuousRange(), 0)
+    var currentDepth: (ContinuousRange, Double) =
+      new Tuple2(new ContinuousRange(), 0)
     val prob = iterator.next
 
-    if(dielMigration == DielVerticalMigrationType.Day) {
+    if (dielMigration == Day) {
       currentDepth = (prob.depth, prob.day)
     } else {
       currentDepth = (prob.depth, prob.night)
@@ -26,11 +28,11 @@ class VerticalMigrationDiel(val probabilities : List[VerticalMigrationDielProbab
     cumulativeProb += currentDepth._2
     while (number > cumulativeProb && iterator.hasNext) {
       val prob = iterator.next
-          if(dielMigration == DielVerticalMigrationType.Day) {
-            currentDepth = (prob.depth, prob.day)
-          } else {
-            currentDepth = (prob.depth, prob.night)
-          }
+      if (dielMigration == Day) {
+        currentDepth = (prob.depth, prob.day)
+      } else {
+        currentDepth = (prob.depth, prob.night)
+      }
       cumulativeProb += currentDepth._2
     }
     calculateDepthInRange(currentDepth._1)
@@ -39,6 +41,5 @@ class VerticalMigrationDiel(val probabilities : List[VerticalMigrationDielProbab
   private def calculateDepthInRange(depthRange: ContinuousRange): Double = {
     RandomNumberGenerator.get(depthRange.start, depthRange.end)
   }
-
 
 }

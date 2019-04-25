@@ -1,7 +1,7 @@
 package maths.interpolation
 
 import grizzled.slf4j.Logging
-import locals.InterpolationType._
+import locals._
 import maths.interpolation.cubic.BicubicInterpolation
 import maths.interpolation.linear.BilinearInterpolation
 import physical.flow.FlowGridWrapper
@@ -9,36 +9,61 @@ import physical.{GeoCoordinate, Velocity}
 
 class Interpolation extends Logging {
 
-
   val bicubicInterpolation = new BicubicInterpolation()
   val bilinearInterpolation = new BilinearInterpolation()
   //TODO: Get dimensions from flow grid
-  def apply(coordinate: GeoCoordinate, grid: FlowGridWrapper, index: (Int,Int,Int,Boolean)): Option[Velocity] = {
-      val centroid = grid.getCentroid(index)
-      debug("Centroid of the grid is: " + centroid)
-      val latitudeDisplacement = math.abs(coordinate.latitude - centroid.latitude) * (1.0 / 0.1) + 1.0
-      val longitudeDisplacement = math.abs(coordinate.longitude - centroid.longitude) * (1.0 / 0.1) + 1.0
-      debug("Latitude : "+latitudeDisplacement + ", long: "+ longitudeDisplacement)
+  def apply(
+      coordinate: GeoCoordinate,
+      grid: FlowGridWrapper,
+      index: (Int, Int, Int, Boolean)
+  ): Option[Velocity] = {
+    val centroid = grid.getCentroid(index)
+    debug("Centroid of the grid is: " + centroid)
+    val latitudeDisplacement = math.abs(coordinate.latitude - centroid.latitude) * (1.0 / 0.1) + 1.0
+    val longitudeDisplacement = math.abs(
+      coordinate.longitude - centroid.longitude
+    ) * (1.0 / 0.1) + 1.0
+    debug(
+      "Latitude : " + latitudeDisplacement + ", long: " + longitudeDisplacement
+    )
 
-      val neighbourhood = grid.getInterpolationValues(coordinate, Bicubic)
+    val neighbourhood = grid.getInterpolationValues(coordinate, Bicubic)
+    if (neighbourhood.isDefined) {
+      debug("Can bicubic interpolate")
+      Some(
+        interpolate(
+          Bicubic,
+          neighbourhood.get,
+          longitudeDisplacement,
+          latitudeDisplacement
+        )
+      )
+    } else {
+      val neighbourhood = grid.getInterpolationValues(coordinate, Bilinear)
       if (neighbourhood.isDefined) {
-        debug("Can bicubic interpolate")
-        Some(interpolate(Bicubic, neighbourhood.get, longitudeDisplacement, latitudeDisplacement))
+        debug("Can only bilnear interpolate")
+        Some(
+          interpolate(
+            Bilinear,
+            neighbourhood.get,
+            longitudeDisplacement,
+            latitudeDisplacement
+          )
+        )
       } else {
-        val neighbourhood = grid.getInterpolationValues(coordinate, Bilinear)
-        if (neighbourhood.isDefined) {
-          debug("Can only bilnear interpolate")
-          Some(interpolate(Bilinear, neighbourhood.get, longitudeDisplacement, latitudeDisplacement))
-        } else {
-          debug("No interpolations")
-          grid.getVelocity(index)
-        }
+        debug("No interpolations")
+        grid.getVelocity(index)
       }
+    }
   }
 
-  private def interpolate(interpolation: InterpolationType, neighbourhood: Array[Array[Velocity]],
-                          long: Double, lat: Double): Velocity = interpolation match {
-    case Bicubic => bicubicInterpolation(neighbourhood, long, lat)
+  private def interpolate(
+      interpolation: InterpolationType,
+      neighbourhood: Array[Array[Velocity]],
+      long: Double,
+      lat: Double
+  ): Velocity = interpolation match {
+    case Bicubic  => bicubicInterpolation(neighbourhood, long, lat)
     case Bilinear => bilinearInterpolation(neighbourhood, long, lat)
     //case Tricubic => new tricubicInterpolation(neighbourhood, long, lat)
     //case Trilinear => new trilinearInterpolation(neighbourhood, long, lat)

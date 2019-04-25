@@ -5,7 +5,7 @@ import java.io.File
 import grizzled.slf4j.Logging
 import io.GisShapeFile
 import locals.HabitatType
-import locals.Constants._
+import locals.Constants.LightWeightException._
 import maths.Geometry
 import org.geotools.data.simple.SimpleFeatureCollection
 import org.geotools.data.collection.ListFeatureCollection
@@ -17,8 +17,11 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.Sorting._
 import scala.collection.Searching._
 
-
-class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]) extends Logging {
+class HabitatManager(
+    file: File,
+    val buffer: Buffer,
+    habitatTypes: Array[String]
+) extends Logging {
 
   private val habitatReader = new GisShapeFile()
   private val features = habitatReader.read(file)
@@ -33,21 +36,26 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
   def isBuffered: Boolean = buffer.isBuffered
 
   def getReefs(): Array[GeometryAdaptor] = {
-    val polys:ArrayBuffer[GeometryAdaptor] = ArrayBuffer.empty[GeometryAdaptor]
+    val polygons: ArrayBuffer[GeometryAdaptor] =
+      ArrayBuffer.empty[GeometryAdaptor]
     val shapes = features.features()
     try {
       while (shapes.hasNext) {
         val shape = shapes.next()
         val geometry = SimpleFeatureAdaptor.getGeometry(shape)
-        polys += new GeometryAdaptor(geometry, SimpleFeatureAdaptor.getId(shape), SimpleFeatureAdaptor.getHabitatType(shape))
+        polygons += new GeometryAdaptor(
+          geometry,
+          SimpleFeatureAdaptor.getId(shape),
+          SimpleFeatureAdaptor.getHabitatType(shape)
+        )
       }
-      polys.toArray
+      polygons.toArray
     } finally {
       shapes.close()
     }
   }
 
-  private def getSortedCentroids() : (Array[GeoCoordinate],Array[Int]) = {
+  private def getSortedCentroids(): (Array[GeoCoordinate], Array[Int]) = {
     val centroidsWithIndexes = reefs.zipWithIndex.map {
       case (reef, count) => (reef.centroid, count)
     }
@@ -55,20 +63,20 @@ class HabitatManager(file: File, val buffer: Buffer, habitatTypes: Array[String]
     centroidsWithIndexes.unzip
   }
 
-  def getClosestHabitat(coordinate : GeoCoordinate) : (Int,Int,Double) = {
+  def getClosestHabitat(coordinate: GeoCoordinate): (Int, Int, Double) = {
 
     val result = centroids.search(coordinate)
     val reef = reefs(indexes(result.insertionPoint))
-    var settle : Int = LightWeightException.NoReefToSettle
-    var sense : Int = LightWeightException.NoReefSensed
-    var angle : Double = LightWeightException.NoSwimmingAngle
+    var settle: Int = NoReefToSettleException
+    var sense: Int = NoReefSensedException
+    var angle: Double = NoSwimmingAngleException
 
-    if(reef.isWithinBuffer(coordinate, buffer.settlement)) {
+    if (reef.isWithinBuffer(coordinate, buffer.settlement)) {
       settle = reef.id
     } else if (reef.isWithinBuffer(coordinate, buffer.olfactory)) {
       angle = reef.direction(coordinate)
       sense = reef.id
     }
-    (settle,sense,angle)
+    (settle, sense, angle)
   }
 }
