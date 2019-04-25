@@ -33,7 +33,7 @@ libraryDependencies ++= Seq(
   "edu.ucar" % "cdm" % "4.6.13",
   "org.geotools" % "gt-shapefile" % "21.0",
   "org.geotools" % "gt-main" % "21.0",
-  "com.vividsolutions" %"jts-core" % "1.14.0",
+  "org.locationtech.jts" %"jts-core" % "1.16.1",
   "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
   "javax.media" % "jai_codec" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
   "javax.media" % "jai_imageio" % "1.1" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar",

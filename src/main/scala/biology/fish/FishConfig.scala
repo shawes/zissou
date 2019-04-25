@@ -1,10 +1,11 @@
 package biology.fish
 
 import biology._
+import biology.swimming._
 
-class FishParameters(
+class FishConfig(
            val pld: PelagicLarvalDuration,
-           val ontogeny: FishOntogeny,
+           val ontogeny: OntogenyFish,
            val name: String,
            val savePositions: Boolean,
            val swimming : Swimming,
