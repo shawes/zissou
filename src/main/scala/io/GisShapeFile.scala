@@ -3,7 +3,7 @@ package io
 import java.io.{File, Serializable}
 import java.util
 import biology.{Larva, TimeCapsule}
-import com.vividsolutions.jts.geom.{Coordinate, LineString}
+import org.locationtech.jts.geom.{Coordinate, LineString}
 import maths.RandomNumberGenerator
 import org.geotools.data._
 import grizzled.slf4j.Logging

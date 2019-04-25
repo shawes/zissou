@@ -5,6 +5,7 @@ import java.io.File
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import biology._
 import biology.fish._
+import biology.swimming._
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
 import io.config.ConfigMappings._
@@ -22,7 +23,7 @@ import physical.habitat.HabitatManager
 class BiologicalModel(val config: Configuration, clock: SimulationClock, integrator: RungeKuttaIntegration) extends Logging {
 
   val fish: FishParameters = config.fish
-  val factory = LarvaFactory.apply(LarvaType.Fish, config.fish)
+  val factory = LarvaeFactory.apply(LarvaType.Fish, config.fish)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(new File(config.inputFiles.pathHabitatShapeFile), config.habitat.buffer, Array("Reef", "Other"))
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
@@ -75,26 +76,31 @@ class BiologicalModel(val config: Configuration, clock: SimulationClock, integra
   }
 
   private def swim(larva : Larva) : Option[Velocity] = {
-    if(larva.swimming.isDirected && larva.direction != -1) {
-      Some(larva.swimming(larva.direction))
-    } else {
-      None
+    larva.horizontalSwimming match {
+      case Some(swimming) => {
+        if(swimming.isDirected && larva.canSwim && larva.direction != -1) {
+          Some(swimming(new HorizontalSwimmingVariables(larva.direction,0,0,0)))
+        } else {
+          None
+        }
+      }
+      case None => None
     }
   }
 
   private def migrateLarvaVertically(larva: Larva): Unit = {
     if(larva.undergoesDielMigration) {
       if(clock.isSunRising(larva.position)) {
-        larva.dielVerticallyMigrate(DielVerticalMigrationType.Day)
+        larva.diel(DielVerticalMigrationType.Day)
       } else if(clock.isSunSetting(larva.position)) {
-        larva.dielVerticallyMigrate(DielVerticalMigrationType.Night)
+        larva.diel(DielVerticalMigrationType.Night)
       }
     }
     if(larva.undergoesOntogeneticMigration &&
       ((larva.ontogeneticVerticallyMigrateType == StageMigration && larva.changedOntogeneticState) || (larva.ontogeneticVerticallyMigrateType == TimestepMigration)
       || larva.ontogeneticVerticallyMigrateType == DailyMigration && clock.isMidnight)) {
 
-      larva.ontogeneticVerticallyMigrate
+      larva.ovm
     }
   }
 

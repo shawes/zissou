@@ -9,21 +9,24 @@ import locals.Constants.LightWeightException
 import physical.GeoCoordinate
 import com.github.nscala_time.time.Imports._
 import biology._
+import biology.swimming._
 import scala.collection.mutable.ArrayBuffer
-import maths.Geometry
+import maths.{Geometry, RandomNumberGenerator}
 
-class Fish(
+class Fish (
   val id: Int,
   val pelagicLarvalDuration: Int,
   val maximumLifeSpan: Int,
   val birthplace: Birthplace,
   val spawned: LocalDateTime,
-  val fishOntogeny: FishOntogeny,
-  val swimming: Swimming,
+  override val hatching : Int,
+  override val preflexion : Int,
+  override val flexion : Int,
+  override val postflexion : Int,
   val verticalMigrationOntogenetic: VerticalMigrationOntogenetic,
   val verticalMigrationDiel: VerticalMigrationDiel,
   val nonSettlementPeriod: Int)
-  extends Larva with Logging {
+  extends Larva with Logging with Swimming with OntogenyFish {
 
   val fishHistory = ArrayBuffer.empty[TimeCapsule]
   var fishState = PelagicLarvaeState.Pelagic
@@ -37,7 +40,7 @@ class Fish(
   var fishDirection : Double = LightWeightException.NoSwimmingAngle
   val geometry = new Geometry()
 
-  def this() = this(0, 0, 0, null, LocalDateTime.now(), null, null, null, null, 0)
+  def this() = this(0, 0, 0, null, LocalDateTime.now(), 0,0,0,0, null, null, 0)
 
   override def settlementDate: LocalDateTime = fishSettlementDate.get
 
@@ -45,17 +48,28 @@ class Fish(
 
   override def direction : Double = fishDirection
 
-  override def changeDirection(angle : Double) : Unit = fishDirection = angle
+  override def changeDirection(angle : Double) : Unit = {
+      if(angle != LightWeightException.NoSwimmingAngle) {
+          fishDirection = angle
+      } else {
+          fishDirection = RandomNumberGenerator.getAngle
+        }
+  }
 
-  def inOlfactoryCompetencyWindow: Boolean = age <= pelagicLarvalDuration && getOntogeny == OntogenyState.Postflexion && swimming.isDirected
+  def inOlfactoryCompetencyWindow: Boolean = 
+    age <= pelagicLarvalDuration && 
+    getOntogeny == OntogenyState.Postflexion && 
+    horizontalSwimming.get.isDirected
 
   def inSettlementCompetencyWindow: Boolean = age >= nonSettlementPeriod
 
   //def canSmell : Boolean = swimming.isDirected && inOlfactoryCompetencyWindow
+  //
+  def canSwim : Boolean = getState(age) == OntogenyState.Flexion || getState(age) == OntogenyState.Postflexion
 
-  def getOntogeny: OntogenyState = ontogeny.getState(age)
+  def getOntogeny: OntogenyState = getState(age)
 
-  override def ontogeny: FishOntogeny = fishOntogeny
+  //override def ontogeny: OntogenyFish = fishOntogeny
 
   override def age: Int = fishAge
 

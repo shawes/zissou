@@ -1,7 +1,7 @@
 package physical.habitat
 
-import com.vividsolutions.jts.geom.Geometry
-import com.vividsolutions.jts.algorithm.Angle
+import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.algorithm.Angle
 import locals.HabitatType
 import physical.GeoCoordinate
 import physical.adaptors.GeometryToGeoCoordinateAdaptor

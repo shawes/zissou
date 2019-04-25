@@ -1,4 +1,4 @@
-package biology
+package biology.swimming
 
 import maths.ContinuousRange
 

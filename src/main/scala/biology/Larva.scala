@@ -10,8 +10,9 @@ import locals.PelagicLarvaeState
 import locals.PelagicLarvaeState.PelagicLarvaeState
 import physical.GeoCoordinate
 import physical.habitat.HabitatPolygon
+import biology.swimming._
 
-trait Larva {
+trait Larva extends Swimming {
 
   def id: Int
   def birthday: LocalDateTime
@@ -24,8 +25,6 @@ trait Larva {
   def history: ArrayBuffer[TimeCapsule]
   def position: GeoCoordinate
   def state: PelagicLarvaeState
-  def ontogeny: Ontogeny
-  def swimming : Swimming
   def direction : Double
   def move(newPosition: GeoCoordinate) : Unit
   def updatePosition(newPos: GeoCoordinate) : Unit
@@ -34,9 +33,6 @@ trait Larva {
   def getOntogeny: OntogenyState
   def updateHabitat(reefId : Int) : Unit
   def kill() : Unit
-  def ontogeneticVerticallyMigrate(): Unit
-  def ontogeneticVerticallyMigrateType : OntogeneticVerticalMigrationImpl
-  def dielVerticallyMigrate(dielMigration : DielVerticalMigrationType) : Unit
   def inOlfactoryCompetencyWindow: Boolean
   def inSettlementCompetencyWindow : Boolean
   def isTooOld : Boolean = age > maximumLifeSpan
@@ -47,5 +43,5 @@ trait Larva {
   def undergoesOntogeneticMigration : Boolean
   def changedOntogeneticState : Boolean
   def changeDirection(angle : Double) : Unit
-
+  def canSwim() : Boolean
 }

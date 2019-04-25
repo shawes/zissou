@@ -4,6 +4,7 @@ import java.io.File
 
 import biology._
 import biology.fish._
+import biology.swimming._
 import com.github.nscala_time.time.Imports._
 import io.{InputFiles, OutputFiles}
 import locals._
@@ -60,7 +61,7 @@ object ConfigMappings {
   implicit def ontogenyConfigMap(o: OntogenyConfig): FishOntogeny =
     new FishOntogeny(o.preFlexion, o.flexion, o.postFlexion)
 
-  implicit def swimmingConfigMap(s: SwimmingConfig): Swimming = new Swimming(SwimmingAbility.withName(s.ability), s.criticalSwimmingSpeed, s.inSituSwimmingPotential, s.endurance, s.reynoldsEffect)
+  implicit def swimmingConfigMap(s: SwimmingConfig): HorizontalSwimmingConfig = new HorizontalSwimmingConfig(SwimmingAbility.withName(s.ability), s.criticalSwimmingSpeed, s.inSituSwimmingPotential, s.endurance, s.reynoldsEffect, s.ageMaxSpeedReached, s.hatchSwimmingSpeed)
 
   implicit def verticalMigrationOntogeneticConfigMap(vm: VerticalMigrationOntogeneticConfig): VerticalMigrationOntogenetic =
     new VerticalMigrationOntogenetic(
@@ -80,7 +81,7 @@ object ConfigMappings {
   implicit def verticalMigrationDielProbabilityConfigMap(prob: VerticalMigrationDielProbabilityConfig) : VerticalMigrationDielProbability =
     new VerticalMigrationDielProbability(new ContinuousRange(prob.depthStart, prob.depthFinish, true), prob.day, prob.night)
 
-  implicit def fishConfigMap(f: FishConfig): FishParameters = new FishParameters(f.pelagicLarvalDuration, f.ontogeny, "name", true, f.swimming, f.verticalMigrationOntogeneticProbabilities, f.verticalMigrationDielProbabilities, f.isMortal, f.mortalityRate)
+  implicit def fishConfigMap(f: FishConfig): FishConfig = new FishConfig(f.pelagicLarvalDuration, f.ontogeny, "name", true, f.swimming, f.verticalMigrationOntogeneticProbabilities, f.verticalMigrationDielProbabilities, f.isMortal, f.mortalityRate)
 
 
 }

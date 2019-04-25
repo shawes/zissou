@@ -2,7 +2,7 @@ package main
 
 import org.scalatest.FlatSpec
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 import maths.integration.RungeKuttaIntegration
 import io.config.Configuration

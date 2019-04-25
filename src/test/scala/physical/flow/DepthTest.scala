@@ -1,7 +1,7 @@
 package physical.flow
 
 import org.scalatest.FlatSpec
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 
 class DepthTest extends FlatSpec with MockitoSugar {
 
