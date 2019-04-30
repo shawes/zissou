@@ -1,5 +1,7 @@
 package io.config
 
+import locals._
+
 case class Configuration(
     inputFiles: InputFilesConfig,
     spawn: SpawnConfig,
@@ -78,7 +80,7 @@ case class OutputFilesConfig(
 )
 
 case class LarvaConfig(
-    larvaClass: String,
+    species: String,
     ontogeny: OntogenyConfig,
     swimming: SwimmingConfig,
     verticalMigrationOntogeneticProbabilities: VerticalMigrationOntogeneticConfig,
@@ -96,11 +98,14 @@ case class OntogenyConfig(
 )
 
 case class SwimmingConfig(
+    strategy: String,
     ability: String,
     criticalSwimmingSpeed: Double,
     inSituSwimmingPotential: Double,
     endurance: Double,
-    reynoldsEffect: Boolean
+    reynoldsEffect: Boolean,
+    ageMaxSpeedReached: Int,
+    hatchSwimmingSpeed: Double
 )
 
 case class PelagicLarvalDurationConfig(
@@ -121,9 +126,9 @@ case class VerticalMigrationOntogeneticProbabilityConfig(
     depthStart: Int,
     depthFinish: Int,
     hatching: Double,
-    preFlexion: Double,
+    preflexion: Double,
     flexion: Double,
-    postFlexion: Double
+    postflexion: Double
 )
 
 case class VerticalMigrationDielProbabilityConfig(

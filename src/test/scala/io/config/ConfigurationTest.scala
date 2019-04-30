@@ -46,19 +46,24 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
         verticalDiffusionCoefficient: 15
         applyTurbulence: true
         interval: 1
-      fish:
+      larva:
+        species: fish
         isMortal: true
         mortalityRate: 0.26
         ontogeny:
-         preFlexion: 0
+         hatching: 0
+         preflexion: 2
          flexion: 5
-         postFlexion: 8
+         postflexion: 8
         swimming:
-         ability: Directed
+         strategy: one
+         ability: directed
          criticalSwimmingSpeed: 0.463
          inSituSwimmingPotential: 0.25
          endurance: 0.5
          reynoldsEffect: false
+         ageMaxSpeedReached: 1
+         hatchSwimmingSpeed: 1
         pelagicLarvalDuration:
          mean: 18.3
          stdev: 1.5
@@ -94,23 +99,23 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
            depthStart: 0
            depthFinish: 5
            hatching: 0
-           preFlexion: 0.4
+           preflexion: 0.4
            flexion: 0.35
-           postFlexion: 0.05
+           postflexion: 0.05
           -
            depthStart: 6
            depthFinish: 50
            hatching: 0
-           preFlexion: 0.5
+           preflexion: 0.5
            flexion: 0.5
-           postFlexion: 0.85
+           postflexion: 0.85
           -
            depthStart: 51
            depthFinish: 100
            hatching: 0
-           preFlexion: 0.1
+           preflexion: 0.1
            flexion: 0.15
-           postFlexion: 0.1
+           postflexion: 0.1
       flow:
         period:
          start: 2010-07-01
@@ -250,9 +255,9 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
     assert(ontogenyProb.depthStart == 0)
     assert(ontogenyProb.depthFinish == 5)
     assert(ontogenyProb.hatching == 0)
-    assert(ontogenyProb.preFlexion == 0.4)
+    assert(ontogenyProb.preflexion == 0.4)
     assert(ontogenyProb.flexion == 0.35)
-    assert(ontogenyProb.postFlexion == 0.05)
+    assert(ontogenyProb.postflexion == 0.05)
   }
 
   it should "parse the diel YAML" in {
@@ -271,5 +276,23 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
     assert(dielProb.depthFinish == 25)
     assert(dielProb.day == 0.1)
     assert(dielProb.night == 0.3)
+  }
+
+  it should "parse the swimming YAML" in {
+    val json = yaml.parser.parse("""     
+      strategy: one
+      ability: directed
+      criticalSwimmingSpeed: 0.463
+      inSituSwimmingPotential: 0.25
+      endurance: 0.5
+      reynoldsEffect: false
+      ageMaxSpeedReached: 1
+      hatchSwimmingSpeed: 1
+  """)
+    val config = json
+      .leftMap(err => err: Error)
+      .flatMap(_.as[SwimmingConfig])
+      .valueOr(throw _)
+    assert(config.ability == "directed")
   }
 }

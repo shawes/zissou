@@ -60,6 +60,11 @@ case object StrategyOne extends HorizontalSwimmingStrategy
 case object StrategyTwo extends HorizontalSwimmingStrategy
 case object StrategyThree extends HorizontalSwimmingStrategy
 
+sealed trait SwimmingAbility
+case object Passive extends SwimmingAbility
+case object Directed extends SwimmingAbility
+case object Undirected extends SwimmingAbility
+
 object Direction extends Enumeration {
   type Direction = Value
   val North, East, South, West = Value
@@ -83,11 +88,6 @@ object DistributionType extends Enumeration {
 object VerticalMigrationPattern extends Enumeration {
   type VerticalMigrationPattern = Value
   val None, Diel, Ontogenetic, Both = Value
-}
-
-object SwimmingAbility extends Enumeration {
-  type SwimmingAbility = Value
-  val Passive, Directed, Undirected = Value
 }
 
 object LoggingLevel extends Enumeration {

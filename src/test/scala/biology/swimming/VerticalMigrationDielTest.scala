@@ -1,14 +1,18 @@
-package biology
+package biology.swimming
 
 import org.scalatest.FlatSpec
 import org.mockito.Mockito._
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 
-class VerticalMigrationDielTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+class VerticalMigrationDielTest
+    extends FlatSpec
+    with MockitoSugar
+    with PrivateMethodTester {
 
   "A diel vertical migration" should "initialise" in {
-    val dielMigration = new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability])
+    val dielMigration =
+      new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability])
     assert(dielMigration != null)
   }
 

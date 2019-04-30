@@ -96,7 +96,14 @@ object ConfigMappings {
 
   implicit def swimmingConfigMap(s: SwimmingConfig): HorizontalSwimmingConfig =
     new HorizontalSwimmingConfig(
-      SwimmingAbility.withName(s.ability),
+      s.ability match {
+        case "directed"   => Directed
+        case "undirected" => Undirected
+        case _            => Passive
+      },
+      s.strategy match {
+        case _ => StrategyOne
+      },
       s.criticalSwimmingSpeed,
       s.inSituSwimmingPotential,
       s.endurance,
@@ -134,9 +141,9 @@ object ConfigMappings {
     new VerticalMigrationOntogeneticProbability(
       new ContinuousRange(prob.depthStart, prob.depthFinish, true),
       prob.hatching,
-      prob.preFlexion,
+      prob.preflexion,
       prob.flexion,
-      prob.postFlexion
+      prob.postflexion
     )
 
   implicit def verticalMigrationDielProbabilityConfigMap(

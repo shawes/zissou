@@ -110,8 +110,8 @@ class VerticalMigrationOntogenetic(
     ontogeny match {
       case Hatching => new Tuple2(prob.depth, prob.hatching)
       case Preflexion =>
-        new Tuple2(prob.depth, prob.preFlexion)
+        new Tuple2(prob.depth, prob.preflexion)
       case Flexion => new Tuple2(prob.depth, prob.flexion)
-      case _       => new Tuple2(prob.depth, prob.postFlexion)
+      case _       => new Tuple2(prob.depth, prob.postflexion)
     }
 }

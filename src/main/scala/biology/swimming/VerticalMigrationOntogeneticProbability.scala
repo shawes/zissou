@@ -3,8 +3,9 @@ package biology.swimming
 import maths.ContinuousRange
 
 class VerticalMigrationOntogeneticProbability(
-  depth: ContinuousRange,
-  val hatching: Double,
-  val preFlexion: Double,
-  val flexion: Double,
-  val postFlexion: Double) extends VerticalMigrationProbability(depth) {}
+    depth: ContinuousRange,
+    val hatching: Double,
+    val preflexion: Double,
+    val flexion: Double,
+    val postflexion: Double
+) extends VerticalMigrationProbability(depth) {}

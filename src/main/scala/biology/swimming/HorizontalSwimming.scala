@@ -7,10 +7,9 @@ import maths.RandomNumberGenerator
 class HorizontalSwimming(config: HorizontalSwimmingConfig) {
 
   def apply(
-      swimmingStrategy: HorizontalSwimmingStrategy,
       variables: HorizontalSwimmingVariables
   ) = {
-    val speed = swimmingStrategy match {
+    val speed = config.strategy match {
       case StrategyOne   => getSpeed(typeOneSwimmingSpeed, variables)
       case StrategyTwo   => getSpeed(typeTwoSwimmingSpeed, variables)
       case StrategyThree => getSpeed(typeTwoSwimmingSpeed, variables)
@@ -50,11 +49,12 @@ class HorizontalSwimming(config: HorizontalSwimmingConfig) {
     )
   }
 
-  def isDirected: Boolean = config.ability == SwimmingAbility.Directed
+  def isDirected: Boolean = config.ability == Directed
 }
 
 class HorizontalSwimmingConfig(
     val ability: SwimmingAbility,
+    val strategy: HorizontalSwimmingStrategy,
     val criticalSwimmingSpeed: Double,
     val inSituSwimmingPotential: Double,
     val endurance: Double,

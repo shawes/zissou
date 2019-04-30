@@ -91,7 +91,9 @@ class BiologicalModel(
       case Some(swimming) => {
         if (swimming.isDirected && larva.canSwim && larva.direction != -1) {
           Some(
-            swimming(new HorizontalSwimmingVariables(larva.direction, 0, 0, 0))
+            swimming(
+              new HorizontalSwimmingVariables(larva.direction, 0, 0, 0)
+            )
           )
         } else {
           None
