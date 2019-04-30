@@ -139,13 +139,19 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
 
   "The configuration case class" should "parse the YAML file into a configuration object" in {
     val json = yaml.parser.parse(configYAML)
-    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    val config = json
+      .leftMap(err => err: Error)
+      .flatMap(_.as[Configuration])
+      .valueOr(throw _)
     assert(config.isInstanceOf[Configuration])
   }
 
   it should "parse the input files YAML" in {
     val json = yaml.parser.parse(configYAML)
-    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    val config = json
+      .leftMap(err => err: Error)
+      .flatMap(_.as[Configuration])
+      .valueOr(throw _)
     assert(config.inputFiles.pathNetcdfFiles == "test1")
     assert(config.inputFiles.pathHabitatShapeFile == "test2")
     assert(config.inputFiles.randomSeed == 1234)
@@ -153,8 +159,14 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
 
   it should "parse the spawning YAML" in {
     val json = yaml.parser.parse(configYAML)
-    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
-    assert(config.spawn.spawningLocation.size == 2, "Not correct number of spawning locations")
+    val config = json
+      .leftMap(err => err: Error)
+      .flatMap(_.as[Configuration])
+      .valueOr(throw _)
+    assert(
+      config.spawn.spawningLocation.size == 2,
+      "Not correct number of spawning locations"
+    )
     val actual = config.spawn.spawningLocation(0)
     assert(actual.name == "location one")
     assert(actual.numberOfLarvae == 1000)
@@ -169,7 +181,10 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
 
   it should "parse the turbulence YAML" in {
     val json = yaml.parser.parse(configYAML)
-    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    val config = json
+      .leftMap(err => err: Error)
+      .flatMap(_.as[Configuration])
+      .valueOr(throw _)
     assert(config.turbulence.horizontalDiffusionCoefficient == 300)
     assert(config.turbulence.verticalDiffusionCoefficient == 15)
     assert(config.turbulence.applyTurbulence)
@@ -178,7 +193,10 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
 
   it should "parse the output YAML" in {
     val json = yaml.parser.parse(configYAML)
-    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    val config = json
+      .leftMap(err => err: Error)
+      .flatMap(_.as[Configuration])
+      .valueOr(throw _)
     assert(!config.output.includeLarvaeHistory)
     assert(config.output.saveOutputFilePath == "test3")
     assert(config.output.percentage == 5)
@@ -189,7 +207,10 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
 
   it should "parse the habitat YAML" in {
     val json = yaml.parser.parse(configYAML)
-    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    val config = json
+      .leftMap(err => err: Error)
+      .flatMap(_.as[Configuration])
+      .valueOr(throw _)
     assert(config.habitat.buffer.isBuffered)
     assert(config.habitat.buffer.settlement == 10)
     assert(config.habitat.buffer.olfactory == 10)
@@ -197,7 +218,10 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
 
   it should "parse the flow YAML" in {
     val json = yaml.parser.parse(configYAML)
-    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
+    val config = json
+      .leftMap(err => err: Error)
+      .flatMap(_.as[Configuration])
+      .valueOr(throw _)
     assert(config.flow.includeVerticalVelocity)
     assert(config.flow.period.start == "2010-07-01")
     assert(config.flow.period.end == "2011-08-31")
@@ -210,10 +234,18 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
 
   it should "parse the ovm YAML" in {
     val json = yaml.parser.parse(configYAML)
-    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
-    assert(config.fish.verticalMigrationOntogeneticProbabilities.implementation == "Stage")
-    assert(config.fish.verticalMigrationOntogeneticProbabilities.verticalMigrationOntogeneticProbability.size == 3)
-    val ontogenyProb = config.fish.verticalMigrationOntogeneticProbabilities.verticalMigrationOntogeneticProbability(0)
+    val config = json
+      .leftMap(err => err: Error)
+      .flatMap(_.as[Configuration])
+      .valueOr(throw _)
+    assert(
+      config.larva.verticalMigrationOntogeneticProbabilities.implementation == "Stage"
+    )
+    assert(
+      config.larva.verticalMigrationOntogeneticProbabilities.verticalMigrationOntogeneticProbability.size == 3
+    )
+    val ontogenyProb = config.larva.verticalMigrationOntogeneticProbabilities
+      .verticalMigrationOntogeneticProbability(0)
 
     assert(ontogenyProb.depthStart == 0)
     assert(ontogenyProb.depthFinish == 5)
@@ -225,9 +257,15 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
 
   it should "parse the diel YAML" in {
     val json = yaml.parser.parse(configYAML)
-    val config = json.leftMap(err => err: Error).flatMap(_.as[Configuration]).valueOr(throw _)
-    assert(config.fish.verticalMigrationDielProbabilities.verticalMigrationDielProbability.size == 4)
-    val dielProb = config.fish.verticalMigrationDielProbabilities.verticalMigrationDielProbability(0)
+    val config = json
+      .leftMap(err => err: Error)
+      .flatMap(_.as[Configuration])
+      .valueOr(throw _)
+    assert(
+      config.larva.verticalMigrationDielProbabilities.verticalMigrationDielProbability.size == 4
+    )
+    val dielProb = config.larva.verticalMigrationDielProbabilities
+      .verticalMigrationDielProbability(0)
 
     assert(dielProb.depthStart == 0)
     assert(dielProb.depthFinish == 25)
