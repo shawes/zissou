@@ -55,6 +55,11 @@ case object TopRight extends QuadrantLocation
 case object BottomLeft extends QuadrantLocation
 case object BottomRight extends QuadrantLocation
 
+sealed trait HorizontalSwimmingStrategy
+case object StrategyOne extends HorizontalSwimmingStrategy
+case object StrategyTwo extends HorizontalSwimmingStrategy
+case object StrategyThree extends HorizontalSwimmingStrategy
+
 object Direction extends Enumeration {
   type Direction = Value
   val North, East, South, West = Value
