@@ -21,7 +21,7 @@ class Fish(
     override val flexion: Int,
     override val postflexion: Int,
     val verticalMigrationOntogenetic: OntogeneticMigration,
-    val verticalMigrationDiel: VerticalMigrationDiel,
+    val verticalMigrationDiel: DielMigration,
     val nonSettlementPeriod: Int
 ) extends Larva
     with Logging

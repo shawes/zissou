@@ -4,8 +4,8 @@ import locals._
 
 import maths.{ContinuousRange, RandomNumberGenerator}
 
-class VerticalMigrationDiel(
-    val probabilities: List[VerticalMigrationDielProbability]
+class DielMigration(
+    val probabilities: List[DielMigrationProbability]
 ) {
 
   def enabled: Boolean = probabilities.nonEmpty

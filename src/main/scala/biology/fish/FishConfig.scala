@@ -10,7 +10,7 @@ class FishConfig(
     val savePositions: Boolean,
     val swimming: Swimming,
     val ovmProbabilities: OntogeneticMigration,
-    val dielProbabilities: VerticalMigrationDiel,
+    val dielProbabilities: DielMigration,
     val isMortal: Boolean,
     val mortalityRate: Double
 ) {

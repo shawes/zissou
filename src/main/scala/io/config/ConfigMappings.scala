@@ -128,8 +128,8 @@ object ConfigMappings {
 
   implicit def verticalMigrationDielConfigMap(
       vm: VerticalMigrationDielConfig
-  ): VerticalMigrationDiel =
-    new VerticalMigrationDiel(
+  ): DielMigration =
+    new DielMigration(
       vm.verticalMigrationDielProbability
         .map(x => verticalMigrationDielProbabilityConfigMap(x))
         .toList
@@ -152,8 +152,8 @@ object ConfigMappings {
 
   implicit def verticalMigrationDielProbabilityConfigMap(
       probability: VerticalMigrationDielProbabilityConfig
-  ): VerticalMigrationDielProbability =
-    new VerticalMigrationDielProbability(
+  ): DielMigrationProbability =
+    new DielMigrationProbability(
       new ContinuousRange(
         probability.depthStart,
         probability.depthFinish,
