@@ -94,32 +94,32 @@ object ConfigMappings {
       pld.nonSettlementPeriod
     )
 
-  implicit def swimmingConfigMap(s: SwimmingConfig): HorizontalSwimmingConfig =
-    new HorizontalSwimmingConfig(
-      s.ability match {
-        case "directed"   => Directed
-        case "undirected" => Undirected
-        case _            => Passive
-      },
-      s.strategy match {
-        case _ => StrategyOne
-      },
-      s.criticalSwimmingSpeed,
-      s.inSituSwimmingPotential,
-      s.endurance,
-      s.reynoldsEffect,
-      s.ageMaxSpeedReached,
-      s.hatchSwimmingSpeed
-    )
+  // implicit def swimmingConfigMap(s: SwimmingConfig): HorizontalSwimmingConfig =
+  //   new HorizontalSwimmingConfig(
+  //     s.ability match {
+  //       case "directed"   => Directed
+  //       case "undirected" => Undirected
+  //       case _            => Passive
+  //     },
+  //     s.strategy match {
+  //       case _ => StrategyOne
+  //     },
+  //     s.criticalSwimmingSpeed,
+  //     s.inSituSwimmingPotential,
+  //     s.endurance,
+  //     s.reynoldsEffect,
+  //     s.ageMaxSpeedReached,
+  //     s.hatchSwimmingSpeed
+  //   )
 
   implicit def verticalMigrationOntogeneticConfigMap(
-      vm: VerticalMigrationOntogeneticConfig
-  ): VerticalMigrationOntogenetic =
-    new VerticalMigrationOntogenetic(
+      vm: OntogeneticMigrationConfig
+  ): OntogeneticMigration =
+    new OntogeneticMigration(
       vm.implementation match {
         case "Daily"    => DailyMigration
-        case "Timestep" => TimeStepMigration
-        case _          => StageMigration
+        case "TimeStep" => TimeStepMigration
+        case _          => OntogeneticStageMigration
       },
       vm.verticalMigrationOntogeneticProbability
         .map(x => verticalMigrationOntogeneticProbabilityConfigMap(x))
@@ -136,23 +136,31 @@ object ConfigMappings {
     )
 
   implicit def verticalMigrationOntogeneticProbabilityConfigMap(
-      prob: VerticalMigrationOntogeneticProbabilityConfig
-  ): VerticalMigrationOntogeneticProbability =
-    new VerticalMigrationOntogeneticProbability(
-      new ContinuousRange(prob.depthStart, prob.depthFinish, true),
-      prob.hatching,
-      prob.preflexion,
-      prob.flexion,
-      prob.postflexion
+      probability: OntogeneticMigrationProbabilityConfig
+  ): OntogeneticMigrationProbability =
+    new OntogeneticMigrationProbability(
+      new ContinuousRange(
+        probability.depthStart,
+        probability.depthFinish,
+        true
+      ),
+      probability.hatching,
+      probability.preflexion,
+      probability.flexion,
+      probability.postflexion
     )
 
   implicit def verticalMigrationDielProbabilityConfigMap(
-      prob: VerticalMigrationDielProbabilityConfig
+      probability: VerticalMigrationDielProbabilityConfig
   ): VerticalMigrationDielProbability =
     new VerticalMigrationDielProbability(
-      new ContinuousRange(prob.depthStart, prob.depthFinish, true),
-      prob.day,
-      prob.night
+      new ContinuousRange(
+        probability.depthStart,
+        probability.depthFinish,
+        true
+      ),
+      probability.day,
+      probability.night
     )
 
 }

@@ -83,8 +83,8 @@ case class LarvaConfig(
     species: String,
     ontogeny: OntogenyConfig,
     swimming: SwimmingConfig,
-    verticalMigrationOntogeneticProbabilities: VerticalMigrationOntogeneticConfig,
-    verticalMigrationDielProbabilities: VerticalMigrationDielConfig,
+    ovmProbabilities: OntogeneticMigrationConfig,
+    dielProbabilities: VerticalMigrationDielConfig,
     pelagicLarvalDuration: PelagicLarvalDurationConfig,
     isMortal: Boolean,
     mortalityRate: Double
@@ -115,14 +115,14 @@ case class PelagicLarvalDurationConfig(
     nonSettlementPeriod: Double
 )
 
-case class VerticalMigrationOntogeneticConfig(
+case class OntogeneticMigrationConfig(
     implementation: String,
     verticalMigrationOntogeneticProbability: List[
-      VerticalMigrationOntogeneticProbabilityConfig
+      OntogeneticMigrationProbabilityConfig
     ]
 )
 
-case class VerticalMigrationOntogeneticProbabilityConfig(
+case class OntogeneticMigrationProbabilityConfig(
     depthStart: Int,
     depthFinish: Int,
     hatching: Double,

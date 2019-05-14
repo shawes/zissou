@@ -28,12 +28,12 @@ object Constants {
   }
 
   object LightWeightException {
-    val NoReefToSettleException = -100
-    val UndefinedVelocityException = -200
-    val UndefinedCoordinateException = -300
-    val CoordinateNotFoundException = -400
-    val NoReefSensedException = -500
-    val NoSwimmingAngleException = -600
+    val NoReefToSettleException = -1
+    val UndefinedVelocityException = -2
+    val UndefinedCoordinateException = -3
+    val CoordinateNotFoundException = -4
+    val NoReefSensedException = -5
+    val NoSwimmingAngleException = -6
   }
 
   object Interpolation {

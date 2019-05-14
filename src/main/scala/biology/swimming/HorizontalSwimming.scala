@@ -4,12 +4,21 @@ import locals._
 import physical.Velocity
 import maths.RandomNumberGenerator
 
-class HorizontalSwimming(config: HorizontalSwimmingConfig) {
+class HorizontalSwimming(
+    val ability: SwimmingAbility,
+    val strategy: HorizontalSwimmingStrategy,
+    val criticalSwimmingSpeed: Double,
+    val inSituSwimmingPotential: Double,
+    val endurance: Double,
+    val reynoldsEffect: Boolean,
+    val ageMaxSpeedReached: Int,
+    val hatchSwimmingSpeed: Double
+) {
 
   def apply(
       variables: HorizontalSwimmingVariables
   ) = {
-    val speed = config.strategy match {
+    val speed = strategy match {
       case StrategyOne   => getSpeed(typeOneSwimmingSpeed, variables)
       case StrategyTwo   => getSpeed(typeTwoSwimmingSpeed, variables)
       case StrategyThree => getSpeed(typeTwoSwimmingSpeed, variables)
@@ -24,44 +33,39 @@ class HorizontalSwimming(config: HorizontalSwimmingConfig) {
       variables: HorizontalSwimmingVariables
   ) = impl(variables)
 
-  def typeOneSwimmingSpeed(variables: HorizontalSwimmingVariables): Double = {
-    config.criticalSwimmingSpeed *
-      RandomNumberGenerator.get(config.inSituSwimmingPotential, 1) *
-      config.endurance
+  private def typeOneSwimmingSpeed(
+      variables: HorizontalSwimmingVariables
+  ): Double = {
+    criticalSwimmingSpeed *
+      RandomNumberGenerator.get(inSituSwimmingPotential, 1) *
+      endurance
   }
 
   // From Wolanski 2014
-  def typeTwoSwimmingSpeed(variables: HorizontalSwimmingVariables): Double = {
-    if (variables.age < config.ageMaxSpeedReached) {
-      config.criticalSwimmingSpeed * (variables.age - variables.preflexion) / (config.ageMaxSpeedReached - variables.preflexion)
+  private def typeTwoSwimmingSpeed(
+      variables: HorizontalSwimmingVariables
+  ): Double = {
+    if (variables.age < ageMaxSpeedReached) {
+      criticalSwimmingSpeed * (variables.age - variables.preflexion) / (ageMaxSpeedReached - variables.preflexion)
     } else {
-      config.criticalSwimmingSpeed
+      criticalSwimmingSpeed
     }
   }
 
   /* From Staaterman 2012 */
-  def typeThreeSwimmingSpeed(variables: HorizontalSwimmingVariables): Double = {
-    config.hatchSwimmingSpeed + Math.pow(
+  private def typeThreeSwimmingSpeed(
+      variables: HorizontalSwimmingVariables
+  ): Double = {
+    hatchSwimmingSpeed + Math.pow(
       10,
       Math.log(variables.age) / Math.log(variables.pld) * Math.log(
-        config.criticalSwimmingSpeed - config.hatchSwimmingSpeed
+        criticalSwimmingSpeed - hatchSwimmingSpeed
       )
     )
   }
 
-  def isDirected: Boolean = config.ability == Directed
+  def isDirected: Boolean = ability == Directed
 }
-
-class HorizontalSwimmingConfig(
-    val ability: SwimmingAbility,
-    val strategy: HorizontalSwimmingStrategy,
-    val criticalSwimmingSpeed: Double,
-    val inSituSwimmingPotential: Double,
-    val endurance: Double,
-    val reynoldsEffect: Boolean,
-    val ageMaxSpeedReached: Int,
-    val hatchSwimmingSpeed: Double
-) {}
 
 class HorizontalSwimmingVariables(
     val angle: Double,

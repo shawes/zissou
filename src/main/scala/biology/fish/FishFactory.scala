@@ -3,12 +3,13 @@ package biology.fish
 import grizzled.slf4j._
 import io.config.ConfigMappings._
 import io.config.LarvaConfig
-import locals.{Constants, LarvaType, Random, Fixed, DistributionType}
+import locals._
 import maths.{RandomNumberGenerator}
 import org.apache.commons.math3.distribution.NormalDistribution
 import com.github.nscala_time.time.Imports._
 import physical.GeoCoordinate
 import biology._
+import biology.swimming._
 import utilities.Time
 import scala.collection.mutable.ArrayBuffer
 import java.util.UUID.randomUUID
@@ -26,6 +27,26 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
     },
     config.pelagicLarvalDuration.nonSettlementPeriod
   )
+
+  val horizontalSwimming =
+    new HorizontalSwimming(
+      config.swimming.ability match {
+        case "directed"   => Directed
+        case "undirected" => Undirected
+        case _            => Passive
+      },
+      config.swimming.strategy match {
+        case "one"   => StrategyOne
+        case "two"   => StrategyTwo
+        case "three" => StrategyThree
+      },
+      config.swimming.criticalSwimmingSpeed,
+      config.swimming.inSituSwimmingPotential,
+      config.swimming.endurance,
+      config.swimming.reynoldsEffect,
+      config.swimming.ageMaxSpeedReached,
+      config.swimming.hatchSwimmingSpeed
+    )
 
   val hatchingDistribution = new NormalDistribution(
     Time.convertDaysToSeconds(config.ontogeny.hatching),
@@ -88,8 +109,8 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
       preflexion,
       flexion,
       postflexion,
-      config.verticalMigrationOntogeneticProbabilities,
-      config.verticalMigrationDielProbabilities,
+      config.ovmProbabilities,
+      config.dielProbabilities,
       Time.convertDaysToSeconds(nonSettlementPeriod)
     )
     fish

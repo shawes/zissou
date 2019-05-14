@@ -22,10 +22,11 @@ class ConnectivityMatrix(larvae: Array[Larva], csvFile: File) {
     sb ++= larva.birthplace.name + ","
     sb ++= larva.birthplace.reef + ","
     sb ++= larva.age + ","
-    sb ++= larva.settlementDate.toLocalDate.toString + ","
-    sb ++= larva.polygon + "\n"
+    sb ++= larva.settlementDate.get.toLocalDate.toString + ","
+    sb ++= larva.settledHabitatId + "\n"
     sb.toString()
   }
 
-  private def columnHeaders: String = "id,born,region,source,age,recruited,settle"
+  private def columnHeaders: String =
+    "id,born,region,source,age,recruited-date,settle-id"
 }

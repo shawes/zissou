@@ -2,7 +2,7 @@ package biology.swimming
 
 import maths.ContinuousRange
 
-class VerticalMigrationOntogeneticProbability(
+class OntogeneticMigrationProbability(
     depth: ContinuousRange,
     val hatching: Double,
     val preflexion: Double,

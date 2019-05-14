@@ -16,10 +16,10 @@ sealed trait PelagicLarvalDurationType
 case object Random extends PelagicLarvalDurationType
 case object Fixed extends PelagicLarvalDurationType
 
-sealed trait OntogeneticVerticalMigrationImpl
-case object StageMigration extends OntogeneticVerticalMigrationImpl
-case object DailyMigration extends OntogeneticVerticalMigrationImpl
-case object TimeStepMigration extends OntogeneticVerticalMigrationImpl
+sealed trait OntogeneticMigrationStrategy
+case object OntogeneticStageMigration extends OntogeneticMigrationStrategy
+case object DailyMigration extends OntogeneticMigrationStrategy
+case object TimeStepMigration extends OntogeneticMigrationStrategy
 
 sealed trait DielVerticalMigrationType
 case object Day extends DielVerticalMigrationType
@@ -46,7 +46,7 @@ case object InterpolateTomorrow extends InterpolationTime
 sealed trait InterpolationType
 case object Bilinear extends InterpolationType
 case object Bicubic extends InterpolationType
-case object TriLinear extends InterpolationType
+case object Trilinear extends InterpolationType
 case object Tricubic extends InterpolationType
 
 sealed trait QuadrantLocation

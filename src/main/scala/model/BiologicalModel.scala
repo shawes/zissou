@@ -55,16 +55,23 @@ class BiologicalModel(
     stationaryLarvae ++= cull._2
   }
 
+  /*
+   Cycles through all the biological processes per time iteration
+   - increment the age
+   - move
+   - sense habitat
+   - kill if too old
+   */
   private def biology(larva: Larva): Unit = {
-    ageLarvae(larva)
-    move(larva)
+    val recentlyDeveloped = ageLarvae(larva)
+    mortalityDueToOldAgeCheck(larva)
+    move(larva, recentlyDeveloped)
     sense(larva)
-    lifespanCheck(larva)
   }
 
-  private def move(larva: Larva): Unit = {
+  private def move(larva: Larva, recentlyDeveloped: Boolean): Unit = {
     val dampeningFactor: List[Double] = List(1.0)
-    val orientate = swim(larva)
+    val orientate = larva.swim()
     def moveParticle(larva: Larva, dampeningFactor: List[Double]): Unit = {
       if (dampeningFactor.nonEmpty) {
         integrator.integrate(
@@ -83,44 +90,38 @@ class BiologicalModel(
       }
     }
     moveParticle(larva, dampeningFactor)
-    migrateLarvaVertically(larva)
+    migrateLarvaVertically(larva, recentlyDeveloped)
   }
 
-  private def swim(larva: Larva): Option[Velocity] = {
-    larva.horizontalSwimming match {
-      case Some(swimming) => {
-        if (swimming.isDirected && larva.canSwim && larva.direction != -1) {
-          Some(
-            swimming(
-              new HorizontalSwimmingVariables(larva.direction, 0, 0, 0)
-            )
-          )
-        } else {
-          None
+  private def migrateLarvaVertically(
+      larva: Larva,
+      recentlyDeveloped: Boolean
+  ): Unit = {
+    if (clock.isSunRising(larva.position)) {
+      larva.dielMigrate(Day)
+    } else if (clock.isSunSetting(larva.position)) {
+      larva.dielMigrate(Night)
+    }
+    larva.ovmMigrate(
+      new OntogeneticMigrationVariables(recentlyDeveloped, clock.isMidnight)
+    )
+  }
+
+  private def canDielMigrate(larva: Larva): Unit = {
+    larva.diel match {
+      case Some(diel) => {
+        if (clock.isSunRising(larva.position)) {
+          larva.dielMigrate(Day)
+        } else if (clock.isSunSetting(larva.position)) {
+          larva.dielMigrate(Night)
         }
       }
-      case None => None
+      case None =>
     }
   }
 
-  private def migrateLarvaVertically(larva: Larva): Unit = {
-    if (larva.undergoesDielMigration) {
-      if (clock.isSunRising(larva.position)) {
-        //larva.diel(Day)
-      } else if (clock.isSunSetting(larva.position)) {
-        //larva.diel(Night)
-      }
-    }
-    //if (larva.undergoesOntogeneticMigration &&
-    //((larva.ontogeneticVerticallyMigrateType == StageMigration && larva.changedOntogeneticState) || (larva.ontogeneticVerticallyMigrateType == TimeStepMigration)
-    //|| larva.ontogeneticVerticallyMigrateType == DailyMigration && clock.isMidnight)) {
-
-    larva.ovm
-    //}
-  }
-
-  private def ageLarvae(larva: Larva): Unit = {
-    larva growOlder clock.timeStep.totalSeconds
+  private def ageLarvae(larva: Larva): Boolean = {
+    larva incrementAge clock.timeStep.totalSeconds
   }
 
   private def mortality(larva: Larva): Unit = {
@@ -130,21 +131,21 @@ class BiologicalModel(
   }
 
   private def sense(larva: Larva): Unit = {
-    if (larva.inOlfactoryCompetencyWindow || larva.inSettlementCompetencyWindow) {
+    if (larva.canSettle || larva.canSense) {
       val index = habitatManager.getClosestHabitat(larva.position)
-      if (index._1 != NoReefToSettleException && larva.inSettlementCompetencyWindow) {
+      if (index._1 != NoReefToSettleException && larva.canSettle) {
         larva.settle(index._1, clock.now)
       } else {
-        if (index._2 != NoReefSensedException && larva.inOlfactoryCompetencyWindow) {
-          larva.changeDirection(index._3)
+        if (index._2 != NoReefSensedException && larva.canSense) {
+          larva.direction = index._3
         } else {
-          larva.changeDirection(NoSwimmingAngleException)
+          larva.direction = RandomNumberGenerator.getAngle
         }
       }
     }
   }
 
-  private def lifespanCheck(larva: Larva): Unit = {
+  private def mortalityDueToOldAgeCheck(larva: Larva): Unit = {
     if (larva.isPelagic && larva.isTooOld) {
       larva.kill()
     }

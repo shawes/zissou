@@ -2,6 +2,11 @@ package biology
 
 import locals._
 import physical.GeoCoordinate
+import scala.collection.mutable.ArrayBuffer
+
+trait History {
+  val history: ArrayBuffer[TimeCapsule] = ArrayBuffer.empty[TimeCapsule]
+}
 
 class TimeCapsule(
     val age: Int,

@@ -3,7 +3,7 @@ package biology.fish
 import grizzled.slf4j.Logging
 import locals._
 import locals.Constants.LightWeightException._
-import physical.GeoCoordinate
+import physical.{GeoCoordinate, Velocity}
 import com.github.nscala_time.time.Imports._
 import biology._
 import biology.swimming._
@@ -20,24 +20,20 @@ class Fish(
     override val preflexion: Int,
     override val flexion: Int,
     override val postflexion: Int,
-    val verticalMigrationOntogenetic: VerticalMigrationOntogenetic,
+    val verticalMigrationOntogenetic: OntogeneticMigration,
     val verticalMigrationDiel: VerticalMigrationDiel,
     val nonSettlementPeriod: Int
 ) extends Larva
     with Logging
     with Swimming
-    with OntogenyFish {
+    with OntogenyFish
+    with History {
 
-  override val history = ArrayBuffer.empty[TimeCapsule]
-  //var fishState: PelagicLarvaeState = Pelagic
-  //var fishAge = 0
-  var fishSettlementDate: Option[LocalDateTime] = None
-  override var position = birthplace.location
-  var fishPolygon: Int = 0
-  var lastDielMigration: Option[DielVerticalMigrationType] = None
-  var nightDepth: Double = -1
-  private var hasChangedOntogeneticState: Boolean = false
-  var fishDirection: Double = NoSwimmingAngleException
+  //var fishPolygon: Int = 0
+  private var lastDielMigration: Option[DielVerticalMigrationType] = None
+  private var nightDepth: Double = -1
+  //private var hasChangedOntogeneticState: Boolean = false
+  //var direction: Double = NoSwimmingAngleException
   val geometry = new Geometry()
   //override val history: ArrayBuffer[TimeCapsule] = fishHistory
 
@@ -45,136 +41,137 @@ class Fish(
 
   override val birthday: LocalDateTime = spawned
 
-  override def settlementDate: LocalDateTime = fishSettlementDate.get
+  //override def settlementDate: LocalDateTime = settlementDate.get
 
-  override def changedOntogeneticState: Boolean = hasChangedOntogeneticState
-
-  override def direction: Double = fishDirection
-
-  override def changeDirection(angle: Double): Unit = {
-    if (angle != NoSwimmingAngleException) {
-      fishDirection = angle
-    } else {
-      fishDirection = RandomNumberGenerator.getAngle
-    }
-  }
-
-  def inOlfactoryCompetencyWindow: Boolean =
+  /*
+   A fish can sense if is in a window where olfactory competency has developed and if it has the ability to swim in a directed fashion.
+   */
+  def canSense: Boolean =
     age <= pelagicLarvalDuration &&
-      getOntogeny == Postflexion &&
-      horizontalSwimming.get.isDirected
+      ontogeny == Postflexion &&
+      (horizontalSwimming match {
+        case Some(swimming) => swimming.isDirected
+        case None           => false
+      })
 
-  def inSettlementCompetencyWindow: Boolean = age >= nonSettlementPeriod
+  def canSettle: Boolean = age >= nonSettlementPeriod
 
-  //def canSmell : Boolean = swimming.isDirected && inOlfactoryCompetencyWindow
-  //
   def canSwim: Boolean =
-    getState(age) == Flexion || getState(age) == Postflexion
+    ontogeny == Flexion || ontogeny == Postflexion
 
-  def getOntogeny: OntogeneticState = getState(age)
-
-  //override def ontogeny: OntogenyFish = fishOntogeny
-
-  //override def age: Int = fishAge
-
-  def undergoesOntogeneticMigration: Boolean = {
-    trace(
-      "Checking OVM, size is " + verticalMigrationOntogenetic.probabilities.size
-    )
-    verticalMigrationOntogenetic.probabilities.nonEmpty
-  }
-
-  def ontogeneticVerticallyMigrateType: OntogeneticVerticalMigrationImpl =
-    verticalMigrationOntogenetic.implementation
-
-  def undergoesDielMigration: Boolean =
-    verticalMigrationDiel.probabilities.nonEmpty
-
-  def move(location: GeoCoordinate): Unit = {
-    if (location != position) {
-      changeState(Pelagic)
-      updatePosition(location)
+  def move(newPosition: GeoCoordinate): Unit = {
+    if (newPosition != position) {
+      changeLarvaState(Pelagic)
+      position = newPosition
     }
   }
 
-  def updatePosition(newPos: GeoCoordinate): Unit = {
-    position = newPos
+  /*
+   * Develops the larvae by ageing it the specified number of seconds
+   */
+  override def incrementAge(seconds: Int): Boolean = {
+    age += seconds
+    val newOntogeny = getOntogeneticStateForAge(age)
+    if (newOntogeny == ontogeny) {
+      false
+    } else {
+      ontogeny = newOntogeny
+      true
+    }
   }
 
-  def growOlder(seconds: Int): Unit = {
-    val initialOntogeny = getOntogeny
-    age += seconds
-    val currentOntogeny = getOntogeny
-    if (initialOntogeny == currentOntogeny) {
-      hasChangedOntogeneticState = false
-    } else {
-      hasChangedOntogeneticState = true
+  def swim(): Option[Velocity] = {
+    horizontalSwimming match {
+      case Some(swimming) => {
+        if (swimming.isDirected && canSwim && direction != NoSwimmingAngleException) {
+          Some(
+            swimming(
+              new HorizontalSwimmingVariables(
+                direction,
+                age,
+                preflexion,
+                pelagicLarvalDuration
+              )
+            )
+          )
+        } else {
+          None
+        }
+      }
+      case None => None
     }
   }
 
   def settle(reefId: Int, date: LocalDateTime): Unit = {
-    updateHabitat(reefId)
-    fishSettlementDate = Some(date)
-    changeState(Settled)
-  }
-
-  def updateHabitat(reefId: Int): Unit = {
-    fishPolygon = reefId
+    settledHabitatId = reefId
+    settlementDate = Some(date)
+    changeLarvaState(Settled)
   }
 
   def kill(): Unit = {
-    changeState(Dead)
+    changeLarvaState(Dead)
   }
 
-  private def changeState(newState: PelagicLarvaeState): Unit = {
-    state = newState
+  private def changeLarvaState(newState: PelagicLarvaeState): Unit = {
+    larvaState = newState
     saveState()
   }
 
   private def saveState(): Unit =
     history append new TimeCapsule(
       age,
-      getOntogeny,
-      state,
-      polygon,
+      ontogeny,
+      larvaState,
+      settledHabitatId,
       position
     )
 
-  //override def position: GeoCoordinate = fishPosition
-
-  override def polygon: Int = fishPolygon
-
-  def ontogeneticVerticallyMigrate: Unit = {
-
-    val depth =
-      verticalMigrationOntogenetic.getDepth(getOntogeny, position.depth)
-    updatePosition(
-      new GeoCoordinate(position.latitude, position.longitude, depth)
-    )
+  override def ovmMigrate(variables: OntogeneticMigrationVariables): Unit = {
+    ovm match {
+      case Some(ovm) => {
+        ovm.implementation match {
+          case TimeStepMigration =>
+            depthMigration(ovm(ontogeny, position.depth))
+          case OntogeneticStageMigration =>
+            if (variables.recentlyDeveloped)
+              depthMigration(ovm(ontogeny, position.depth))
+          case DailyMigration =>
+            if (variables.isMidnight)
+              depthMigration(ovm(ontogeny, position.depth))
+          case _ =>
+        }
+      }
+      case None => ()
+    }
   }
 
-  def dielVerticallyMigrate(
-      dielMigration: DielVerticalMigrationType
-  ): Unit = {
-    if (!lastDielMigration.isDefined || lastDielMigration.get != dielMigration) {
-      var newDepth = position
-      if (undergoesOntogeneticMigration && dielMigration == Day) {
-        val depth = verticalMigrationDiel.getDepth(dielMigration)
-        nightDepth = position.depth
-        newDepth =
-          new GeoCoordinate(position.latitude, position.longitude, depth)
-      } else if (undergoesOntogeneticMigration && dielMigration == Night) {
-        if (nightDepth >= 0)
-          newDepth =
-            new GeoCoordinate(position.latitude, position.longitude, nightDepth)
-      } else {
-        val depth = verticalMigrationDiel.getDepth(dielMigration)
-        newDepth =
-          new GeoCoordinate(position.latitude, position.longitude, depth)
+  override def dielMigrate(time: DielVerticalMigrationType): Unit = {
+    diel match {
+      case Some(diel) => {
+        if (!lastDielMigration.isDefined || lastDielMigration.get != time) {
+          if (ovm.isDefined) {
+            time match {
+              case Day => {
+                nightDepth = position.depth
+                depthMigration(diel(Day))
+              }
+              case Night =>
+                if (nightDepth >= 0) {
+                  depthMigration(nightDepth)
+                }
+            }
+          } else {
+            depthMigration(diel(time))
+            lastDielMigration = Some(time)
+          }
+        }
       }
-      updatePosition(newDepth)
-      lastDielMigration = Some(dielMigration)
+      case None =>
     }
+  }
+
+  private def depthMigration(depth: Double): Unit = {
+    move(new GeoCoordinate(position.latitude, position.longitude, depth))
   }
 
   override def toString: String =
@@ -183,7 +180,7 @@ class Fish(
       "age:" + age / Constants.SecondsInDay + "," +
       "pld:" + pelagicLarvalDuration / Constants.SecondsInDay + "," +
       "birthplace:" + birthplace.name + "," +
-      "state:" + state + "," +
+      "larvaState:" + larvaState + "," +
       "history:" + history.size
 
 }

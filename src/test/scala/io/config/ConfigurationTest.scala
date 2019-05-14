@@ -70,7 +70,7 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
          distribution: Normal
          pldType: Fixed
          nonSettlementPeriod: 5
-        verticalMigrationDielProbabilities:
+        dielProbabilities:
          verticalMigrationDielProbability:
           -
            depthStart: 0
@@ -92,7 +92,7 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
            depthFinish: 100
            day: 0.2
            night: 0.1
-        verticalMigrationOntogeneticProbabilities:
+        ovmProbabilities:
          implementation: Stage
          verticalMigrationOntogeneticProbability:
           -
@@ -244,12 +244,12 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
       .flatMap(_.as[Configuration])
       .valueOr(throw _)
     assert(
-      config.larva.verticalMigrationOntogeneticProbabilities.implementation == "Stage"
+      config.larva.ovmProbabilities.implementation == "Stage"
     )
     assert(
-      config.larva.verticalMigrationOntogeneticProbabilities.verticalMigrationOntogeneticProbability.size == 3
+      config.larva.ovmProbabilities.verticalMigrationOntogeneticProbability.size == 3
     )
-    val ontogenyProb = config.larva.verticalMigrationOntogeneticProbabilities
+    val ontogenyProb = config.larva.ovmProbabilities
       .verticalMigrationOntogeneticProbability(0)
 
     assert(ontogenyProb.depthStart == 0)
@@ -267,9 +267,9 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
       .flatMap(_.as[Configuration])
       .valueOr(throw _)
     assert(
-      config.larva.verticalMigrationDielProbabilities.verticalMigrationDielProbability.size == 4
+      config.larva.dielProbabilities.verticalMigrationDielProbability.size == 4
     )
-    val dielProb = config.larva.verticalMigrationDielProbabilities
+    val dielProb = config.larva.dielProbabilities
       .verticalMigrationDielProbability(0)
 
     assert(dielProb.depthStart == 0)

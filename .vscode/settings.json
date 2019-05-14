@@ -1,4 +1,10 @@
 {
     "editor.wordWrap": "on",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "cSpell.ignoreWords": [
+        "mockito",
+        "situ",
+        "staaterman",
+        "wolanski"
+    ]
 }

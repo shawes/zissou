@@ -4,14 +4,14 @@ import locals._
 import maths.{ContinuousRange, RandomNumberGenerator}
 import scala.collection.mutable.ListBuffer
 
-class VerticalMigrationOntogenetic(
-    val implementation: OntogeneticVerticalMigrationImpl,
-    val probabilities: List[VerticalMigrationOntogeneticProbability]
+class OntogeneticMigration(
+    val implementation: OntogeneticMigrationStrategy,
+    val probabilities: List[OntogeneticMigrationProbability]
 ) {
 
   def enabled: Boolean = probabilities.nonEmpty
 
-  def getDepth(ontogeny: OntogeneticState, currentDepth: Double): Double = {
+  def apply(ontogeny: OntogeneticState, currentDepth: Double): Double = {
     implementation match {
       case TimeStepMigration => getDepthRestricted(ontogeny, currentDepth)
       case _                 => getDepthRandom(ontogeny)
@@ -25,17 +25,17 @@ class VerticalMigrationOntogenetic(
       list append getProbability(vmp, ontogeny)
     })
 
-    var cumulativeProb = 0.0
+    var cumulativeProbability = 0.0
     val number = RandomNumberGenerator.get
 
     val iterator = list.iterator
     var currentDepth: (ContinuousRange, Double) =
       new Tuple2(new ContinuousRange(), 0)
     currentDepth = iterator.next
-    cumulativeProb += currentDepth._2
-    while (number > cumulativeProb && iterator.hasNext) {
+    cumulativeProbability += currentDepth._2
+    while (number > cumulativeProbability && iterator.hasNext) {
       currentDepth = iterator.next
-      cumulativeProb += currentDepth._2
+      cumulativeProbability += currentDepth._2
     }
     calculateDepthInRange(currentDepth._1)
   }
@@ -104,14 +104,19 @@ class VerticalMigrationOntogenetic(
   }
 
   private def getProbability(
-      prob: VerticalMigrationOntogeneticProbability,
+      probability: OntogeneticMigrationProbability,
       ontogeny: OntogeneticState
   ): (ContinuousRange, Double) =
     ontogeny match {
-      case Hatching => new Tuple2(prob.depth, prob.hatching)
+      case Hatching => new Tuple2(probability.depth, probability.hatching)
       case Preflexion =>
-        new Tuple2(prob.depth, prob.preflexion)
-      case Flexion => new Tuple2(prob.depth, prob.flexion)
-      case _       => new Tuple2(prob.depth, prob.postflexion)
+        new Tuple2(probability.depth, probability.preflexion)
+      case Flexion => new Tuple2(probability.depth, probability.flexion)
+      case _       => new Tuple2(probability.depth, probability.postflexion)
     }
 }
+
+case class OntogeneticMigrationVariables(
+    recentlyDeveloped: Boolean = false,
+    isMidnight: Boolean = false
+)

@@ -36,37 +36,37 @@ class FishOntogenyTest extends FlatSpec {
   }
 
   it should "give the ontogeny state as hatching" in {
-    val result = ontogeny.getState(500)
+    val result = ontogeny.getOntogeneticStateForAge(500)
     result should equal(Hatching)
   }
 
   it should "give the ontogeny state as preflexion" in {
-    val result = ontogeny.getState(1500)
+    val result = ontogeny.getOntogeneticStateForAge(1500)
     result should equal(Preflexion)
   }
 
   it should "give the ontogeny state as preflexion if equal" in {
-    val result = ontogeny.getState(1000)
+    val result = ontogeny.getOntogeneticStateForAge(1000)
     result should equal(Preflexion)
   }
 
   it should "give the ontogeny state as flexion" in {
-    val result = ontogeny.getState(2500)
+    val result = ontogeny.getOntogeneticStateForAge(2500)
     result should equal(Flexion)
   }
 
   it should "give the ontogeny state as flexion if equal" in {
-    val result = ontogeny.getState(2000)
+    val result = ontogeny.getOntogeneticStateForAge(2000)
     result should equal(Flexion)
   }
 
   it should "give the ontogeny state as postflexion" in {
-    val result = ontogeny.getState(3500)
+    val result = ontogeny.getOntogeneticStateForAge(3500)
     result should equal(Postflexion)
   }
 
   it should "give the ontogeny state as postflexion if equal" in {
-    val result = ontogeny.getState(3000)
+    val result = ontogeny.getOntogeneticStateForAge(3000)
     result should equal(Postflexion)
   }
 

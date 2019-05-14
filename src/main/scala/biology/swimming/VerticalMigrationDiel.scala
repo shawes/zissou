@@ -11,29 +11,29 @@ class VerticalMigrationDiel(
   def enabled: Boolean = probabilities.nonEmpty
 
   //TODO: Reduce complexity of this method
-  def getDepth(dielMigration: DielVerticalMigrationType): Double = {
-    var cumulativeProb = 0.0
+  def apply(dielMigration: DielVerticalMigrationType): Double = {
+    var cumulativeProbability = 0.0
     val number = RandomNumberGenerator.get
     val iterator = probabilities.iterator
     var currentDepth: (ContinuousRange, Double) =
       new Tuple2(new ContinuousRange(), 0)
-    val prob = iterator.next
+    val probability = iterator.next
 
     if (dielMigration == Day) {
-      currentDepth = (prob.depth, prob.day)
+      currentDepth = (probability.depth, probability.day)
     } else {
-      currentDepth = (prob.depth, prob.night)
+      currentDepth = (probability.depth, probability.night)
     }
 
-    cumulativeProb += currentDepth._2
-    while (number > cumulativeProb && iterator.hasNext) {
-      val prob = iterator.next
+    cumulativeProbability += currentDepth._2
+    while (number > cumulativeProbability && iterator.hasNext) {
+      val probability = iterator.next
       if (dielMigration == Day) {
-        currentDepth = (prob.depth, prob.day)
+        currentDepth = (probability.depth, probability.day)
       } else {
-        currentDepth = (prob.depth, prob.night)
+        currentDepth = (probability.depth, probability.night)
       }
-      cumulativeProb += currentDepth._2
+      cumulativeProbability += currentDepth._2
     }
     calculateDepthInRange(currentDepth._1)
   }

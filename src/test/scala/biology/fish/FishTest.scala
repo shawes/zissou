@@ -20,30 +20,30 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   val pelagicState = Pelagic
   val swimming = new Swimming(SwimmingAbility.Directed, 1, 2, 3, false)
   val ontogeneticVerticalMigration
-      : List[VerticalMigrationOntogeneticProbability] =
+      : List[OntogeneticMigrationProbability] =
     List(
-      new VerticalMigrationOntogeneticProbability(
+      new OntogeneticMigrationProbability(
         new ContinuousRange(1, 25, false),
         0.9,
         0.6,
         0.3,
         0.2
       ),
-      new VerticalMigrationOntogeneticProbability(
+      new OntogeneticMigrationProbability(
         new ContinuousRange(25, 50, false),
         0.1,
         0.3,
         0.5,
         0.35
       ),
-      new VerticalMigrationOntogeneticProbability(
+      new OntogeneticMigrationProbability(
         new ContinuousRange(50, 75, false),
         0,
         0.1,
         0.15,
         0.40
       ),
-      new VerticalMigrationOntogeneticProbability(
+      new OntogeneticMigrationProbability(
         new ContinuousRange(75, 100, false),
         0,
         0,
@@ -61,9 +61,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -80,9 +80,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -92,7 +92,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   /*  it should "know when it has attained pelagic larval duration" in {
       val fish = new Fish(id, pld, maximumLifespan, birthplace, LocalDateTime.now,
-        ontogeny, new VerticalMigrationOntogenetic(new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
+        ontogeny, new OntogeneticMigration(new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
       assert(!fish.hasBeenPelagicTooLong)
       fish.growOlder(29) // below PLD
       assert(!fish.hasBeenPelagicTooLong)
@@ -104,7 +104,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   /*  it should "know when it is in the competency window" in {
       val fish = new Fish(id, pld, maximumLifespan, birthplace, LocalDateTime.now,
-        ontogeny, new VerticalMigrationOntogenetic(new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
+        ontogeny, new OntogeneticMigration(new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
       assert(fish.inCompetencyWindow)
       fish.growOlder(29) // below PLD
       assert(fish.inCompetencyWindow)
@@ -123,9 +123,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -148,9 +148,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -170,9 +170,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -189,9 +189,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -201,7 +201,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
 
   // it should "not move when there is an invalid position" in {
   //   val fish = new Fish(id, pld, maximumLifespan, birthplace, LocalDateTime.now,
-  //     ontogeny, swimming, new VerticalMigrationOntogenetic(List.empty[VerticalMigrationOntogeneticProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
+  //     ontogeny, swimming, new OntogeneticMigration(List.empty[OntogeneticMigrationProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
   //   val invalidPoint = new GeoCoordinate(Double.NaN, Double.NaN, 0)
   //   fish.move(invalidPoint)
   //   assert(fish.position == birthplace.location)
@@ -216,9 +216,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -238,9 +238,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -252,7 +252,7 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
   }
 
   it should "calls ontogenetic vertical migration appropriately" in {
-    val mockOntogeneticVerticalMigration = mock[VerticalMigrationOntogenetic]
+    val mockOntogeneticVerticalMigration = mock[OntogeneticMigration]
     val fish = new Fish(
       id,
       pld,
@@ -279,9 +279,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       mockDielVerticalMigration,
       0
@@ -299,9 +299,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -320,9 +320,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -341,9 +341,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -362,9 +362,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
@@ -386,9 +386,9 @@ class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
       LocalDateTime.now,
       ontogeny,
       swimming,
-      new VerticalMigrationOntogenetic(
+      new OntogeneticMigration(
         StageMigration,
-        List.empty[VerticalMigrationOntogeneticProbability]
+        List.empty[OntogeneticMigrationProbability]
       ),
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
