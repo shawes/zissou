@@ -29,7 +29,6 @@ class Fish(
     with OntogenyFish
     with History {
 
-  //var fishPolygon: Int = 0
   private var lastDielMigration: Option[DielVerticalMigrationType] = None
   private var nightDepth: Double = -1
   //private var hasChangedOntogeneticState: Boolean = false

@@ -12,7 +12,7 @@ class VerticalMigrationDielTest
 
   "A diel vertical migration" should "initialise" in {
     val dielMigration =
-      new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability])
+      new DielMigration(List.empty[DielMigrationProbability])
     assert(dielMigration != null)
   }
 
