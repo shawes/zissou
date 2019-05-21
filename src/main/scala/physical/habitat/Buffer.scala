@@ -3,7 +3,6 @@ package physical.habitat
 import org.locationtech.jts.geom.Geometry
 
 class Buffer(
-    val isBuffered: Boolean,
     val settlement: Double,
     val olfactory: Double
 ) {

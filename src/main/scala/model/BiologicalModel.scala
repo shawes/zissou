@@ -41,6 +41,7 @@ class BiologicalModel(
 
   def apply(): Unit = {
     spawnLarvae()
+    debug("Spawned " + pelagicLarvae.size + " larvae")
     pelagicLarvae.par.foreach(fish => biology(fish))
     refresh()
   }
@@ -169,10 +170,11 @@ class BiologicalModel(
     pelagicLarvae ++= spawn
   }
 
-  def canDisperse(time: LocalDateTime): Boolean = {
-    val canSpawn = spawn.isItSpawningSeason(time)
-    val pelagic = pelagicLarvae.nonEmpty
-    canSpawn || pelagic
+  def isDispersing(time: LocalDateTime): Boolean = {
+    val isSpawning = spawn.isItSpawningSeason(time)
+    val isPelagic = pelagicLarvae.nonEmpty
+    debug("Can spawn is " + isSpawning + " and pelagic is " + isPelagic)
+    isSpawning || isPelagic
   }
 
 }

@@ -49,7 +49,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       info("Simulation run started")
       val stepTimer = new SimpleTimer()
       stepTimer.start()
-      while (clock.stillTime && biology.canDisperse(clock.now)) {
+      while (clock.stillTime && biology.isDispersing(clock.now)) {
         biology()
         if (clock.isMidnight) {
           if (config.larva.isMortal.getOrElse(false)) {
@@ -67,7 +67,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       val time: Double = simulationTimer.stop() / 60.0
       info(f"Simulation run completed in $time%.2f minutes")
       val still = clock.stillTime
-      val disperse = biology.canDisperse(clock.now)
+      val disperse = biology.isDispersing(clock.now)
       debug(s"Still movin': $still and dispersin': $disperse")
       ocean.shutdown()
 

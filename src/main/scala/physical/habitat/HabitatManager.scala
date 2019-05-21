@@ -33,7 +33,7 @@ class HabitatManager(
 
   private val geometry = new Geometry
 
-  def isBuffered: Boolean = buffer.isBuffered
+  def isBuffered: Boolean = buffer.settlement > 0 || buffer.olfactory > 0
 
   def getReefs(): Array[GeometryAdaptor] = {
     val polygons: ArrayBuffer[GeometryAdaptor] =
