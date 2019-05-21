@@ -1,7 +1,6 @@
 package io.config
 
 import locals._
-
 case class Configuration(
     inputFiles: InputFilesConfig,
     spawn: SpawnConfig,

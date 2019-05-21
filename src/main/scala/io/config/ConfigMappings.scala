@@ -82,17 +82,6 @@ object ConfigMappings {
   implicit def siteConfigMap(s: SiteConfig): GeoCoordinate =
     new GeoCoordinate(s.latitude, s.longitude, s.depth)
 
-  implicit def pelagicLarvalDurationMap(
-      pld: PelagicLarvalDurationConfig
-  ): PelagicLarvalDuration =
-    new PelagicLarvalDuration(
-      new NormalDistribution(pld.mean, pld.stdev),
-      pld.pldType match {
-        case "fixed" => true
-        case _       => false
-      },
-      pld.nonSettlementPeriod
-    )
 
   // implicit def swimmingConfigMap(s: SwimmingConfig): HorizontalSwimmingConfig =
   //   new HorizontalSwimmingConfig(

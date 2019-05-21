@@ -9,6 +9,7 @@ import biology._
 import biology.swimming._
 import scala.collection.mutable.ArrayBuffer
 import maths.{Geometry, RandomNumberGenerator}
+import utilities._
 
 class Fish(
     val id: String,
@@ -180,10 +181,12 @@ class Fish(
   override def toString: String =
     "id:" + id + "," +
       "birthday:" + birthday + "," +
-      "age:" + age / Constants.SecondsInDay + "," +
-      "pld:" + pelagicLarvalDuration / Constants.SecondsInDay + "," +
+      "age:" + Time.convertSecondsToDays(age) + "," +
+      "pld (seconds):" + pelagicLarvalDuration + "," +
+      "pld (days):" + Time.convertSecondsToDays(pelagicLarvalDuration) + "," +
       "birthplace:" + birthplace.name + "," +
       "larvaState:" + larvaState + "," +
-      "history:" + history.size
+      "history:" + history.size + "," +
+      "ontogeny flexion age:" + Time.convertSecondsToDays(flexion)
 
 }

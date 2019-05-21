@@ -16,17 +16,7 @@ import java.util.UUID.randomUUID
 
 class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
 
-  val pld = new PelagicLarvalDuration(
-    new NormalDistribution(
-      config.pelagicLarvalDuration.mean,
-      config.pelagicLarvalDuration.stdev
-    ),
-    config.pelagicLarvalDuration.pldType match {
-      case "fixed" => true
-      case _       => false
-    },
-    config.pelagicLarvalDuration.nonSettlementPeriod
-  )
+  val pldDistribution = new PelagicLarvalDuration(config.pelagicLarvalDuration)
 
   val horizontalSwimming = config.swimming match {
     case Some(swim) => {
@@ -77,8 +67,8 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
 
   def create(site: SpawningLocation, time: LocalDateTime): Larva = {
 
-    val fishPld: Double =
-      if (pld.isFixed) pld.distribution.getMean else pld.distribution.sample
+    val pld = pldDistribution.getPld()
+    info("Pld is " + pld)
 
     // Handles case of demersal eggs
     val hatching = hatchingDistribution.sample().toInt
@@ -94,22 +84,21 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
       RandomNumberGenerator.get(0, site.location.depth)
     )
 
-    def getNonSettlementPeriod(): Double = {
-      val settlement = pld.nonSettlementPeriod
-      if (settlement < fishPld) {
-        settlement
+    def getNonSettlementPeriod(): Int = {
+      val settlement = config.pelagicLarvalDuration.nonSettlementPeriod
+      if (settlement < pld) {
+        Time.convertDaysToSeconds(settlement)
       } else {
-        fishPld
+        pld
       }
     }
 
-    val nonSettlementPeriod: Double =
-      if (pld.isFixed) fishPld else getNonSettlementPeriod()
+    val nonSettlementPeriod = getNonSettlementPeriod()
 
     val fish = new Fish(
       randomUUID.toString(),
-      Time.convertDaysToSeconds(fishPld),
-      Time.convertDaysToSeconds(fishPld),
+      pld,
+      pld,
       new Birthplace(site.title, site.reefId, birthLocation),
       time,
       hatching,
@@ -119,8 +108,9 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
       config.ovmProbabilities,
       config.dielProbabilities,
       horizontalSwimming,
-      Time.convertDaysToSeconds(nonSettlementPeriod)
+      nonSettlementPeriod
     )
+    //info("Just created the fish: " + fish)
     fish
   }
 }
