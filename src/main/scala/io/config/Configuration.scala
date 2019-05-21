@@ -65,7 +65,6 @@ case class DepthConfig(
 case class HabitatConfig(buffer: BufferConfig)
 
 case class BufferConfig(
-    isBuffered: Boolean,
     settlement: Double,
     olfactory: Double
 )
@@ -82,12 +81,12 @@ case class OutputFilesConfig(
 case class LarvaConfig(
     species: String,
     ontogeny: OntogenyConfig,
-    swimming: SwimmingConfig,
-    ovmProbabilities: OntogeneticMigrationConfig,
-    dielProbabilities: VerticalMigrationDielConfig,
+    swimming: Option[SwimmingConfig],
+    ovmProbabilities: Option[OntogeneticMigrationConfig],
+    dielProbabilities: Option[DielMigrationConfig],
     pelagicLarvalDuration: PelagicLarvalDurationConfig,
-    isMortal: Boolean,
-    mortalityRate: Double
+    isMortal: Option[Boolean],
+    mortalityRate: Option[Double]
 )
 
 case class OntogenyConfig(
@@ -99,13 +98,13 @@ case class OntogenyConfig(
 
 case class SwimmingConfig(
     strategy: String,
-    ability: String,
-    criticalSwimmingSpeed: Double,
-    inSituSwimmingPotential: Double,
-    endurance: Double,
-    reynoldsEffect: Boolean,
-    ageMaxSpeedReached: Int,
-    hatchSwimmingSpeed: Double
+    ability: Option[String],
+    criticalSwimmingSpeed: Option[Double],
+    inSituSwimmingPotential: Option[Double],
+    endurance: Option[Double],
+    reynoldsEffect: Option[Boolean],
+    ageMaxSpeedReached: Option[Int],
+    hatchSwimmingSpeed: Option[Double]
 )
 
 case class PelagicLarvalDurationConfig(
@@ -117,7 +116,7 @@ case class PelagicLarvalDurationConfig(
 
 case class OntogeneticMigrationConfig(
     implementation: String,
-    verticalMigrationOntogeneticProbability: List[
+    ontogeneticMigrationProbability: List[
       OntogeneticMigrationProbabilityConfig
     ]
 )
@@ -131,15 +130,15 @@ case class OntogeneticMigrationProbabilityConfig(
     postflexion: Double
 )
 
-case class VerticalMigrationDielProbabilityConfig(
+case class DielMigrationProbabilityConfig(
     depthStart: Int,
     depthFinish: Int,
     day: Double,
     night: Double
 )
 
-case class VerticalMigrationDielConfig(
-    verticalMigrationDielProbability: List[
-      VerticalMigrationDielProbabilityConfig
+case class DielMigrationConfig(
+    dielMigrationProbability: List[
+      DielMigrationProbabilityConfig
     ]
 )

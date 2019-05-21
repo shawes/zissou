@@ -20,8 +20,9 @@ class Fish(
     override val preflexion: Int,
     override val flexion: Int,
     override val postflexion: Int,
-    val verticalMigrationOntogenetic: OntogeneticMigration,
-    val verticalMigrationDiel: DielMigration,
+    val ovmMigration: Option[OntogeneticMigration],
+    val dielMigration: Option[DielMigration],
+    val horizontalMigration: Option[HorizontalSwimming],
     val nonSettlementPeriod: Int
 ) extends Larva
     with Logging
@@ -40,6 +41,9 @@ class Fish(
 
   override val birthday: LocalDateTime = spawned
 
+  override def diel = dielMigration
+  override def ovm = ovmMigration
+  override def horizontalSwimming = horizontalMigration
   //override def settlementDate: LocalDateTime = settlementDate.get
 
   /*

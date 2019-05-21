@@ -52,7 +52,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       while (clock.stillTime && biology.canDisperse(clock.now)) {
         biology()
         if (clock.isMidnight) {
-          if (config.larva.isMortal) {
+          if (config.larva.isMortal.getOrElse(false)) {
             biology.applyMortality()
           }
           info(

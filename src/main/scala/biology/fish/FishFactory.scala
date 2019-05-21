@@ -28,25 +28,32 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
     config.pelagicLarvalDuration.nonSettlementPeriod
   )
 
-  val horizontalSwimming =
-    new HorizontalSwimming(
-      config.swimming.ability match {
-        case "directed"   => Directed
-        case "undirected" => Undirected
-        case _            => Passive
-      },
-      config.swimming.strategy match {
-        case "one"   => StrategyOne
-        case "two"   => StrategyTwo
-        case "three" => StrategyThree
-      },
-      config.swimming.criticalSwimmingSpeed,
-      config.swimming.inSituSwimmingPotential,
-      config.swimming.endurance,
-      config.swimming.reynoldsEffect,
-      config.swimming.ageMaxSpeedReached,
-      config.swimming.hatchSwimmingSpeed
-    )
+  val horizontalSwimming = config.swimming match {
+    case Some(swim) => {
+      Some(
+        new HorizontalSwimming(
+          swim.ability.getOrElse("") match {
+            case "directed"   => Directed
+            case "undirected" => Undirected
+            case _            => Passive
+          },
+          swim.strategy match {
+            case "one"   => StrategyOne
+            case "two"   => StrategyTwo
+            case "three" => StrategyThree
+          },
+          swim.criticalSwimmingSpeed.getOrElse(0),
+          swim.inSituSwimmingPotential.getOrElse(1),
+          swim.endurance.getOrElse(1),
+          swim.reynoldsEffect.getOrElse(false),
+          swim.ageMaxSpeedReached.getOrElse(0),
+          swim.hatchSwimmingSpeed.getOrElse(0)
+        )
+      )
+    }
+    case None => None
+
+  }
 
   val hatchingDistribution = new NormalDistribution(
     Time.convertDaysToSeconds(config.ontogeny.hatching),
@@ -111,6 +118,7 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
       postflexion,
       config.ovmProbabilities,
       config.dielProbabilities,
+      horizontalSwimming,
       Time.convertDaysToSeconds(nonSettlementPeriod)
     )
     fish

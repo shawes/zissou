@@ -113,27 +113,39 @@ object ConfigMappings {
   //   )
 
   implicit def verticalMigrationOntogeneticConfigMap(
-      vm: OntogeneticMigrationConfig
-  ): OntogeneticMigration =
-    new OntogeneticMigration(
-      vm.implementation match {
-        case "Daily"    => DailyMigration
-        case "TimeStep" => TimeStepMigration
-        case _          => OntogeneticStageMigration
-      },
-      vm.verticalMigrationOntogeneticProbability
-        .map(x => verticalMigrationOntogeneticProbabilityConfigMap(x))
-        .toList
-    )
+      vm: Option[OntogeneticMigrationConfig]
+  ): Option[OntogeneticMigration] =
+    vm match {
+      case Some(vm) =>
+        Some(
+          new OntogeneticMigration(
+            vm.implementation match {
+              case "Daily"    => DailyMigration
+              case "TimeStep" => TimeStepMigration
+              case _          => OntogeneticStageMigration
+            },
+            vm.ontogeneticMigrationProbability
+              .map(x => verticalMigrationOntogeneticProbabilityConfigMap(x))
+              .toList
+          )
+        )
+      case None => None
+    }
 
   implicit def verticalMigrationDielConfigMap(
-      vm: VerticalMigrationDielConfig
-  ): DielMigration =
-    new DielMigration(
-      vm.verticalMigrationDielProbability
-        .map(x => verticalMigrationDielProbabilityConfigMap(x))
-        .toList
-    )
+      vm: Option[DielMigrationConfig]
+  ): Option[DielMigration] =
+    vm match {
+      case Some(vm) =>
+        Some(
+          new DielMigration(
+            vm.dielMigrationProbability
+              .map(x => verticalMigrationDielProbabilityConfigMap(x))
+              .toList
+          )
+        )
+      case None => None
+    }
 
   implicit def verticalMigrationOntogeneticProbabilityConfigMap(
       probability: OntogeneticMigrationProbabilityConfig
@@ -151,7 +163,7 @@ object ConfigMappings {
     )
 
   implicit def verticalMigrationDielProbabilityConfigMap(
-      probability: VerticalMigrationDielProbabilityConfig
+      probability: DielMigrationProbabilityConfig
   ): DielMigrationProbability =
     new DielMigrationProbability(
       new ContinuousRange(

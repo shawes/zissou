@@ -35,7 +35,9 @@ class BiologicalModel(
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val geometry = new Geometry
-  val mortality = new MortalityConstant(config.larva.mortalityRate)
+  val mortality: Mortality = new MortalityConstant(
+    config.larva.mortalityRate.getOrElse(1)
+  )
 
   def apply(): Unit = {
     spawnLarvae()
