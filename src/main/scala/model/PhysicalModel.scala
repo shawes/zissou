@@ -8,14 +8,14 @@ import physical.flow.FlowController
 
 class PhysicalModel(val config: Configuration) extends Logging {
 
-  val flowFile = new FlowFileIterator(config.inputFiles.pathNetcdfFiles, config.flow)
+  val flowFile = new FlowFileIterator(config.flow)
   val flowController = new FlowController(flowFile, config.flow)
 
   def circulate(): Unit = {
-      flowController.updateHydrodynamicFlow(flowFile.next())
+    flowController.updateHydrodynamicFlow(flowFile.next())
   }
 
-  def shutdown() : Unit = {
+  def shutdown(): Unit = {
     flowFile.shutdown()
   }
 }

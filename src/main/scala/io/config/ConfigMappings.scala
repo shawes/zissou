@@ -6,7 +6,7 @@ import biology._
 import biology.fish._
 import biology.swimming._
 import com.github.nscala_time.time.Imports._
-import io.{InputFiles, OutputFiles}
+import io.OutputFiles
 import locals._
 import maths.ContinuousRange
 import org.apache.commons.math3.distribution.NormalDistribution
@@ -22,6 +22,7 @@ import scala.language.implicitConversions
 object ConfigMappings {
   implicit def flowConfigToFlow(f: FlowConfig): Flow =
     new Flow(
+      f.netcdfFilePath,
       new Depth(f.depth),
       new DateTime(f.period.start, DateTimeZone.UTC) to new DateTime(
         f.period.end,
@@ -36,16 +37,6 @@ object ConfigMappings {
 
   implicit def bufferConfigMap(b: BufferConfig): Buffer =
     new Buffer(b.settlement, b.olfactory)
-
-  implicit def inputConfigMap(i: InputFilesConfig): InputFiles = {
-    val seed: Option[Int] = if (i.randomSeed > 0) Some(i.randomSeed) else None
-    new InputFiles(
-      i.pathNetcdfFiles,
-      i.pathHabitatShapeFile,
-      new File(i.pathNetcdfFiles).list(),
-      seed
-    )
-  }
 
   implicit def depthConfigMap(d: DepthConfig): Depth =
     new Depth(d.average, d.averageOverAllDepths, d.maximumDepthForAverage, null)
@@ -81,7 +72,6 @@ object ConfigMappings {
 
   implicit def siteConfigMap(s: SiteConfig): GeoCoordinate =
     new GeoCoordinate(s.latitude, s.longitude, s.depth)
-
 
   // implicit def swimmingConfigMap(s: SwimmingConfig): HorizontalSwimmingConfig =
   //   new HorizontalSwimmingConfig(

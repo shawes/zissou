@@ -28,7 +28,7 @@ class BiologicalModel(
   val factory = LarvaeFactory.apply(Fish, config.larva)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(
-    new File(config.inputFiles.pathHabitatShapeFile),
+    new File(config.habitat.shapeFilePath),
     config.habitat.buffer,
     Array("Reef", "Other")
   )

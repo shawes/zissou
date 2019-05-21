@@ -2,7 +2,7 @@ package io.config
 
 import locals._
 case class Configuration(
-    inputFiles: InputFilesConfig,
+    settings: SettingsConfig,
     spawn: SpawnConfig,
     turbulence: TurbulenceConfig,
     larva: LarvaConfig,
@@ -11,9 +11,7 @@ case class Configuration(
     output: OutputFilesConfig
 )
 
-case class InputFilesConfig(
-    pathNetcdfFiles: String,
-    pathHabitatShapeFile: String,
+case class SettingsConfig(
     randomSeed: Int
 )
 
@@ -45,6 +43,7 @@ case class TurbulenceConfig(
 )
 
 case class FlowConfig(
+    netcdfFilePath: String,
     period: PeriodConfig,
     timeStep: TimeStepConfig,
     depth: DepthConfig,
@@ -61,7 +60,7 @@ case class DepthConfig(
     maximumDepthForAverage: Int
 )
 
-case class HabitatConfig(buffer: BufferConfig)
+case class HabitatConfig(shapeFilePath: String, buffer: BufferConfig)
 
 case class BufferConfig(
     settlement: Double,
