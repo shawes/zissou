@@ -3,8 +3,10 @@ package io
 import java.io.{BufferedWriter, File}
 import biology.Larva
 import maths.Geometry
+import utilities.Time
+import grizzled.slf4j.Logging
 
-class DispersalKernel(larvae: Array[Larva], csvFile: File) {
+class DispersalKernel(larvae: Array[Larva], csvFile: File) extends Logging {
   val geometry = new Geometry()
 
   def write(): Unit = {
@@ -16,20 +18,24 @@ class DispersalKernel(larvae: Array[Larva], csvFile: File) {
   }
 
   private def getCsvLarvaRow(larva: Larva): String = {
-    val distance = calculateDispersalDistance(larva)
+
     val sb = new StringBuilder()
     sb ++= larva.id + ","
     sb ++= larva.birthday.toLocalDate.toString + ","
     sb ++= larva.birthplace.name + ","
     sb ++= larva.birthplace.reef + ","
-    sb ++= larva.age + ","
+    val age = Time.convertSecondsToDays(larva.age)
+    sb ++= f"$age%.1f" + ","
     sb ++= larva.settledHabitatId + ","
-    sb ++= f"$distance%.1f" + "\n"
+    val dispersalDistance = calculateDispersalDistance(larva)
+    sb ++= f"$dispersalDistance%.1f" + ","
+    val crowFliesDistance = calculateCrowFliesDistance(larva)
+    sb ++= f"$crowFliesDistance%.1f" + "\n"
     sb.toString()
   }
 
   private def columnHeaders: String =
-    "id,born,birthplace,birth-reef,age,settle-reef,distance"
+    "id,born,birthplace,birth-reef,age,settle-reef,dispersal-distance,crow-flies-distance"
 
   private def calculateDispersalDistance(larva: Larva): Double = {
     var distance: Double = 0.0
@@ -42,4 +48,16 @@ class DispersalKernel(larvae: Array[Larva], csvFile: File) {
     }
     distance
   }
+
+  private def calculateCrowFliesDistance(larva: Larva): Double = {
+    larva.history.size match {
+      case 0 => 0
+      case _ =>
+        geometry.getDistanceBetweenTwoPoints(
+          larva.birthplace.location,
+          larva.history.last.position
+        )
+    }
+  }
+
 }

@@ -65,7 +65,10 @@ class Fish(
 
   def move(newPosition: GeoCoordinate): Unit = {
     if (newPosition != position) {
-      changeLarvaState(Pelagic)
+      //changeLarvaState(Pelagic)
+      if (position.latitude != newPosition.latitude || position.longitude != newPosition.longitude) {
+        saveState()
+      }
       position = newPosition
     }
   }

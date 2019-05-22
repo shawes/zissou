@@ -11,9 +11,7 @@ import org.scalatestplus.mockito.MockitoSugar
 class ConfigurationTest extends FlatSpec with MockitoSugar {
 
   private val configYAML = """
-      inputFiles:
-        pathNetcdfFiles: test1
-        pathHabitatShapeFile: test2
+      settings:
         randomSeed: 1234
       spawn:
         spawningLocation:
@@ -71,7 +69,7 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
          pldType: Fixed
          nonSettlementPeriod: 5
         dielProbabilities:
-         verticalMigrationDielProbability:
+         dielMigrationProbability:
           -
            depthStart: 0
            depthFinish: 25
@@ -94,7 +92,7 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
            night: 0.1
         ovmProbabilities:
          implementation: Stage
-         verticalMigrationOntogeneticProbability:
+         ontogeneticMigrationProbability:
           -
            depthStart: 0
            depthFinish: 5
@@ -117,6 +115,7 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
            flexion: 0.15
            postflexion: 0.1
       flow:
+        netcdfFilePath: test1
         period:
          start: 2010-07-01
          end: 2011-08-31
@@ -129,6 +128,7 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
          averageOverAllDepths: false
          maximumDepthForAverage: 5
       habitat:
+        shapeFilePath: test2
         buffer:
          isBuffered: true
          settlement: 10
@@ -151,15 +151,13 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
     assert(config.isInstanceOf[Configuration])
   }
 
-  it should "parse the input files YAML" in {
+  it should "parse the settings YAML" in {
     val json = yaml.parser.parse(configYAML)
     val config = json
       .leftMap(err => err: Error)
       .flatMap(_.as[Configuration])
       .valueOr(throw _)
-    assert(config.inputFiles.pathNetcdfFiles == "test1")
-    assert(config.inputFiles.pathHabitatShapeFile == "test2")
-    assert(config.inputFiles.randomSeed == 1234)
+    assert(config.settings.randomSeed == 1234)
   }
 
   it should "parse the spawning YAML" in {
@@ -216,7 +214,7 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
       .leftMap(err => err: Error)
       .flatMap(_.as[Configuration])
       .valueOr(throw _)
-    //assert(config.habitat.buffer.isBuffered)
+    assert(config.habitat.shapeFilePath == "test2")
     assert(config.habitat.buffer.settlement == 10)
     assert(config.habitat.buffer.olfactory == 10)
   }
@@ -228,6 +226,7 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
       .flatMap(_.as[Configuration])
       .valueOr(throw _)
     assert(config.flow.includeVerticalVelocity)
+    assert(config.flow.netcdfFilePath == "test1")
     assert(config.flow.period.start == "2010-07-01")
     assert(config.flow.period.end == "2011-08-31")
     assert(config.flow.timeStep.unit == "Hour")
