@@ -1,7 +1,7 @@
 package model
 
 import grizzled.slf4j.Logging
-import io.ResultsIO
+import io._
 import io.config.ConfigMappings._
 import io.config.Configuration
 import maths.RandomNumberGenerator
@@ -72,7 +72,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       ocean.shutdown()
 
       val resultsWriter =
-        new ResultsIO(biology.stationaryLarvae.toArray, config.output, name)
+        new ResultsWriter(biology.stationaryLarvae.toArray, config.output, name)
       resultsWriter.write()
 
     } catch {

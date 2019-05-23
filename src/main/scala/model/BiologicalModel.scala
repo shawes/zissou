@@ -74,25 +74,26 @@ class BiologicalModel(
 
   private def move(larva: Larva, recentlyDeveloped: Boolean): Unit = {
     val dampeningFactor: List[Double] = List(1.0)
-    val orientate = larva.swim()
-    def moveParticle(larva: Larva, dampeningFactor: List[Double]): Unit = {
+    val swimmingVelocity = larva.swim()
+    info("Swimming at velocity " + swimmingVelocity)
+    def moveLarva(larva: Larva, dampeningFactor: List[Double]): Unit = {
       if (dampeningFactor.nonEmpty) {
         integrator.integrate(
           larva.position,
           clock.now,
-          orientate,
+          swimmingVelocity,
           dampeningFactor.head
         ) match {
           case Some(newPosition) => larva.move(newPosition)
           case None => {
-            moveParticle(larva, dampeningFactor.tail)
+            moveLarva(larva, dampeningFactor.tail)
           }
         }
       } else {
         larva.move(larva.position)
       }
     }
-    moveParticle(larva, dampeningFactor)
+    moveLarva(larva, dampeningFactor)
     migrateLarvaVertically(larva, recentlyDeveloped)
   }
 

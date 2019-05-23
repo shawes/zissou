@@ -81,7 +81,6 @@ class GisShapeFile() extends Logging {
     featureStore.addFeatures(collection)
     try {
     createTransaction.commit()
-    info("Finished writing shape file")
   } catch {
     case ex : Throwable => error("Error writing the shape file: "+ ex.printStackTrace)
   } finally {
