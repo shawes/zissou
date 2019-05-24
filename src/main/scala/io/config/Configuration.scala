@@ -101,7 +101,6 @@ case class SwimmingConfig(
     inSituSwimmingPotential: Option[Double],
     endurance: Option[Double],
     reynoldsEffect: Option[Boolean],
-    ageMaxSpeedReached: Option[Int],
     hatchSwimmingSpeed: Option[Double]
 )
 

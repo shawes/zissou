@@ -75,7 +75,6 @@ class BiologicalModel(
   private def move(larva: Larva, recentlyDeveloped: Boolean): Unit = {
     val dampeningFactor: List[Double] = List(1.0)
     val swimmingVelocity = larva.swim()
-    info("Swimming at velocity " + swimmingVelocity)
     def moveLarva(larva: Larva, dampeningFactor: List[Double]): Unit = {
       if (dampeningFactor.nonEmpty) {
         integrator.integrate(
@@ -135,12 +134,12 @@ class BiologicalModel(
   }
 
   private def sense(larva: Larva): Unit = {
-    if (larva.canSettle || larva.canSense) {
+    if (larva.isSettlementAge || larva.isSensingAge) {
       val index = habitatManager.getClosestHabitat(larva.position)
-      if (index._1 != NoReefToSettleException && larva.canSettle) {
+      if (index._1 != NoReefToSettleException && larva.isSettlementAge) {
         larva.settle(index._1, clock.now)
       } else {
-        if (index._2 != NoReefSensedException && larva.canSense) {
+        if (index._2 != NoReefSensedException && larva.isSensingAge) {
           larva.direction = index._3
         } else {
           larva.direction = RandomNumberGenerator.getAngle

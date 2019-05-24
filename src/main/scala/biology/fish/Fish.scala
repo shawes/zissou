@@ -41,16 +41,18 @@ class Fish(
   //override def state: PelagicLarvaeState = fishState
 
   override val birthday: LocalDateTime = spawned
+  //override val nonSettlementPeriod = nonSettlementPeriod
 
   override def diel = dielMigration
   override def ovm = ovmMigration
   override def horizontalSwimming = horizontalMigration
+
   //override def settlementDate: LocalDateTime = settlementDate.get
 
   /*
    A fish can sense if is in a window where olfactory competency has developed and if it has the ability to swim in a directed fashion.
    */
-  def canSense: Boolean =
+  def isSensingAge: Boolean =
     age <= pelagicLarvalDuration &&
       ontogeny == Postflexion &&
       (horizontalSwimming match {
@@ -58,10 +60,7 @@ class Fish(
         case None           => false
       })
 
-  def canSettle: Boolean = age >= nonSettlementPeriod
-
-  def canSwim: Boolean =
-    ontogeny == Flexion || ontogeny == Postflexion
+  //def isSettlementAge: Boolean = age >= nonSettlementPeriod
 
   def move(newPosition: GeoCoordinate): Unit = {
     if (newPosition != position) {
@@ -90,20 +89,16 @@ class Fish(
   def swim(): Option[Velocity] = {
     horizontalSwimming match {
       case Some(swimming) => {
-        if (swimming.isDirected && canSwim && direction != NoSwimmingAngleException) {
-          Some(
-            swimming(
-              new HorizontalSwimmingVariables(
-                direction,
-                age,
-                preflexion,
-                pelagicLarvalDuration
-              )
-            )
+        swimming(
+          new HorizontalSwimmingVariables(
+            direction,
+            age,
+            preflexion,
+            flexion,
+            postflexion,
+            pelagicLarvalDuration
           )
-        } else {
-          None
-        }
+        )
       }
       case None => None
     }

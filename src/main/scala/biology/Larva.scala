@@ -22,6 +22,7 @@ trait Larva extends Swimming with History with Ontogeny {
   var settlementDate: Option[LocalDateTime] = None
   var settledHabitatId: Int = 0
   var position: GeoCoordinate = birthplace.location
+  val nonSettlementPeriod: Int
 
   def move(newPosition: GeoCoordinate): Unit
   def incrementAge(seconds: Int): Boolean
@@ -33,9 +34,8 @@ trait Larva extends Swimming with History with Ontogeny {
   def ovmMigrate(variables: OntogeneticMigrationVariables): Unit
   //def changedOntogeneticState: Boolean
 
-  def canSwim(): Boolean
-  def canSense(): Boolean
-  def canSettle(): Boolean
+  def isSensingAge(): Boolean
+  def isSettlementAge(): Boolean = age > nonSettlementPeriod
 
   def isTooOld: Boolean = age > maximumLifeSpan
   def isPelagic: Boolean = larvaState == Pelagic

@@ -36,7 +36,6 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
           swim.inSituSwimmingPotential.getOrElse(1),
           swim.endurance.getOrElse(1),
           swim.reynoldsEffect.getOrElse(false),
-          swim.ageMaxSpeedReached.getOrElse(0),
           swim.hatchSwimmingSpeed.getOrElse(0)
         )
       )
@@ -44,6 +43,7 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
     case None => None
 
   }
+  info("Swimming strategy is " + horizontalSwimming.get.strategy)
 
   val hatchingDistribution = new NormalDistribution(
     Time.convertDaysToSeconds(config.ontogeny.hatching),
