@@ -1,6 +1,7 @@
 package io
 
 import java.io.{BufferedWriter, File}
+import utilities.Time
 
 import biology.Larva
 
@@ -21,7 +22,7 @@ class ConnectivityMatrix(larvae: Array[Larva], csvFile: File) {
     sb ++= larva.birthday.toLocalDate.toString + ","
     sb ++= larva.birthplace.name + ","
     sb ++= larva.birthplace.reef + ","
-    sb ++= larva.age + ","
+    sb ++= Time.convertSecondsToDays(larva.age) + ","
     sb ++= larva.settlementDate.get.toLocalDate.toString + ","
     sb ++= larva.settledHabitatId + "\n"
     sb.toString()
