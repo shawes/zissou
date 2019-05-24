@@ -31,7 +31,6 @@ class HorizontalSwimmingTest
       new HorizontalSwimming(Directed, StrategyOne, 1, 1, 1, true, 1)
     val speed =
       swimmingStrategy1(new HorizontalSwimmingVariables(1, 1, 1, 1, 1, 1))
-    assert(speed.get.u > 0)
+    assert(!speed.isDefined)
   }
-
 }
