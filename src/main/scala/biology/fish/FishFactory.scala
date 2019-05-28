@@ -55,8 +55,6 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
     case None => None
   }
 
-  info("Swimming strategy is " + horizontalSwimming.get.strategy)
-
   val hatchingDistribution = new NormalDistribution(
     Time.convertDaysToSeconds(config.ontogeny.hatching),
     Constants.SecondsInDay * 0.5
@@ -80,7 +78,6 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
   def create(site: SpawningLocation, time: LocalDateTime): Larva = {
 
     val pld = pldDistribution.getPld()
-    info("Pld is " + pld)
 
     // Handles case of demersal eggs
     val hatching = hatchingDistribution.sample().toInt
