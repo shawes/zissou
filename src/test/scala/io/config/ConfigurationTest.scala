@@ -69,27 +69,9 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
          pldType: Fixed
          nonSettlementPeriod: 5
         dielProbabilities:
-         dielMigrationProbability:
-          -
-           depthStart: 0
-           depthFinish: 25
-           day: 0.1
-           night: 0.3
-          -
-           depthStart: 26
-           depthFinish: 50
-           day: 0.3
-           night: 0.3
-          -
-           depthStart: 51
-           depthFinish: 75
-           day: 0.4
-           night: 0.3
-          -
-           depthStart: 76
-           depthFinish: 100
-           day: 0.2
-           night: 0.1
+         depths: [25,50,75,100]
+         day: [0.1, 0.3, 0.4, 0.2]
+         night: [0.3, 0.3, 0.3, 0.1]
         ovmProbabilities:
          implementation: Stage
          ontogeneticMigrationProbability:
@@ -266,15 +248,15 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
       .flatMap(_.as[Configuration])
       .valueOr(throw _)
     assert(
-      config.larva.dielProbabilities.get.dielMigrationProbability.size == 4
+      config.larva.dielProbabilities.get.depths.size == 4
     )
-    val dielProb = config.larva.dielProbabilities.get
-      .dielMigrationProbability(0)
+    assert(
+      config.larva.dielProbabilities.get.day.size == 4
+    )
+    assert(
+      config.larva.dielProbabilities.get.night.size == 4
+    )
 
-    assert(dielProb.depthStart == 0)
-    assert(dielProb.depthFinish == 25)
-    assert(dielProb.day == 0.1)
-    assert(dielProb.night == 0.3)
   }
 
   it should "parse the swimming YAML" in {

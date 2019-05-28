@@ -5,8 +5,28 @@ import locals._
 import maths.{ContinuousRange, RandomNumberGenerator}
 
 class DielMigration(
-    val probabilities: List[DielMigrationProbability]
+    val depths: List[Double],
+    val day: List[Double],
+    val night: List[Double]
 ) {
+
+  val probabilities: List[DielMigrationProbability] = {
+    for (i <- 0 until depths.length) yield {
+      if (i == 0) {
+        new DielMigrationProbability(
+          new ContinuousRange(0, depths(i), true),
+          day(i),
+          night(i)
+        )
+      } else {
+        new DielMigrationProbability(
+          new ContinuousRange(depths(i - 1) + 1, depths(i), true),
+          day(i),
+          night(i)
+        )
+      }
+    }
+  }.toList
 
   def enabled: Boolean = probabilities.nonEmpty
 

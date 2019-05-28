@@ -111,21 +111,6 @@ object ConfigMappings {
       case None => None
     }
 
-  implicit def verticalMigrationDielConfigMap(
-      vm: Option[DielMigrationConfig]
-  ): Option[DielMigration] =
-    vm match {
-      case Some(vm) =>
-        Some(
-          new DielMigration(
-            vm.dielMigrationProbability
-              .map(x => verticalMigrationDielProbabilityConfigMap(x))
-              .toList
-          )
-        )
-      case None => None
-    }
-
   implicit def verticalMigrationOntogeneticProbabilityConfigMap(
       probability: OntogeneticMigrationProbabilityConfig
   ): OntogeneticMigrationProbability =
@@ -139,19 +124,6 @@ object ConfigMappings {
       probability.preflexion,
       probability.flexion,
       probability.postflexion
-    )
-
-  implicit def verticalMigrationDielProbabilityConfigMap(
-      probability: DielMigrationProbabilityConfig
-  ): DielMigrationProbability =
-    new DielMigrationProbability(
-      new ContinuousRange(
-        probability.depthStart,
-        probability.depthFinish,
-        true
-      ),
-      probability.day,
-      probability.night
     )
 
 }

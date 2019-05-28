@@ -127,15 +127,8 @@ case class OntogeneticMigrationProbabilityConfig(
     postflexion: Double
 )
 
-case class DielMigrationProbabilityConfig(
-    depthStart: Int,
-    depthFinish: Int,
-    day: Double,
-    night: Double
-)
-
 case class DielMigrationConfig(
-    dielMigrationProbability: List[
-      DielMigrationProbabilityConfig
-    ]
+    depths: List[Double],
+    day: List[Double],
+    night: List[Double]
 )

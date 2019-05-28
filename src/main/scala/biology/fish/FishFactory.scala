@@ -43,6 +43,12 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
     case None => None
 
   }
+
+  val dielMigration = config.dielProbabilities match {
+    case Some(dvm) => Some(new DielMigration(dvm.depths, dvm.day, dvm.night))
+    case None      => None
+  }
+
   info("Swimming strategy is " + horizontalSwimming.get.strategy)
 
   val hatchingDistribution = new NormalDistribution(
@@ -106,7 +112,7 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
       flexion,
       postflexion,
       config.ovmProbabilities,
-      config.dielProbabilities,
+      dielMigration,
       horizontalSwimming,
       nonSettlementPeriod
     )
