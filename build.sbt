@@ -38,6 +38,7 @@ libraryDependencies ++= Seq(
   "org.geotools" % "gt-main" % "21.0",
   "org.geotools" % "gt-opengis" % "21.0",
   "org.geotools" % "gt-referencing" % "21.0",
+  "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
   "org.locationtech.jts" % "jts-core" % "1.16.1",
   "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
   //"org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3",
