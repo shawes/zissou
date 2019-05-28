@@ -5,12 +5,12 @@ import org.scalatest.FlatSpec
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 
-class OntogeneticMigrationProbabilityTest
+class OntogeneticMigrationTest
     extends FlatSpec
     with MockitoSugar
     with PrivateMethodTester {
 
-  "A fish ontogentic vertical migration probabilty" should "be able to construct the " in {
+  /*   "A fish ontogentic vertical migration probabilty" should "be able to construct the " in {
     val result = new OntogeneticMigrationProbability(
       new ContinuousRange(50, 100, true),
       100,
@@ -25,6 +25,6 @@ class OntogeneticMigrationProbabilityTest
     assert(result.depth.start == 50)
     assert(result.depth.end == 100)
     assert(result.depth.isInclusive)
-  }
+  } */
 
 }

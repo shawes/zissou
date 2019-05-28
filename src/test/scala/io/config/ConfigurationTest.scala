@@ -74,28 +74,11 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
          night: [0.3, 0.3, 0.3, 0.1]
         ovmProbabilities:
          implementation: Stage
-         ontogeneticMigrationProbability:
-          -
-           depthStart: 0
-           depthFinish: 5
-           hatching: 0
-           preflexion: 0.4
-           flexion: 0.35
-           postflexion: 0.05
-          -
-           depthStart: 6
-           depthFinish: 50
-           hatching: 0
-           preflexion: 0.5
-           flexion: 0.5
-           postflexion: 0.85
-          -
-           depthStart: 51
-           depthFinish: 100
-           hatching: 0
-           preflexion: 0.1
-           flexion: 0.15
-           postflexion: 0.1
+         depths: [ 5, 50, 100 ]
+         hatching: [ 0, 0, 0 ]
+         preflexion: [ 0.4, 0.5, 0.1 ]
+         flexion: [ 0.35, 0.5, 0.15 ]
+         postflexion: [ 0.05, 0.85, 0.1 ]
       flow:
         netcdfFilePath: test1
         period:
@@ -228,17 +211,8 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
       config.larva.ovmProbabilities.get.implementation == "Stage"
     )
     assert(
-      config.larva.ovmProbabilities.get.ontogeneticMigrationProbability.size == 3
+      config.larva.ovmProbabilities.get.depths.size == 3
     )
-    val ontogenyProb = config.larva.ovmProbabilities.get
-      .ontogeneticMigrationProbability(0)
-
-    assert(ontogenyProb.depthStart == 0)
-    assert(ontogenyProb.depthFinish == 5)
-    assert(ontogenyProb.hatching == 0)
-    assert(ontogenyProb.preflexion == 0.4)
-    assert(ontogenyProb.flexion == 0.35)
-    assert(ontogenyProb.postflexion == 0.05)
   }
 
   it should "parse the diel YAML" in {

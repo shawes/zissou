@@ -1,13 +1,42 @@
 package biology.swimming
 
 import locals._
+import io.config._
 import maths.{ContinuousRange, RandomNumberGenerator}
 import scala.collection.mutable.ListBuffer
 
 class OntogeneticMigration(
-    val implementation: OntogeneticMigrationStrategy,
-    val probabilities: List[OntogeneticMigrationProbability]
+    val config: OntogeneticMigrationConfig
 ) {
+
+  val implementation = config.implementation match {
+    case "stage"    => OntogeneticStageMigration
+    case "daily"    => DailyMigration
+    case "timestep" => TimeStepMigration
+    case _          => OntogeneticStageMigration
+  }
+
+  val probabilities: List[OntogeneticMigrationProbability] = {
+    for (i <- 0 until config.depths.length) yield {
+      if (i == 0) {
+        new OntogeneticMigrationProbability(
+          new ContinuousRange(0, config.depths(i), true),
+          config.hatching(i),
+          config.preflexion(i),
+          config.flexion(i),
+          config.postflexion(i)
+        )
+      } else {
+        new OntogeneticMigrationProbability(
+          new ContinuousRange(config.depths(i - 1) + 1, config.depths(i), true),
+          config.hatching(i),
+          config.preflexion(i),
+          config.flexion(i),
+          config.postflexion(i)
+        )
+      }
+    }
+  }.toList
 
   def enabled: Boolean = probabilities.nonEmpty
 

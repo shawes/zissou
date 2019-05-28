@@ -49,6 +49,12 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
     case None      => None
   }
 
+  val ovmMigration = config.ovmProbabilities match {
+    case Some(ovm) =>
+      Some(new OntogeneticMigration(config.ovmProbabilities.get))
+    case None => None
+  }
+
   info("Swimming strategy is " + horizontalSwimming.get.strategy)
 
   val hatchingDistribution = new NormalDistribution(
@@ -111,7 +117,7 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
       preflexion,
       flexion,
       postflexion,
-      config.ovmProbabilities,
+      ovmMigration,
       dielMigration,
       horizontalSwimming,
       nonSettlementPeriod

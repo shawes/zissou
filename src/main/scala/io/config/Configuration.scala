@@ -113,18 +113,11 @@ case class PelagicLarvalDurationConfig(
 
 case class OntogeneticMigrationConfig(
     implementation: String,
-    ontogeneticMigrationProbability: List[
-      OntogeneticMigrationProbabilityConfig
-    ]
-)
-
-case class OntogeneticMigrationProbabilityConfig(
-    depthStart: Int,
-    depthFinish: Int,
-    hatching: Double,
-    preflexion: Double,
-    flexion: Double,
-    postflexion: Double
+    depths: List[Int],
+    hatching: List[Double],
+    preflexion: List[Double],
+    flexion: List[Double],
+    postflexion: List[Double]
 )
 
 case class DielMigrationConfig(

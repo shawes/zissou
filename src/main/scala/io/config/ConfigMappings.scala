@@ -91,39 +91,4 @@ object ConfigMappings {
   //     s.hatchSwimmingSpeed
   //   )
 
-  implicit def verticalMigrationOntogeneticConfigMap(
-      vm: Option[OntogeneticMigrationConfig]
-  ): Option[OntogeneticMigration] =
-    vm match {
-      case Some(vm) =>
-        Some(
-          new OntogeneticMigration(
-            vm.implementation match {
-              case "Daily"    => DailyMigration
-              case "TimeStep" => TimeStepMigration
-              case _          => OntogeneticStageMigration
-            },
-            vm.ontogeneticMigrationProbability
-              .map(x => verticalMigrationOntogeneticProbabilityConfigMap(x))
-              .toList
-          )
-        )
-      case None => None
-    }
-
-  implicit def verticalMigrationOntogeneticProbabilityConfigMap(
-      probability: OntogeneticMigrationProbabilityConfig
-  ): OntogeneticMigrationProbability =
-    new OntogeneticMigrationProbability(
-      new ContinuousRange(
-        probability.depthStart,
-        probability.depthFinish,
-        true
-      ),
-      probability.hatching,
-      probability.preflexion,
-      probability.flexion,
-      probability.postflexion
-    )
-
 }
