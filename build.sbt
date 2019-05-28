@@ -1,8 +1,12 @@
 name := "zissou"
 
-version := "1.0"
+version := "2.1"
 
 scalaVersion := "2.12.8"
+
+artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
+  artifact.name + "." + artifact.extension
+}
 
 scalacOptions ++= Seq(
   "-deprecation",
@@ -13,8 +17,6 @@ scalacOptions ++= Seq(
 parallelExecution in Test := false
 
 resolvers += Resolver.sonatypeRepo("public")
-
-assemblyJarName in assembly := "zissou.jar"
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", "jdom-info.xml") => MergeStrategy.first
