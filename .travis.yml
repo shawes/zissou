@@ -12,9 +12,6 @@ branches:
 jdk:
   - oraclejdk8
 
-script:
-   - sbt ++$TRAVIS_SCALA_VERSION test
-
 cache:
   directories:
   - $HOME/.sbt
