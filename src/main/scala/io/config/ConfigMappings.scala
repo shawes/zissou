@@ -10,7 +10,7 @@ import io.OutputFiles
 import locals._
 import maths.ContinuousRange
 import org.apache.commons.math3.distribution.NormalDistribution
-import physical.flow.{Depth, Flow}
+import physical.flow.{Flow}
 import physical.habitat.Buffer
 import physical.{GeoCoordinate, TimeStep}
 import scala.collection.JavaConverters._
@@ -23,7 +23,6 @@ object ConfigMappings {
   implicit def flowConfigToFlow(f: FlowConfig): Flow =
     new Flow(
       f.netcdfFilePath,
-      new Depth(f.depth),
       new DateTime(f.period.start, DateTimeZone.UTC) to new DateTime(
         f.period.end,
         DateTimeZone.UTC
@@ -37,9 +36,6 @@ object ConfigMappings {
 
   implicit def bufferConfigMap(b: BufferConfig): Buffer =
     new Buffer(b.settlement, b.olfactory)
-
-  implicit def depthConfigMap(d: DepthConfig): Depth =
-    new Depth(d.average, d.averageOverAllDepths, d.maximumDepthForAverage, null)
 
   implicit def outputFilesConfigMap(o: OutputFilesConfig): OutputFiles =
     new OutputFiles(

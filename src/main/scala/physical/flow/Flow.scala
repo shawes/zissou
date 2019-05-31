@@ -6,7 +6,6 @@ import physical.{Grid, TimeStep}
 
 class Flow(
     val netcdfFilePath: String,
-    var depth: Depth,
     var period: Interval,
     var timeStep: TimeStep,
     val includeVerticalVelocity: Boolean

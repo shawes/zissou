@@ -88,10 +88,6 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
          unit: Hour
          duration: 2
         includeVerticalVelocity: true
-        depth:
-         average: false
-         averageOverAllDepths: false
-         maximumDepthForAverage: 5
       habitat:
         shapeFilePath: test2
         buffer:
@@ -196,9 +192,6 @@ class ConfigurationTest extends FlatSpec with MockitoSugar {
     assert(config.flow.period.end == "2011-08-31")
     assert(config.flow.timeStep.unit == "Hour")
     assert(config.flow.timeStep.duration == 2)
-    assert(!config.flow.depth.average)
-    assert(!config.flow.depth.averageOverAllDepths)
-    assert(config.flow.depth.maximumDepthForAverage == 5)
   }
 
   it should "parse the ovm YAML" in {

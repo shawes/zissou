@@ -46,19 +46,12 @@ case class FlowConfig(
     netcdfFilePath: String,
     period: PeriodConfig,
     timeStep: TimeStepConfig,
-    depth: DepthConfig,
     includeVerticalVelocity: Boolean
 )
 
 case class PeriodConfig(start: String, end: String)
 
 case class TimeStepConfig(unit: String, duration: Int)
-
-case class DepthConfig(
-    average: Boolean,
-    averageOverAllDepths: Boolean,
-    maximumDepthForAverage: Int
-)
 
 case class HabitatConfig(shapeFilePath: String, buffer: BufferConfig)
 
