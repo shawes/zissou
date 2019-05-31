@@ -4,9 +4,7 @@ version := "2.1"
 
 scalaVersion := "2.12.8"
 
-artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
-  artifact.name + "." + artifact.extension
-}
+assemblyJarName in assembly := "zissou.jar"
 
 scalacOptions ++= Seq(
   "-deprecation",
@@ -19,10 +17,8 @@ parallelExecution in Test := false
 resolvers += Resolver.sonatypeRepo("public")
 
 assemblyMergeStrategy in assembly := {
-  case PathList("META-INF", "jdom-info.xml") => MergeStrategy.first
-  case x =>
-    val oldStrategy = (assemblyMergeStrategy in assembly).value
-    oldStrategy(x)
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x                             => MergeStrategy.first
 }
 
 libraryDependencies ++= Seq(
