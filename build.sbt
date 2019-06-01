@@ -37,6 +37,7 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-api" % "1.7.26",
   "org.slf4j" % "slf4j-simple" % "1.7.26",
   "edu.ucar" % "cdm" % "4.6.13",
+  "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
   "org.geotools" % "gt-shapefile" % "21.0",
   "org.geotools" % "gt-main" % "21.0",
   "org.geotools" % "gt-opengis" % "21.0",
