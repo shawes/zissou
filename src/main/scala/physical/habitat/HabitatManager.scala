@@ -3,6 +3,7 @@ package physical.habitat
 import java.io.File
 
 import grizzled.slf4j.Logging
+import io.config._
 import io.GisShapeFile
 import locals.HabitatType
 import locals.Constants.LightWeightException._
@@ -18,13 +19,14 @@ import scala.util.Sorting._
 import scala.collection.Searching._
 
 class HabitatManager(
-    file: File,
-    val buffer: Buffer,
-    habitatTypes: Array[String]
+    config: HabitatConfig
 ) extends Logging {
 
+  //private val habitatFile = new File(config.shapeFilePath)
+  //info("Can read the file name: " + habitatFile.canRead())
   private val habitatReader = new GisShapeFile()
-  private val features = habitatReader.read(file)
+  private val features = habitatReader.read(config.shapeFilePath)
+  private val buffer = config.buffer
 
   private val reefs = getReefs()
   private val subsetReefs = getSortedCentroids()
@@ -38,21 +40,16 @@ class HabitatManager(
   def getReefs(): Array[GeometryAdaptor] = {
     val polygons: ArrayBuffer[GeometryAdaptor] =
       ArrayBuffer.empty[GeometryAdaptor]
-    val shapes = features.features()
-    try {
-      while (shapes.hasNext) {
-        val shape = shapes.next()
-        val geometry = SimpleFeatureAdaptor.getGeometry(shape)
-        polygons += new GeometryAdaptor(
-          geometry,
-          SimpleFeatureAdaptor.getId(shape),
-          SimpleFeatureAdaptor.getHabitatType(shape)
-        )
-      }
-      polygons.toArray
-    } finally {
-      shapes.close()
+    val shapes = features
+    for (shape <- shapes) {
+      val geometry = SimpleFeatureAdaptor.getGeometry(shape)
+      polygons += new GeometryAdaptor(
+        geometry,
+        SimpleFeatureAdaptor.getId(shape),
+        SimpleFeatureAdaptor.getHabitatType(shape)
+      )
     }
+    polygons.toArray
   }
 
   private def getSortedCentroids(): (Array[GeoCoordinate], Array[Int]) = {
