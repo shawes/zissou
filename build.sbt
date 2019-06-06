@@ -56,31 +56,6 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-yaml" % "0.10.0",
   "io.circe" %% "circe-generic" % "0.11.1",
   "io.circe" %% "circe-core" % "0.11.1"
-
-  /*   "org.scalactic" %% "scalactic" % "3.0.7",
-  "org.scalatest" %% "scalatest" % "3.0.7" % "test",
-  "junit" % "junit" % "4.12" % "test",
-  "org.mockito" % "mockito-core" % "2.28.2" % "test",
-  "com.github.nscala-time" %% "nscala-time" % "2.22.0",
-  "org.apache.commons" % "commons-math3" % "3.6.1",
-  "org.clapper" %% "grizzled-slf4j" % "1.3.3",
-  "org.slf4j" % "slf4j-api" % "1.7.26",
-  "org.slf4j" % "slf4j-simple" % "1.7.26",
-  "edu.ucar" % "cdm" % "4.6.13",
-  "org.geotools" % "gt-shapefile" % "21.1",
-  "org.geotools" % "gt-main" % "21.1",
-  "org.geotools" % "gt-opengis" % "21.1",
-  "org.geotools" % "gt-referencing" % "21.1",
-  "org.geotools" % "gt-metadata" % "21.1",
-  "org.locationtech.jts" % "jts-core" % "1.16.1",
-  "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
-  "javax.media" % "jai_codec" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
-  "javax.media" % "jai_imageio" % "1.1" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar",
-  "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
-  //"org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3",
-  "io.circe" %% "circe-yaml" % "0.10.0",
-  "io.circe" %% "circe-generic" % "0.11.1",
-  "io.circe" %% "circe-core" % "0.11.1" */
 )
 
 resolvers ++= Seq(
