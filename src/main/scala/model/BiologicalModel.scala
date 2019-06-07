@@ -30,7 +30,7 @@ class BiologicalModel(
   )
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
-  val geometry = new Geometry
+  //val geometry = new Geometry
   val mortality: Mortality = new MortalityConstant(
     config.larva.mortalityRate.getOrElse(1)
   )
@@ -115,7 +115,7 @@ class BiologicalModel(
           larva.dielMigrate(NightMigration)
         }
       }
-      case None =>
+      case None => throw new NotImplementedError
     }
   }
 

@@ -12,7 +12,8 @@ case class Configuration(
 )
 
 case class SettingsConfig(
-    randomSeed: Int
+    randomSeed: Int,
+    backtracking: Option[Boolean]
 )
 
 case class SpawningLocationConfig(

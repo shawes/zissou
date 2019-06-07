@@ -37,7 +37,8 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
   val integrator = new RungeKuttaIntegration(
     ocean.flowController,
     turbulence,
-    flow.timeStep.totalSeconds
+    flow.timeStep.totalSeconds,
+    config.settings.backtracking.getOrElse(false)
   )
   val biology = new BiologicalModel(config, clock, integrator)
 
@@ -57,7 +58,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
           }
           info(
             "Day " + clock.now.toLocalDate + " has been completed in " + stepTimer
-              .stop() + " secs with " + biology.pelagicLarvae.size + " larvae."
+              .stop() + " seconds with " + biology.pelagicLarvae.size + " larvae."
           )
           stepTimer.start()
           ocean.circulate()
@@ -68,7 +69,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       info(f"Simulation run completed in $time%.2f minutes")
       val still = clock.stillTime
       val disperse = biology.isDispersing(clock.now)
-      debug(s"Still movin': $still and dispersin': $disperse")
+      debug(s"Still moving: $still and dispersing: $disperse")
       ocean.shutdown()
 
       val resultsWriter =

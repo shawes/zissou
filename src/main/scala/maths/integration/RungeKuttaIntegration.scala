@@ -10,7 +10,8 @@ import physical.{GeoCoordinate, Turbulence, Velocity}
 class RungeKuttaIntegration(
     flow: FlowController,
     turbulence: Option[Turbulence],
-    timeStep: Int
+    timeStep: Int,
+    backtracking: Boolean
 ) extends Logging {
 
   val geometry = new Geometry
@@ -81,7 +82,8 @@ class RungeKuttaIntegration(
               integratedVelocity,
               timeStep,
               swimming.getOrElse(new Velocity(0, 0, 0)),
-              flow.flow.includeVerticalVelocity
+              flow.flow.includeVerticalVelocity,
+              backtracking
             )
 
             if (flow.getVelocity(point).isDefined) Some(point)
@@ -130,7 +132,8 @@ class RungeKuttaIntegration(
         velocity.get,
         partialTimeStep,
         swimming.getOrElse(new Velocity(0, 0, 0)),
-        flow.flow.includeVerticalVelocity
+        flow.flow.includeVerticalVelocity,
+        backtracking
       )
       val newVelocity = flow.getVelocityOfCoordinate(
         newCoordinate,
