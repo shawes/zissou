@@ -27,54 +27,18 @@ class GisShapeFile() extends Logging {
   def read(path: String): Seq[SimpleFeature] = {
     val file = new File(path)
     read(file.toURI.toURL)
-    // val store = FileDataStoreFinder.getDataStore(file)
-    // if (store == null) {
-    //   info("There is no store")
-    // }
-    // try {
-    //   val ff = CommonFactoryFinder.getFilterFactory2()
-    //   val filters: ListBuffer[Filter] = ListBuffer.empty
-    //   filters += ff.equals(ff.property("HABITAT"), ff.literal("Reef"))
-    //   filters += ff.equals(
-    //     ff.property("HABITAT"),
-    //     ff.literal("Rocky intertidal")
-    //   )
-    //   filters += ff.equals(ff.property("HABITAT"), ff.literal("Other"))
-    //   val features = store.getFeatureSource.getFeatures(ff.or(filters.asJava))
-    //   new ListFeatureCollection(DataUtilities.collection(features))
-    // } finally {
-    //   store.dispose()
-    // }
   }
 
   def read(url: URL): List[SimpleFeature] = {
-    // Extract the features as GeoTools 'SimpleFeatures'
-
-    /*      File file = new File("example.shp");
-        Map<String, Object> map = new HashMap<>();
-        map.put("url", file.toURI().toURL());
-
-        DataStore dataStore = DataStoreFinder.getDataStore(map);
-        String typeName = dataStore.getTypeNames()[0];
-
-        FeatureSource<SimpleFeatureType, SimpleFeature> source =
-                dataStore.getFeatureSource(typeName);
-        Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
-
-        FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.dataStore(filter);
-     */
-    //val file = new File(path)
-    //info("is file there: " + (file == null))
     val shapeFile = new ShapefileDataStore(url)
-    //info("is shapefile there: " + (shapeFile == null))
     val features = shapeFile.getFeatureSource().getFeatures().features()
     try {
       val simpleFeatures = mutable.ListBuffer[SimpleFeature]()
       while (features.hasNext) simpleFeatures += features.next()
       simpleFeatures.toList
     } finally {
-      features.close
-      shapeFile.dispose
+      features.close()
+      shapeFile.dispose()
     }
   }
 
@@ -85,9 +49,8 @@ class GisShapeFile() extends Logging {
   private def writeLineShapeFile(
       larvae: Array[Larva],
       file: File,
-      percent: Double
-  ) = {
-    //info("Writing shape file")
+      percent: Double) = {
+        
     val features = new java.util.ArrayList[SimpleFeature]
     val builder: SimpleFeatureTypeBuilder = new SimpleFeatureTypeBuilder()
     builder.setName("larva")
@@ -128,6 +91,7 @@ class GisShapeFile() extends Logging {
         error("Error writing the shape file: " + ex.printStackTrace)
     } finally {
       createTransaction.close()
+      newDataStore.dispose()
     }
 
   }

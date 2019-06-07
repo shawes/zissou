@@ -17,17 +17,14 @@ import utilities.Time
 import physical.Velocity
 import physical.GeoCoordinate
 import physical.habitat.HabitatManager
-
 class BiologicalModel(
     val config: Configuration,
     clock: SimulationClock,
     integrator: RungeKuttaIntegration
 ) extends Logging {
 
-  //val fish: FishParameters = config.fish
   val factory = LarvaeFactory.apply(Fish, config.larva)
   val spawn = new Spawn(config.spawn)
-  info("Shape file is: " + config.habitat.shapeFilePath)
   var habitatManager: HabitatManager = new HabitatManager(
     config.habitat
   )

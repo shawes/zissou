@@ -18,12 +18,8 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.Sorting._
 import scala.collection.Searching._
 
-class HabitatManager(
-    config: HabitatConfig
-) extends Logging {
+class HabitatManager(config: HabitatConfig) extends Logging {
 
-  //private val habitatFile = new File(config.shapeFilePath)
-  //info("Can read the file name: " + habitatFile.canRead())
   private val habitatReader = new GisShapeFile()
   private val features = habitatReader.read(config.shapeFilePath)
   private val buffer = config.buffer

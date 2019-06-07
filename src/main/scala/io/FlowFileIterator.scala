@@ -22,7 +22,7 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   val getFileInformation = initialiseFiles()
   var currentFile: Int = getFileInformation._2
   val files = getFileInformation._1
-  val latlonBounds = new LatLonRect(
+  val latLonBounds = new LatLonRect(
     new LatLonPointImpl(-50.0, 142.0),
     new LatLonPointImpl(-10.0, 180.0)
   )
@@ -33,8 +33,8 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   private def initialFlowData(): Unit = {
     readMonth()
     val startDay: Int = flow.period.getStart.toLocalDate.dayOfMonth.get
-    val day1 = readDay(startDay, latlonBounds, depthRange)
-    val day2 = readDay(startDay + 1, latlonBounds, depthRange)
+    val day1 = readDay(startDay, latLonBounds, depthRange)
+    val day2 = readDay(startDay + 1, latLonBounds, depthRange)
     grids.enqueue((day1, startDay, getDaysInMonth))
     grids.enqueue((day2, startDay + 1, getDaysInMonth))
   }
@@ -67,7 +67,7 @@ class FlowFileIterator(val flow: Flow) extends Logging {
 
   private def readDay(
       dayOfMonth: Int,
-      latlonBounds: LatLonRect,
+      latLonBounds: LatLonRect,
       depthRange: Range
   ): List[(Array[Array[Array[Float]]], GridCoordSystem)] = {
 
@@ -79,7 +79,7 @@ class FlowFileIterator(val flow: Flow) extends Logging {
             .subset(
               new Range(dayOfMonth - 1, dayOfMonth - 1),
               depthRange,
-              latlonBounds,
+              latLonBounds,
               0,
               0,
               0
@@ -111,7 +111,7 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   }
 
   private def getNextFlowData(): Unit = {
-    val nextDay = readDay(getNextDayOfMonth, latlonBounds, depthRange)
+    val nextDay = readDay(getNextDayOfMonth, latLonBounds, depthRange)
     grids.enqueue((nextDay, getNextDayOfMonth, getDaysInMonth))
   }
 
@@ -132,7 +132,7 @@ class FlowFileIterator(val flow: Flow) extends Logging {
       files,
       files.indexWhere(
         file =>
-          isFileforDate(
+          isFileForDate(
             flow.period.getStart.toLocalDate,
             getDateFromFileName(file)
           )
@@ -147,7 +147,7 @@ class FlowFileIterator(val flow: Flow) extends Logging {
     new LocalDateTime(sections(2).toInt, sections(3).toInt, 1, 1, 1).toLocalDate
   }
 
-  private def isFileforDate(
+  private def isFileForDate(
       startDate: LocalDate,
       fileDate: LocalDate
   ): Boolean = {
