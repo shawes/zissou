@@ -153,11 +153,11 @@ class Fish(
         if (!lastDielMigration.isDefined || lastDielMigration.get != time) {
           if (ovm.isDefined) {
             time match {
-              case Day => {
+              case DayMigration => {
                 nightDepth = position.depth
-                depthMigration(diel(Day))
+                depthMigration(diel(DayMigration))
               }
-              case Night =>
+              case NightMigration =>
                 if (nightDepth >= 0) {
                   depthMigration(nightDepth)
                 }

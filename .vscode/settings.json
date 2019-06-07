@@ -16,6 +16,7 @@
         "postflexion",
         "preflexion",
         "runge",
-        "shapefile"
+        "shapefile",
+        "stdev"
     ]
 }

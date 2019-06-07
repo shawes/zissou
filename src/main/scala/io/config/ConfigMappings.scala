@@ -27,12 +27,9 @@ object ConfigMappings {
         f.period.end,
         DateTimeZone.UTC
       ),
-      f.timeStep,
+      new TimeStep(f.timeStep.duration, f.timeStep.unit),
       f.includeVerticalVelocity
     )
-
-  implicit def timeStepConfigToTimeStep(t: TimeStepConfig): TimeStep =
-    new TimeStep(t.duration, TimeStepType.withName(t.unit))
 
   implicit def bufferConfigMap(b: BufferConfig): Buffer =
     new Buffer(b.settlement, b.olfactory)

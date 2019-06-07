@@ -39,7 +39,7 @@ class DielMigration(
       new Tuple2(new ContinuousRange(), 0)
     val probability = iterator.next
 
-    if (dielMigration == Day) {
+    if (dielMigration == DayMigration) {
       currentDepth = (probability.depth, probability.day)
     } else {
       currentDepth = (probability.depth, probability.night)
@@ -48,7 +48,7 @@ class DielMigration(
     cumulativeProbability += currentDepth._2
     while (number > cumulativeProbability && iterator.hasNext) {
       val probability = iterator.next
-      if (dielMigration == Day) {
+      if (dielMigration == DayMigration) {
         currentDepth = (probability.depth, probability.day)
       } else {
         currentDepth = (probability.depth, probability.night)

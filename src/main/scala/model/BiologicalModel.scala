@@ -97,9 +97,9 @@ class BiologicalModel(
       recentlyDeveloped: Boolean
   ): Unit = {
     if (clock.isSunRising(larva.position)) {
-      larva.dielMigrate(Day)
+      larva.dielMigrate(DayMigration)
     } else if (clock.isSunSetting(larva.position)) {
-      larva.dielMigrate(Night)
+      larva.dielMigrate(NightMigration)
     }
     larva.ovmMigrate(
       new OntogeneticMigrationVariables(recentlyDeveloped, clock.isMidnight)
@@ -110,9 +110,9 @@ class BiologicalModel(
     larva.diel match {
       case Some(diel) => {
         if (clock.isSunRising(larva.position)) {
-          larva.dielMigrate(Day)
+          larva.dielMigrate(DayMigration)
         } else if (clock.isSunSetting(larva.position)) {
-          larva.dielMigrate(Night)
+          larva.dielMigrate(NightMigration)
         }
       }
       case None =>

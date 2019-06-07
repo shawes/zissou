@@ -1,7 +1,7 @@
 package biology
 
 import org.apache.commons.math3.distribution.NormalDistribution
-import locals.DistributionType.DistributionType
+import locals._
 import locals.PelagicLarvalDurationType
 import io.config._
 import utilities.Time

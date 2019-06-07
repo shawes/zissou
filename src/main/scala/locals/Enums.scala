@@ -22,8 +22,8 @@ case object DailyMigration extends OntogeneticMigrationStrategy
 case object TimeStepMigration extends OntogeneticMigrationStrategy
 
 sealed trait DielVerticalMigrationType
-case object Day extends DielVerticalMigrationType
-case object Night extends DielVerticalMigrationType
+case object DayMigration extends DielVerticalMigrationType
+case object NightMigration extends DielVerticalMigrationType
 
 sealed trait LarvaType
 case object Fish extends LarvaType
@@ -65,37 +65,12 @@ case object Passive extends SwimmingAbility
 case object Directed extends SwimmingAbility
 case object Undirected extends SwimmingAbility
 
-object Direction extends Enumeration {
-  type Direction = Value
-  val North, East, South, West = Value
-}
+sealed trait Distribution
+case object Normal extends Distribution
+case object Skewed extends Distribution
+case object LogNormal extends Distribution
+case object Decay extends Distribution
 
-object TimeStepType extends Enumeration {
-  type TimeStepType = Value
-  val Second, Hour, Day = Value
-}
-
-object OntogeneticVerticalMigrationType extends Enumeration {
-  type OntogeneticVerticalMigrationType = Value
-  val Random, Restricted, StageBased = Value
-}
-
-object DistributionType extends Enumeration {
-  type DistributionType = Value
-  val Normal, Skewed = Value
-}
-
-object VerticalMigrationPattern extends Enumeration {
-  type VerticalMigrationPattern = Value
-  val None, Diel, Ontogenetic, Both = Value
-}
-
-object LoggingLevel extends Enumeration {
-  type LoggingLevel = Value
-  val None, Concise, Verbose = Value
-}
-
-object Sun extends Enumeration {
-  type Sun = Value
-  val Rising, Setting = Value
-}
+sealed trait SunDirection
+case object Rising extends SunDirection
+case object Setting extends SunDirection
