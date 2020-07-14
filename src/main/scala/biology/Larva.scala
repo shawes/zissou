@@ -28,7 +28,7 @@ trait Larva extends Swimming with History with Ontogeny {
   def incrementAge(seconds: Int): Boolean
   def settle(reefId: Int, date: LocalDateTime): Unit
   def swim(): Option[Velocity]
-  def kill()
+  def kill(): Unit
 
   def dielMigrate(time: DielVerticalMigrationType): Unit
   def ovmMigrate(variables: OntogeneticMigrationVariables): Unit

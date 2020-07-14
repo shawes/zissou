@@ -1,6 +1,6 @@
 package physical
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 
 class VelocityTest extends FlatSpec {
 

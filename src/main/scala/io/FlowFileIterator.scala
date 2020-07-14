@@ -56,7 +56,7 @@ class FlowFileIterator(val flow: Flow) extends Logging {
 
   private def clearYesterday(): Unit = {
     if (grids.size == 2) {
-      grids.dequeue
+      grids.dequeue()
     }
   }
 

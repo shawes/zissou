@@ -5,7 +5,7 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.yaml
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.mockito.MockitoSugar
 
 class ConfigurationTest extends FlatSpec with MockitoSugar {

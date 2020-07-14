@@ -1,6 +1,6 @@
 package maths
 
-import org.apache.commons.math3.random.{SynchronizedRandomGenerator,Well44497b}
+import org.apache.commons.math3.random.{SynchronizedRandomGenerator, Well44497b}
 import scala.compat.Platform
 import com.github.nscala_time.time.Imports._
 
@@ -11,26 +11,29 @@ trait Random {
 
   def getPlusMinus: Double
 
-  def getPercent : Double
+  def getPercent: Double
 
-  def getAngle : Double
+  def getAngle: Double
 
   def coinToss: Boolean
 
-  def setSeed(seed : Int)
+  def setSeed(seed: Int): Unit
 }
 
 object RandomNumberGenerator extends Random {
 
-  private var random = new SynchronizedRandomGenerator(new Well44497b(DateTime.now.getMillisOfSecond))
+  private var random = new SynchronizedRandomGenerator(
+    new Well44497b(DateTime.now().getMillisOfSecond)
+  )
 
-  def setSeed(customSeed : Int) {
+  def setSeed(customSeed: Int): Unit = {
     random = new SynchronizedRandomGenerator(new Well44497b(customSeed))
   }
 
   def get: Double = random.nextDouble
 
-  def get(low: Double, high: Double): Double = random.nextDouble * (high - low) + low
+  def get(low: Double, high: Double): Double =
+    random.nextDouble * (high - low) + low
 
   def getPlusMinus: Double = {
     val number = random.nextDouble()
@@ -43,7 +46,7 @@ object RandomNumberGenerator extends Random {
 
   def coinToss: Boolean = random.nextBoolean()
 
-  def getPercent : Double = get(0,100)
+  def getPercent: Double = get(0, 100)
 
-  def getAngle : Double = get(0,360)
+  def getAngle: Double = get(0, 360)
 }

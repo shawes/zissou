@@ -1,7 +1,7 @@
 package biology
 
 import com.github.nscala_time.time.Imports._
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 import physical.GeoCoordinate
 
 import scala.collection.mutable._

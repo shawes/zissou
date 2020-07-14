@@ -1,6 +1,6 @@
 package biology
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 
 class MortalityDecayTest extends FlatSpec {
 

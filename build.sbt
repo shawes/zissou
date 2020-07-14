@@ -41,6 +41,7 @@ libraryDependencies ++= Seq(
   "org.clapper" %% "grizzled-slf4j" % "1.3.4",
   "org.slf4j" % "slf4j-api" % "1.7.30",
   "org.slf4j" % "slf4j-simple" % "1.7.30",
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",
   //"org.slf4j" % "slf4j-jdk14" % "latest.integration",
   "edu.ucar" % "netcdf4" % "5.3.3",
   "edu.ucar" % "cdm" % "5.1.0",
@@ -49,7 +50,7 @@ libraryDependencies ++= Seq(
   "org.geotools" % "gt-shapefile" % "23.0",
   "org.geotools" % "gt-main" % "23.0",
   "javax.media" % "jai_core" % "1.1.3",
-  "javax.media" % "jai_codec" % "1.1.3" % "Test",
+  "javax.media" % "jai_codec" % "1.1.3" % Test,
   "javax.media" % "jai_imageio" % "1.1.1",
   "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
   //"org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3",
@@ -58,14 +59,19 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-core" % "0.13.0"
 )
 
+libraryDependencies ++= Seq(
+  "org.scalatest" %% "scalatest-flatspec" % "3.2.0" % "test",
+  "org.scalatest" %% "scalatest-shouldmatchers" % "3.2.0" % "test"
+)
+
 resolvers ++= Seq(
   Resolver.sonatypeRepo("public"),
   //"Locationtech-releases" at "https://repo.locationtech.org/content/groups/releases",
   //"OpenGeo Maven Repository" at "http://repo.boundlessgeo.com/main/",
   //"Unidata Releases" at "https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases",
-  //"Artima Maven Repository" at "https://repo.artima.com/releases",
+  "Artima Maven Repository" at "https://repo.artima.com/releases",
   //"geosolutions" at "http://maven.geo-solutions.it/",
   "osgeo" at "https://repo.osgeo.org/repository/release/",
-  "Geotoolkit" at "http://maven.geotoolkit.org/"
+  "Geotoolkit" at "https://maven.geotoolkit.org/"
   //"maven" at "http://central.maven.org/maven2/"
 )

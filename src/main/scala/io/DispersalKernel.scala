@@ -23,10 +23,10 @@ class DispersalKernel(larvae: Array[Larva], csvFile: File) extends Logging {
     sb ++= larva.id + ","
     sb ++= larva.birthday.toLocalDate.toString + ","
     sb ++= larva.birthplace.name + ","
-    sb ++= larva.birthplace.reef + ","
+    sb ++= larva.birthplace.reef.toString() + ","
     val age = Time.convertSecondsToDays(larva.age)
     sb ++= f"$age%.1f" + ","
-    sb ++= larva.settledHabitatId + ","
+    sb ++= larva.settledHabitatId.toString() + ","
     val dispersalDistance = calculateDispersalDistance(larva)
     sb ++= f"$dispersalDistance%.1f" + ","
     val crowFliesDistance = calculateCrowFliesDistance(larva)
@@ -61,4 +61,3 @@ class DispersalKernel(larvae: Array[Larva], csvFile: File) extends Logging {
   }
 
 }
- 

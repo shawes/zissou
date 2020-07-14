@@ -11,7 +11,7 @@ import physical.{GeoCoordinate, Velocity}
 class FlowController(val reader: FlowFileIterator, var flow: Flow)
     extends Logging {
 
-  private var hydrodynamicFlow = reader.next
+  private var hydrodynamicFlow = reader.next()
   flow.dimensions = reader.flow.dimensions
 
   def getVelocityOfCoordinate(

@@ -1,7 +1,7 @@
 package biology.swimming
 
 import maths.ContinuousRange
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, PrivateMethodTester}
 

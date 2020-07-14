@@ -1,10 +1,10 @@
 package biology
 
 import locals._
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class FishOntogenyTest extends FlatSpec {
+class FishOntogenyTest extends AnyFlatSpec {
   val hatching = 0
   val preflexion = 1000
   val flexion = 2000

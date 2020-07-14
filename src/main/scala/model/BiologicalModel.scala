@@ -17,6 +17,8 @@ import utilities.Time
 import physical.Velocity
 import physical.GeoCoordinate
 import physical.habitat.HabitatManager
+import scala.collection.parallel.CollectionConverters._
+
 class BiologicalModel(
     val config: Configuration,
     clock: SimulationClock,
@@ -130,12 +132,12 @@ class BiologicalModel(
   }
 
   private def sense(larva: Larva): Unit = {
-    if (larva.isSettlementAge || larva.isSensingAge) {
+    if (larva.isSettlementAge() || larva.isSensingAge()) {
       val index = habitatManager.getClosestHabitat(larva.position)
-      if (index._1 != NoReefToSettleException && larva.isSettlementAge) {
+      if (index._1 != NoReefToSettleException && larva.isSettlementAge()) {
         larva.settle(index._1, clock.now)
       } else {
-        if (index._2 != NoReefSensedException && larva.isSensingAge) {
+        if (index._2 != NoReefSensedException && larva.isSensingAge()) {
           larva.direction = index._3
         } else {
           larva.direction = RandomNumberGenerator.getAngle

@@ -19,12 +19,12 @@ class ConnectivityMatrix(larvae: Array[Larva], csvFile: File) {
   private def getCsvLarvaRow(larva: Larva): String = {
     val sb = new StringBuilder()
     sb ++= larva.id + ","
-    sb ++= larva.birthday.toLocalDate.toString + ","
+    sb ++= larva.birthday.toLocalDate.toString() + ","
     sb ++= larva.birthplace.name + ","
-    sb ++= larva.birthplace.reef + ","
-    sb ++= Time.convertSecondsToDays(larva.age) + ","
-    sb ++= larva.settlementDate.get.toLocalDate.toString + ","
-    sb ++= larva.settledHabitatId + "\n"
+    sb ++= larva.birthplace.reef.toString() + ","
+    sb ++= Time.convertSecondsToDays(larva.age).toString() + ","
+    sb ++= larva.settlementDate.get.toLocalDate.toString() + ","
+    sb ++= larva.settledHabitatId.toString() + "\n"
     sb.toString()
   }
 

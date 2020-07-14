@@ -52,7 +52,7 @@ class Fish(
   /*
    A fish can sense if is in a window where olfactory competency has developed and if it has the ability to swim in a directed fashion.
    */
-  def isSensingAge: Boolean =
+  def isSensingAge(): Boolean =
     age <= pelagicLarvalDuration &&
       ontogeny == Postflexion &&
       (horizontalSwimming match {
