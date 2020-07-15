@@ -1,10 +1,10 @@
 package io
 
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest._
 
 class ConnectivityMatrixTest
-    extends FlatSpec
+    extends flatspec.AnyFlatSpec
     with MockitoSugar
     with PrivateMethodTester {
 
@@ -14,9 +14,10 @@ class ConnectivityMatrixTest
   }
 
   it should "have the correct column headers for the csv file" in {
-    val ColumnHeaders = "id,born,region,source,age,recruited-date,settle-id"
+    val ColumnHeaders =
+      "id,born,region,source,age,recruited-date,settle-id"
     val ConnectivityMatrix = new ConnectivityMatrix(null, null)
-    val columns = PrivateMethod[String]('columnHeaders)
+    val columns = PrivateMethod[String](Symbol("columnHeaders"))
     val headers = ConnectivityMatrix invokePrivate columns()
     assert(headers == ColumnHeaders)
   }

@@ -2,12 +2,15 @@ package physical
 
 import maths.Random
 import org.mockito.Mockito._
-import org.scalatest.Matchers._
+import org.scalatest.matchers.should._
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest._
 
-class TurbulenceTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
-
+class TurbulenceTest
+    extends flatspec.AnyFlatSpec
+    with MockitoSugar
+    with PrivateMethodTester
+    with Matchers {
 
   "The turbulence object" should "initialise" in {
     val turbulence = new Turbulence()

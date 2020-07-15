@@ -61,7 +61,8 @@ libraryDependencies ++= Seq(
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest-flatspec" % "3.2.0" % "test",
-  "org.scalatest" %% "scalatest-shouldmatchers" % "3.2.0" % "test"
+  "org.scalatest" %% "scalatest-shouldmatchers" % "3.2.0" % "test",
+  "org.scalatestplus" %% "mockito-3-3" % "3.2.0.0" % "test"
 )
 
 resolvers ++= Seq(

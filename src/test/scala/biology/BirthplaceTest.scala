@@ -1,10 +1,10 @@
 package biology
 
 //import org.scalatest._
-import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest._
 import physical.GeoCoordinate
 
-class BirthplaceTest extends AnyFlatSpec {
+class BirthplaceTest extends flatspec.AnyFlatSpec {
 
   val birthplace = new Birthplace("hobart", 30, new GeoCoordinate(1, 2))
 

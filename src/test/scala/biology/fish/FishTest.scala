@@ -5,12 +5,12 @@ import locals._
 import maths.ContinuousRange
 import org.mockito.Mockito._
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest._
 import physical.GeoCoordinate
 import physical.habitat.GeometryAdaptor
 import biology._
 
-class FishTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+class FishTest extends flatspec.AnyFlatSpec with MockitoSugar with PrivateMethodTester {
   val pld: Int = 30
   val id: Int = 1
   val maximumLifespan = 50

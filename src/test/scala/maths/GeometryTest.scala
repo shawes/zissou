@@ -1,10 +1,13 @@
 package maths
 
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest._
 import physical.{GeoCoordinate, Velocity}
 
-class GeometryTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+class GeometryTest
+    extends flatspec.AnyFlatSpec
+    with MockitoSugar
+    with PrivateMethodTester {
 
   val geometry = new Geometry()
 

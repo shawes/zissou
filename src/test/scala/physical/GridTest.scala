@@ -1,8 +1,9 @@
 package physical
 
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest._
 
-class GridTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
-
-}
+class GridTest
+    extends flatspec.AnyFlatSpec
+    with MockitoSugar
+    with PrivateMethodTester {}

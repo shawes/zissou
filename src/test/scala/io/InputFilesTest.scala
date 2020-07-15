@@ -1,7 +1,5 @@
 package io
 
-import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest._
 
-class InputFilesTest extends FlatSpec {
-
-}
+class InputFilesTest extends flatspec.AnyFlatSpec {}

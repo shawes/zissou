@@ -3,10 +3,10 @@ package biology.swimming
 import locals._
 import org.mockito.Mockito._
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest._
 
 class HorizontalSwimmingTest
-    extends FlatSpec
+    extends flatspec.AnyFlatSpec
     with MockitoSugar
     with PrivateMethodTester {
 

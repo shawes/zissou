@@ -5,10 +5,10 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.yaml
 
-import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest._
 import org.scalatestplus.mockito.MockitoSugar
 
-class ConfigurationTest extends FlatSpec with MockitoSugar {
+class ConfigurationTest extends flatspec.AnyFlatSpec with MockitoSugar {
 
   private val configYAML = """
       settings:

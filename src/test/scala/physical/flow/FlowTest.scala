@@ -1,8 +1,9 @@
 package physical.flow
 
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest._
 
-class FlowTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
-
-}
+class FlowTest
+    extends flatspec.AnyFlatSpec
+    with MockitoSugar
+    with PrivateMethodTester {}

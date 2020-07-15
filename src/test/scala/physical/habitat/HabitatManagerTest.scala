@@ -1,13 +1,16 @@
 package physical.habitat
 
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest._
 
 /**
   *
   * Created by Steven Hawes on 17/02/2016.
   */
-class HabitatManagerTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+class HabitatManagerTest
+    extends flatspec.AnyFlatSpec
+    with MockitoSugar
+    with PrivateMethodTester {
   /* val list = Array(
      new Coordinate(-29.112576,153.629551),
      new Coordinate(-29.112201,153.658476),

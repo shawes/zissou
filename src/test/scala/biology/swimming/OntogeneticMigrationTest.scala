@@ -1,12 +1,11 @@
 package biology.swimming
 
 import maths.ContinuousRange
-import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest._
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
 
 class OntogeneticMigrationTest
-    extends FlatSpec
+    extends flatspec.AnyFlatSpec
     with MockitoSugar
     with PrivateMethodTester {
 

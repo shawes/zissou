@@ -1,9 +1,12 @@
 package maths
 
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest._
 
-class ContinuousRangeTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+class ContinuousRangeTest
+    extends flatspec.AnyFlatSpec
+    with MockitoSugar
+    with PrivateMethodTester {
 
   val start = 1.0
   val end = 10.0
@@ -44,15 +47,15 @@ class ContinuousRangeTest extends FlatSpec with MockitoSugar with PrivateMethodT
   }
 
   it should "contain a number in the range" in {
-    assert(rangeParams.contains(end/2))
+    assert(rangeParams.contains(end / 2))
   }
 
   it should "not contain a number before the range start" in {
-    assert(rangeParams.contains(start-1) == false)
+    assert(rangeParams.contains(start - 1) == false)
   }
 
   it should "not contain a number after the range end" in {
-    assert(rangeParams.contains(end+1) == false)
+    assert(rangeParams.contains(end + 1) == false)
   }
 
   it should "contain the start in the range if inclusive" in {
