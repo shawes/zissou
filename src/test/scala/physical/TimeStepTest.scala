@@ -11,7 +11,7 @@ class TimeStepTest
     with PrivateMethodTester
     with Matchers {
 
-  "The timestep" should " not initialise to null" in {
+  "The time step" should " not initialise to null" in {
     val result = new TimeStep(1.0, "hour")
     result should not equal null
   }

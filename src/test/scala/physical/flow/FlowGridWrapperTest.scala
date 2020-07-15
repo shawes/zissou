@@ -14,7 +14,7 @@ class FlowGridWrapperTest
   private val mockDatasets =
     mock[List[List[(Array[Array[Array[Float]]], GridCoordSystem)]]]
 
-  "The flow grid wrapper" should "intialise" in {
+  "The flow grid wrapper" should "initialise" in {
     val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
     assert(flowGridWrapper != null)
   }

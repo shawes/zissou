@@ -8,7 +8,7 @@ class GeoCoordinateTest
     with MockitoSugar
     with PrivateMethodTester {
 
-  "A geocoordinate" should "not be null" in {
+  "A geo coordinate" should "not be null" in {
     val coordinate = new GeoCoordinate(1, 2, 3)
     assert(coordinate != null)
   }
