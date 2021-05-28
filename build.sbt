@@ -1,12 +1,14 @@
 name := "zissou"
 
-version := "2.1"
+version := "3.0"
 
 scalaVersion := "2.13.3"
 
 assemblyJarName in assembly := "zissou.jar"
 
 test in assembly := {}
+
+mainClass in assembly := Some("model.Simulator")
 
 assemblyMergeStrategy in assembly := {
   case PathList("uom-se", xs @ _*) => MergeStrategy.discard
@@ -17,7 +19,6 @@ assemblyMergeStrategy in assembly := {
         MergeStrategy.discard
       case _ => MergeStrategy.last
     }
-
   case x => MergeStrategy.first
 }
 
@@ -34,6 +35,7 @@ parallelExecution in Test := false
 libraryDependencies ++= Seq(
   "org.scalactic" %% "scalactic" % "3.2.0",
   "org.scalatest" %% "scalatest" % "3.2.0" % "test",
+  "org.scalatestplus" %% "scalacheck-1-14" % "3.2.1.0" % "test",
   "junit" % "junit" % "4.13" % "test",
   "org.mockito" % "mockito-core" % "3.4.0" % "test",
   "com.github.nscala-time" %% "nscala-time" % "2.24.0",
@@ -43,8 +45,7 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-simple" % "1.7.30",
   "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",
   //"org.slf4j" % "slf4j-jdk14" % "latest.integration",
-  "edu.ucar" % "netcdf4" % "5.3.3",
-  "edu.ucar" % "cdm" % "5.1.0",
+  "edu.ucar" % "netcdfAll" % "5.3.3",
   //"edu.ucar" % "opendap" % "latest.integration",
   //"org.scala-lang" % "scala-library" % "2.12.3",
   "org.geotools" % "gt-shapefile" % "23.0",
