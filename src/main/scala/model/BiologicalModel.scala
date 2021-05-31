@@ -25,7 +25,7 @@ class BiologicalModel(
     integrator: RungeKuttaIntegration
 ) extends Logging {
 
-  val factory = LarvaeFactory.apply(Fish, config.larva)
+  val factory = LarvaeFactory.apply(locals.Fish, config.larva)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(
     config.habitat

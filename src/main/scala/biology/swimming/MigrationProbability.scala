@@ -2,7 +2,7 @@ package biology.swimming
 
 import maths.ContinuousRange
 
-abstract class MigrationProbability(val depth: ContinuousRange) {}
+trait MigrationProbability(val depth: ContinuousRange) {}
 
 class OntogeneticMigrationProbability(
     depth: ContinuousRange,

@@ -7,7 +7,7 @@ import ucar.nc2.dataset.NetcdfDataset
 class NetcdfFileHandler extends Logging {
 
   def openLocalFile(file: String): GridDataset = GridDataset.open(file)
-  
-  def shutdown() : Unit = NetcdfDataset.shutdown()
+
+  def shutdown(): Unit = NetcdfDataset.shutdown()
 
 }
