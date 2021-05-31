@@ -54,6 +54,7 @@ libraryDependencies ++= Seq(
   "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
   "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3",
   "org.scalatestplus" %% "mockito-3-4" % "3.2.9.0" % "test",
+  "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test",
   "org.scalactic" %% "scalactic" % "3.2.9" % "test",
   "org.scalatest" %% "scalatest" % "3.2.9" % "test",
   "io.circe" %% "circe-core" % "0.14.0-M7",
