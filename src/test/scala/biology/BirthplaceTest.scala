@@ -2,27 +2,20 @@ package biology
 
 //import org.scalatest._
 import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import physical.GeoCoordinate
 
-class BirthplaceTest extends flatspec.AnyFlatSpec {
+class BirthplaceTest extends AnyFunSuite with ScalaCheckDrivenPropertyChecks {
 
-  val birthplace = new Birthplace("hobart", 30, new GeoCoordinate(1, 2))
-
-  "A birthplace" should "not be null upon construction" in {
-    assert(birthplace != null)
-  }
-
-  it should "have the name passed to the constructor" in {
-    assert(birthplace.name == "hobart")
-  }
-
-  it should "have the reef passed to the constructor" in {
-    assert(birthplace.reef == 30)
-  }
-
-  it should "have the coordinate passed to the constructor" in {
-    assert(birthplace.location.latitude == 1)
-    assert(birthplace.location.longitude == 2)
+  test("birthplace construction") {
+    forAll { (name: String, reefId: Int, lat: Int, lon: Int) =>
+      val birthplace = new Birthplace(name, reefId, new GeoCoordinate(lat, lon))
+      assert(birthplace.name == name)
+      assert(birthplace.reef == reefId)
+      assert(birthplace.location.latitude == lat)
+      assert(birthplace.location.longitude == lon)
+    }
   }
 
 }

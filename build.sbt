@@ -1,14 +1,17 @@
 name := "zissou"
 
-version := "2.1"
+version := "3.0"
 
-scalaVersion := "2.13.3"
+scalaVersion := "3.0.0"
+crossScalaVersions ++= Seq("2.13.6", "3.0.0")
 
-assemblyJarName in assembly := "zissou.jar"
+assembly / assemblyJarName := "zissou.jar"
 
-test in assembly := {}
+assembly / test := {}
 
-assemblyMergeStrategy in assembly := {
+assembly / mainClass := Some("model.Simulator")
+
+assembly / assemblyMergeStrategy := {
   case PathList("uom-se", xs @ _*) => MergeStrategy.discard
   case PathList("META-INF", xs @ _*) =>
     (xs map { _.toLowerCase }) match {
@@ -17,62 +20,59 @@ assemblyMergeStrategy in assembly := {
         MergeStrategy.discard
       case _ => MergeStrategy.last
     }
-
   case x => MergeStrategy.first
 }
 
-//logLevel in assembly := Level.Debug
+logLevel in assembly := Level.Debug
 
 scalacOptions ++= Seq(
   "-deprecation",
   "-feature",
-  "-language:implicitConversions"
+  "-language:implicitConversions",
+  "-source:3.0-migration"
 )
 
-parallelExecution in Test := false
+scalacOptions ++= Seq("-Xmax-inlines", "50")
+
+Test / parallelExecution := false
 
 libraryDependencies ++= Seq(
-  "org.scalactic" %% "scalactic" % "3.2.0",
-  "org.scalatest" %% "scalatest" % "3.2.0" % "test",
-  "junit" % "junit" % "4.13" % "test",
-  "org.mockito" % "mockito-core" % "3.4.0" % "test",
-  "com.github.nscala-time" %% "nscala-time" % "2.24.0",
+  //"org.scalatest" %% "scalatest" % "3.2.8",
+  "junit" % "junit" % "4.13.2" % "test",
   "org.apache.commons" % "commons-math3" % "3.6.1",
-  "org.clapper" %% "grizzled-slf4j" % "1.3.4",
+  //"org.slf4j" % "slf4j-jdk14" % "latest.integration",
   "org.slf4j" % "slf4j-api" % "1.7.30",
   "org.slf4j" % "slf4j-simple" % "1.7.30",
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",
-  //"org.slf4j" % "slf4j-jdk14" % "latest.integration",
-  "edu.ucar" % "netcdf4" % "5.3.3",
-  "edu.ucar" % "cdm" % "5.1.0",
+  "edu.ucar" % "netcdfAll" % "5.4.1",
   //"edu.ucar" % "opendap" % "latest.integration",
   //"org.scala-lang" % "scala-library" % "2.12.3",
-  "org.geotools" % "gt-shapefile" % "23.0",
-  "org.geotools" % "gt-main" % "23.0",
-  "javax.media" % "jai_core" % "1.1.3",
-  "javax.media" % "jai_codec" % "1.1.3" % Test,
-  "javax.media" % "jai_imageio" % "1.1.1",
+  "org.geotools" % "gt-shapefile" % "25.0",
+  "org.geotools" % "gt-main" % "25.0",
+  //"javax.media" % "jai_core" % "1.1.3",
+  //"javax.media" % "jai_codec" % "1.1.3" % Test,
+  //"javax.media" % "jai_imageio" % "1.1.1",
   "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3",
+  "org.scalatestplus" %% "mockito-3-4" % "3.2.9.0" % "test",
+  "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test",
+  "org.scalactic" %% "scalactic" % "3.2.9" % "test",
+  "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+  "io.circe" %% "circe-core" % "0.14.0-M7",
+  "io.circe" %% "circe-generic" % "0.14.1",
+  "com.github.nscala-time" %% "nscala-time" % "2.28.0"
+
   //"org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3",
-  "io.circe" %% "circe-yaml" % "0.13.1",
-  "io.circe" %% "circe-generic" % "0.13.0",
-  "io.circe" %% "circe-core" % "0.13.0"
 )
 
-libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest-flatspec" % "3.2.0" % "test",
-  "org.scalatest" %% "scalatest-shouldmatchers" % "3.2.0" % "test",
-  "org.scalatestplus" %% "mockito-3-3" % "3.2.0.0" % "test"
-)
+libraryDependencies += ("org.mockito" %% "mockito-scala" % "1.16.37")
+  .cross(CrossVersion.for3Use2_13)
+libraryDependencies += ("org.clapper" %% "grizzled-slf4j" % "1.3.4")
+  .cross(CrossVersion.for3Use2_13)
+libraryDependencies += ("io.circe" %% "circe-yaml" % "0.13.1")
+  .cross(CrossVersion.for3Use2_13)
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("public"),
-  //"Locationtech-releases" at "https://repo.locationtech.org/content/groups/releases",
-  //"OpenGeo Maven Repository" at "http://repo.boundlessgeo.com/main/",
-  //"Unidata Releases" at "https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases",
   "Artima Maven Repository" at "https://repo.artima.com/releases",
-  //"geosolutions" at "http://maven.geo-solutions.it/",
-  "osgeo" at "https://repo.osgeo.org/repository/release/",
-  "Geotoolkit" at "https://maven.geotoolkit.org/"
-  //"maven" at "http://central.maven.org/maven2/"
+  "osgeo" at "https://repo.osgeo.org/repository/release/"
 )

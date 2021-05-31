@@ -1,5 +1,5 @@
 package biology
 
-abstract class MovementStrategy {
-  def move() : Unit
+trait MovementStrategy {
+  def move(): Unit
 }
