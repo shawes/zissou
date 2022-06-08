@@ -1,6 +1,6 @@
 package biology
 
-import locals._
+import locals.Enums.OntogeneticState._
 import org.scalatest._
 import matchers.should._
 

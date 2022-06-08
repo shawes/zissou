@@ -1,6 +1,7 @@
 package physical.flow
 
-import locals._
+import locals.Enums.QuadrantLocation._
+import locals.Enums.InterpolationType._
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest._
 import ucar.nc2.dt.GridCoordSystem
