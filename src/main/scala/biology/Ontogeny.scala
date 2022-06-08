@@ -1,6 +1,9 @@
 package biology
 
-import locals._
+import locals.Enums.OntogeneticState
+import locals.Enums.OntogeneticState._
+
+//import OntogeneticState.*
 
 trait Ontogeny {
   var ontogeny: OntogeneticState = getOntogeneticStateForAge(0)
@@ -14,9 +17,9 @@ trait OntogenyFish extends Ontogeny {
   val flexion: Int
   val postflexion: Int
   override def getOntogeneticStateForAge(age: Int): OntogeneticState = {
-    if (age < preflexion) Hatching
-    else if (age >= preflexion && age < flexion) Preflexion
-    else if (age >= flexion && age < postflexion) Flexion
+    if (age < preflexion) then Hatching
+    else if (age >= preflexion && age < flexion) then Preflexion
+    else if (age >= flexion && age < postflexion) then Flexion
     else Postflexion
   }
 }

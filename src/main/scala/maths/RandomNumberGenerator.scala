@@ -37,7 +37,7 @@ object RandomNumberGenerator extends Random {
 
   def getPlusMinus: Double = {
     val number = random.nextDouble()
-    if (random.nextBoolean) {
+    if (random.nextBoolean) then {
       number
     } else {
       number * (-1.0)

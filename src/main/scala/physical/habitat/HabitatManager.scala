@@ -5,7 +5,7 @@ import java.io.File
 import grizzled.slf4j.Logging
 import io.config._
 import io.GisShapeFile
-import locals.HabitatType
+import locals.Enums.HabitatType
 import locals.Constants.LightWeightException._
 import maths.Geometry
 import org.geotools.data.simple.SimpleFeatureCollection
@@ -49,8 +49,8 @@ class HabitatManager(config: HabitatConfig) extends Logging {
   }
 
   private def getSortedCentroids(): (Array[GeoCoordinate], Array[Int]) = {
-    val centroidsWithIndexes = reefs.zipWithIndex.map {
-      case (reef, count) => (reef.centroid, count)
+    val centroidsWithIndexes = reefs.zipWithIndex.map { case (reef, count) =>
+      (reef.centroid, count)
     }
     quickSort(centroidsWithIndexes)
     centroidsWithIndexes.unzip
@@ -64,9 +64,9 @@ class HabitatManager(config: HabitatConfig) extends Logging {
     var sense: Int = NoReefSensedException
     var angle: Double = NoSwimmingAngleException
 
-    if (reef.isWithinBuffer(coordinate, buffer.settlement)) {
+    if (reef.isWithinBuffer(coordinate, buffer.settlement)) then {
       settle = reef.id
-    } else if (reef.isWithinBuffer(coordinate, buffer.olfactory)) {
+    } else if (reef.isWithinBuffer(coordinate, buffer.olfactory)) then {
       angle = reef.direction(coordinate)
       sense = reef.id
     }

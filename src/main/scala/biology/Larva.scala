@@ -3,7 +3,9 @@ package biology
 import scala.collection.mutable.ArrayBuffer
 
 import com.github.nscala_time.time.Imports._
-import locals._
+import locals.Constants
+import locals.Enums._
+import locals.Enums.PelagicLarvaeState._
 import physical.{GeoCoordinate, Velocity}
 import physical.habitat.HabitatPolygon
 import biology.swimming._
@@ -32,7 +34,7 @@ trait Larva extends Swimming with History with Ontogeny {
 
   def dielMigrate(time: DielVerticalMigrationType): Unit
   def ovmMigrate(variables: OntogeneticMigrationVariables): Unit
-  //def changedOntogeneticState: Boolean
+  // def changedOntogeneticState: Boolean
 
   def isSensingAge(): Boolean
   def isSettlementAge(): Boolean = age > nonSettlementPeriod

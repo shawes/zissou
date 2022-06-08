@@ -2,7 +2,7 @@ package biology
 
 import org.apache.commons.math3.distribution.NormalDistribution
 import locals._
-import locals.PelagicLarvalDurationType
+import locals.Enums.PelagicLarvalDurationType
 import io.config._
 import utilities.Time
 import locals.Constants

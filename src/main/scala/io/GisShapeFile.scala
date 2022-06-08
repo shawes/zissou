@@ -34,7 +34,7 @@ class GisShapeFile() extends Logging {
     val features = shapeFile.getFeatureSource().getFeatures().features()
     try {
       val simpleFeatures = mutable.ListBuffer[SimpleFeature]()
-      while (features.hasNext) simpleFeatures += features.next()
+      while (features.hasNext) do simpleFeatures += features.next()
       simpleFeatures.toList
     } finally {
       features.close()
@@ -49,24 +49,25 @@ class GisShapeFile() extends Logging {
   private def writeLineShapeFile(
       larvae: Array[Larva],
       file: File,
-      percent: Double) = {
-        
+      percent: Double
+  ) = {
+
     val features = new java.util.ArrayList[SimpleFeature]
     val builder: SimpleFeatureTypeBuilder = new SimpleFeatureTypeBuilder()
     builder.setName("larva")
     builder.setCRS(DefaultGeographicCRS.WGS84) // <- Coordinate reference system
     builder.add("the_geom", classOf[LineString])
-    //builder.add("birth", classOf[String])
-    //builder.add("settle",classOf[Integer])
+    // builder.add("birth", classOf[String])
+    // builder.add("settle",classOf[Integer])
 
     val larvaLine: SimpleFeatureType = builder.buildFeatureType()
 
     for (larva <- larvae) {
-      if (larva.history.size > 1 && RandomNumberGenerator.getPercent < percent) {
+      if (larva.history.size > 1 && RandomNumberGenerator.getPercent < percent) then {
         val featureBuilder = new SimpleFeatureBuilder(larvaLine)
         featureBuilder.add(writeStageLine(larva.history.toArray))
-        //featureBuilder.add(larva.birthplace)
-        //featureBuilder.add(larva.polygon)
+        // featureBuilder.add(larva.birthplace)
+        // featureBuilder.add(larva.polygon)
         val feature = featureBuilder.buildFeature(null)
         features.add(feature)
       }

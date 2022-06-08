@@ -1,7 +1,9 @@
 package biology.swimming
 
-import locals._
+import locals.Constants
 import locals.Constants._
+import locals.Enums.SwimmingStrategy
+import locals.Enums.Swims
 import biology.OntogenyFish
 import physical.Velocity
 import utilities._
@@ -9,13 +11,13 @@ import maths.RandomNumberGenerator
 import grizzled.slf4j.Logging
 
 class HorizontalSwimming(
-    val ability: SwimmingAbility,
-    val strategy: HorizontalSwimmingStrategy,
+    val ability: Swims,
+    val strategy: SwimmingStrategy,
     val criticalSwimmingSpeed: Double,
     val inSituSwimmingPotential: Double,
     val endurance: Double,
     val reynoldsEffect: Boolean,
-    //val ageMaxSpeedReached: Int,
+    // val ageMaxSpeedReached: Int,
     val hatchSwimmingSpeed: Double
 ) extends Logging {
 
@@ -23,13 +25,12 @@ class HorizontalSwimming(
       variables: HorizontalSwimmingVariables
   ): Option[Velocity] = {
     val speed = strategy match {
-      case StrategyOne   => getSpeed(typeOneSwimmingSpeed, variables)
-      case StrategyTwo   => getSpeed(typeTwoSwimmingSpeed, variables)
-      case StrategyThree => getSpeed(typeThreeSwimmingSpeed, variables)
-      case _             => 0
+      case SwimmingStrategy.One   => getSpeed(typeOneSwimmingSpeed, variables)
+      case SwimmingStrategy.Two   => getSpeed(typeTwoSwimmingSpeed, variables)
+      case SwimmingStrategy.Three => getSpeed(typeThreeSwimmingSpeed, variables)
     }
-    if (speed > 0) {
-      if (isDirected && variables.angle != LightWeightException.NoSwimmingAngleException) {
+    if (speed > 0) then {
+      if (isDirected && variables.angle != LightWeightException.NoSwimmingAngleException) then {
         Some(calculateVelocity(variables.angle, speed))
       } else {
         Some(calculateVelocity(RandomNumberGenerator.getAngle, speed))
@@ -53,7 +54,7 @@ class HorizontalSwimming(
   private def typeOneSwimmingSpeed(
       variables: HorizontalSwimmingVariables
   ): Double = {
-    if (variables.age > variables.flexion) {
+    if (variables.age > variables.flexion) then {
       criticalSwimmingSpeed *
         RandomNumberGenerator.get(inSituSwimmingPotential, 1) *
         endurance
@@ -66,7 +67,7 @@ class HorizontalSwimming(
   private def typeTwoSwimmingSpeed(
       variables: HorizontalSwimmingVariables
   ): Double = {
-    if (variables.age < variables.postflexion) {
+    if (variables.age < variables.postflexion) then {
       criticalSwimmingSpeed * (variables.age - variables.preflexion) / (variables.postflexion - variables.preflexion)
     } else {
       criticalSwimmingSpeed
@@ -86,7 +87,7 @@ class HorizontalSwimming(
     ) / 100
   }
 
-  def isDirected: Boolean = ability == Directed
+  def isDirected: Boolean = ability == Swims.Directed
 }
 
 class HorizontalSwimmingVariables(

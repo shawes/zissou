@@ -14,7 +14,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
     extends Logging {
   setConfiguredLogLevel()
 
-  if (config.settings.randomSeed.isValidInt) {
+  if (config.settings.randomSeed.isValidInt) then {
     RandomNumberGenerator.setSeed(config.settings.randomSeed)
   }
 
@@ -50,10 +50,10 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       info("Simulation run started")
       val stepTimer = new SimpleTimer()
       stepTimer.start()
-      while (clock.stillTime && biology.isDispersing(clock.now)) {
+      while (clock.stillTime && biology.isDispersing(clock.now)) do {
         biology()
-        if (clock.isMidnight) {
-          if (config.larva.isMortal.getOrElse(false)) {
+        if (clock.isMidnight) then {
+          if (config.larva.isMortal.getOrElse(false)) then {
             biology.applyMortality()
           }
           info(
@@ -84,8 +84,8 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
   }
 
   private def setConfiguredLogLevel(): Unit = {
-    //val logFile = config.output.logFile
-    if (config.output.logFile.nonEmpty) {
+    // val logFile = config.output.logFile
+    if (config.output.logFile.nonEmpty) then {
       System.setProperty(
         "org.slf4j.simpleLogger.logFile",
         config.output.logFile

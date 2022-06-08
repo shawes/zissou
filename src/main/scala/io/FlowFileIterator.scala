@@ -8,23 +8,23 @@ import physical.flow.{Flow, FlowGridWrapper}
 import ucar.ma2.Range
 import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.{GridDataset}
-import ucar.unidata.geoloc.{LatLonPointImpl, LatLonRect}
+import ucar.unidata.geoloc.{LatLonPoint, LatLonRect}
 
 class FlowFileIterator(val flow: Flow) extends Logging {
   val NetcdfExtension = ".nc"
-  val variables = List("u", "v", "w") //TODO: Put this into the config file
+  val variables = List("u", "v", "w") // TODO: Put this into the config file
   var dataset: List[(GridDataset, String)] = List.empty
   val grids =
     new Queue[(List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)]
   val depths = List(2.5, 7.5, 12.5, 17.5, 22.7, 28.2, 34.2, 41.0, 48.5, 56.7,
-    65.7, 75.2, 85.0, 95.0, 105.0) //TODO: Get this info from the netcdf file
+    65.7, 75.2, 85.0, 95.0, 105.0) // TODO: Get this info from the netcdf file
   val netcdfHandler = new NetcdfFileHandler()
   val getFileInformation = initialiseFiles()
   var currentFile: Int = getFileInformation._2
   val files = getFileInformation._1
   val latLonBounds = new LatLonRect(
-    new LatLonPointImpl(-50.0, 142.0),
-    new LatLonPointImpl(-10.0, 180.0)
+    LatLonPoint.create(-50.0, 142.0),
+    LatLonPoint.create(-10.0, 180.0)
   )
   val depthRange: Range = new Range(0, 14)
 
@@ -41,7 +41,7 @@ class FlowFileIterator(val flow: Flow) extends Logging {
 
   def next(): FlowGridWrapper = {
     clearYesterday()
-    if (isEndOfMonth && hasNext) readMonth()
+    if (isEndOfMonth && hasNext) then readMonth()
     getNextFlowData()
     new FlowGridWrapper(depths, grids.map(grid => grid._1.toList).toList)
   }
@@ -49,13 +49,13 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   def hasNext: Boolean = currentFile < files.size - 1
 
   def closeAllOpenDatasets(): Unit = {
-    if (dataset.nonEmpty) {
+    if (dataset.nonEmpty) then {
       dataset.foreach(dataset => dataset._1.close())
     }
   }
 
   private def clearYesterday(): Unit = {
-    if (grids.size == 2) {
+    if (grids.size == 2) then {
       grids.dequeue()
     }
   }
@@ -72,38 +72,36 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   ): List[(Array[Array[Array[Float]]], GridCoordSystem)] = {
 
     val day = dataset
-      .map(
-        dataset =>
-          dataset._1
-            .findGridByName(dataset._2)
-            .subset(
-              new Range(dayOfMonth - 1, dayOfMonth - 1),
-              depthRange,
-              latLonBounds,
-              0,
-              0,
-              0
-            )
+      .map(dataset =>
+        dataset._1
+          .findGridByName(dataset._2)
+          .subset(
+            new Range(dayOfMonth - 1, dayOfMonth - 1),
+            depthRange,
+            latLonBounds,
+            0,
+            0,
+            0
+          )
       )
       .toList
 
-    day.map(
-      grid =>
-        (
-          grid
-            .readDataSlice(0, -1, -1, -1)
-            .copyToNDJavaArray()
-            .asInstanceOf[Array[Array[Array[Float]]]],
-          grid.getCoordinateSystem()
-        )
+    day.map(grid =>
+      (
+        grid
+          .readDataSlice(0, -1, -1, -1)
+          .copyToNDJavaArray()
+          .asInstanceOf[Array[Array[Array[Float]]]],
+        grid.getCoordinateSystem()
+      )
     )
 
   }
 
   private def readMonth(): Unit = {
     val nextDayData = ListBuffer.empty[(GridDataset, String)]
-    variables.foreach(
-      variable => nextDayData += ((loadNextFlowFile(variable), variable))
+    variables.foreach(variable =>
+      nextDayData += ((loadNextFlowFile(variable), variable))
     )
     closeAllOpenDatasets()
     dataset = nextDayData.toList
@@ -130,12 +128,11 @@ class FlowFileIterator(val flow: Flow) extends Logging {
     files.foreach(f => info(s"$f"))
     (
       files,
-      files.indexWhere(
-        file =>
-          isFileForDate(
-            flow.period.getStart.toLocalDate,
-            getDateFromFileName(file)
-          )
+      files.indexWhere(file =>
+        isFileForDate(
+          flow.period.getStart.toLocalDate,
+          getDateFromFileName(file)
+        )
       )
     )
   }

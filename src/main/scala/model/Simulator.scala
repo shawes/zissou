@@ -13,7 +13,7 @@ object Simulator extends App with Logging {
 
   private def readConfigurationFile: Option[(Configuration, String)] = {
     val configurationFile = new ConfigurationFile()
-    if (args.nonEmpty) {
+    if (args.nonEmpty) then {
       val testConfigPathDesktop = args(0)
       val config = configurationFile.read(args(0))
       val name = getConfigName(args(0))

@@ -8,14 +8,14 @@ import com.github.nscala_time.time.Imports._
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator
 import com.luckycatlabs.sunrisesunset.dto.Location
 import java.util.Locale
-import locals._
+import locals.Enums.SunDirection
 
 class SimulationClock(interval: Interval, val timeStep: TimeStep)
     extends Logging {
 
   val start = interval.getStart
   val end = interval.getEnd
-  //val totalDays: Int = interval.toPeriod.getDays
+  // val totalDays: Int = interval.toPeriod.getDays
   var now: LocalDateTime = start.toLocalDateTime()
 
   def tick(): Unit = {
@@ -27,11 +27,11 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep)
   def isMidnight: Boolean = now.getHourOfDay == 0
 
   def isSunSetting(location: GeoCoordinate): Boolean = {
-    isSunSettingOrRising(location, Setting)
+    isSunSettingOrRising(location, SunDirection.Setting)
   }
 
   def isSunRising(location: GeoCoordinate): Boolean = {
-    isSunSettingOrRising(location, Rising)
+    isSunSettingOrRising(location, SunDirection.Rising)
   }
 
   private def isSunSettingOrRising(
@@ -47,13 +47,13 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep)
     val nowDateTime: DateTime = now.toDateTime(localTimeZone)
 
     val sunsetOrSunrise = sun match {
-      case Setting =>
+      case SunDirection.Setting =>
         new DateTime(
           sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(
             nowDateTime.toCalendar(Locale.getDefault())
           )
         )
-      case Rising =>
+      case SunDirection.Rising =>
         new DateTime(
           sunriseSunsetCalculator.getOfficialSunriseCalendarForDate(
             nowDateTime.toCalendar(Locale.getDefault())

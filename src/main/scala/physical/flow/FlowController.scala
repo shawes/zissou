@@ -3,7 +3,8 @@ package physical.flow
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
 import io.FlowFileIterator
-import locals._
+import locals.Enums.InterpolationTime
+import locals.Constants
 import maths.RandomNumberGenerator
 import maths.interpolation.Interpolation
 import physical.{GeoCoordinate, Velocity}
@@ -20,10 +21,10 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow)
       now: LocalDateTime,
       timeStep: Int
   ): Option[Velocity] = {
-    if (future == now) {
-      getInterpolatedVelocity(coordinate, InterpolateToday)
-    } else if (future == now.plusSeconds(timeStep)) {
-      getInterpolatedVelocity(coordinate, InterpolateTomorrow)
+    if (future == now) then {
+      getInterpolatedVelocity(coordinate, InterpolationTime.Today)
+    } else if (future == now.plusSeconds(timeStep)) then {
+      getInterpolatedVelocity(coordinate, InterpolationTime.Tomorrow)
     } else {
       derivePartialTimeStepVelocity(coordinate, future, now, timeStep)
     }
@@ -35,11 +36,12 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow)
       now: LocalDateTime,
       timeStep: Int
   ): Option[Velocity] = {
-    val velocityNow = getInterpolatedVelocity(coordinate, InterpolateToday)
+    val velocityNow =
+      getInterpolatedVelocity(coordinate, InterpolationTime.Today)
     val velocityFuture =
-      getInterpolatedVelocity(coordinate, InterpolateTomorrow)
+      getInterpolatedVelocity(coordinate, InterpolationTime.Tomorrow)
 
-    if (velocityNow.isDefined && velocityFuture.isDefined) {
+    if (velocityNow.isDefined && velocityFuture.isDefined) then {
       val divisor = 1 / timeStep.toDouble
       val period = now.toDateTime(DateTimeZone.UTC) to future.toDateTime(
         DateTimeZone.UTC
@@ -92,12 +94,12 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow)
     }
 
   private def correctNegativeCoordinate(value: Double): Double = {
-    if (value < 0) value + 180 else value
+    if (value < 0) then value + 180 else value
   }
 
   private def ensureDepthIsInRange(value: Int): Int = {
-    if (value < 0) 0
-    else if (value > flow.dimensions.cellSize.depth)
+    if (value < 0) then 0
+    else if (value > flow.dimensions.cellSize.depth) then
       flow.dimensions.cellSize.depth
     else value
   }

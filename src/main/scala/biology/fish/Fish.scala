@@ -1,7 +1,7 @@
 package biology.fish
 
 import grizzled.slf4j.Logging
-import locals._
+import locals.Enums._
 import locals.Constants.LightWeightException._
 import physical.{GeoCoordinate, Velocity}
 import com.github.nscala_time.time.Imports._
@@ -33,39 +33,41 @@ class Fish(
 
   private var lastDielMigration: Option[DielVerticalMigrationType] = None
   private var nightDepth: Double = -1
-  //private var hasChangedOntogeneticState: Boolean = false
-  //var direction: Double = NoSwimmingAngleException
+  // private var hasChangedOntogeneticState: Boolean = false
+  // var direction: Double = NoSwimmingAngleException
   val geometry = new Geometry()
-  //override val history: ArrayBuffer[TimeCapsule] = fishHistory
+  // override val history: ArrayBuffer[TimeCapsule] = fishHistory
 
-  //override def state: PelagicLarvaeState = fishState
+  // override def state: PelagicLarvaeState = fishState
 
   override val birthday: LocalDateTime = spawned
-  //override val nonSettlementPeriod = nonSettlementPeriod
+  // override val nonSettlementPeriod = nonSettlementPeriod
 
   override def diel = dielMigration
   override def ovm = ovmMigration
   override def horizontalSwimming = horizontalMigration
 
-  //override def settlementDate: LocalDateTime = settlementDate.get
+  // override def settlementDate: LocalDateTime = settlementDate.get
 
   /*
    A fish can sense if is in a window where olfactory competency has developed and if it has the ability to swim in a directed fashion.
    */
   def isSensingAge(): Boolean =
     age <= pelagicLarvalDuration &&
-      ontogeny == Postflexion &&
+      ontogeny == OntogeneticState.Postflexion &&
       (horizontalSwimming match {
         case Some(swimming) => swimming.isDirected
         case None           => false
       })
 
-  //def isSettlementAge: Boolean = age >= nonSettlementPeriod
+  // def isSettlementAge: Boolean = age >= nonSettlementPeriod
 
   def move(newPosition: GeoCoordinate): Unit = {
-    if (newPosition != position) {
-      //changeLarvaState(Pelagic)
-      if (position.latitude != newPosition.latitude || position.longitude != newPosition.longitude) {
+    if (newPosition != position) then {
+      // changeLarvaState(Pelagic)
+      if (
+        position.latitude != newPosition.latitude || position.longitude != newPosition.longitude
+      ) then {
         saveState()
       }
       position = newPosition
@@ -78,7 +80,7 @@ class Fish(
   override def incrementAge(seconds: Int): Boolean = {
     age += seconds
     val newOntogeny = getOntogeneticStateForAge(age)
-    if (newOntogeny == ontogeny) {
+    if (newOntogeny == ontogeny) then {
       false
     } else {
       ontogeny = newOntogeny
@@ -107,11 +109,11 @@ class Fish(
   def settle(reefId: Int, date: LocalDateTime): Unit = {
     settledHabitatId = reefId
     settlementDate = Some(date)
-    changeLarvaState(Settled)
+    changeLarvaState(PelagicLarvaeState.Settled)
   }
 
   def kill(): Unit = {
-    changeLarvaState(Dead)
+    changeLarvaState(PelagicLarvaeState.Dead)
   }
 
   private def changeLarvaState(newState: PelagicLarvaeState): Unit = {
@@ -132,15 +134,14 @@ class Fish(
     ovm match {
       case Some(ovm) => {
         ovm.implementation match {
-          case TimeStepMigration =>
+          case OntogeneticMigrationType.TimeStep =>
             depthMigration(ovm(ontogeny, position.depth))
-          case OntogeneticStageMigration =>
-            if (variables.recentlyDeveloped)
+          case OntogeneticMigrationType.Stage =>
+            if (variables.recentlyDeveloped) then
               depthMigration(ovm(ontogeny, position.depth))
-          case DailyMigration =>
-            if (variables.isMidnight)
+          case OntogeneticMigrationType.Daily =>
+            if (variables.isMidnight) then
               depthMigration(ovm(ontogeny, position.depth))
-          case _ =>
         }
       }
       case None => ()
@@ -150,15 +151,15 @@ class Fish(
   override def dielMigrate(time: DielVerticalMigrationType): Unit = {
     diel match {
       case Some(diel) => {
-        if (!lastDielMigration.isDefined || lastDielMigration.get != time) {
-          if (ovm.isDefined) {
+        if (!lastDielMigration.isDefined || lastDielMigration.get != time) then {
+          if (ovm.isDefined) then {
             time match {
-              case DayMigration => {
+              case DielVerticalMigrationType.Day => {
                 nightDepth = position.depth
-                depthMigration(diel(DayMigration))
+                depthMigration(diel(DielVerticalMigrationType.Day))
               }
-              case NightMigration =>
-                if (nightDepth >= 0) {
+              case DielVerticalMigrationType.Night =>
+                if (nightDepth >= 0) then {
                   depthMigration(nightDepth)
                 }
             }

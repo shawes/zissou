@@ -9,8 +9,9 @@ import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
 import io.config.ConfigMappings._
 import io.config.Configuration
-import locals._
+import locals.Constants
 import locals.Constants.LightWeightException._
+import locals.Enums._
 import maths.{Geometry, RandomNumberGenerator}
 import maths.integration.RungeKuttaIntegration
 import utilities.Time
@@ -25,14 +26,14 @@ class BiologicalModel(
     integrator: RungeKuttaIntegration
 ) extends Logging {
 
-  val factory = LarvaeFactory.apply(locals.Fish, config.larva)
+  val factory = LarvaeFactory.apply(LarvaType.Fish, config.larva)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(
     config.habitat
   )
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
-  //val geometry = new Geometry
+  // val geometry = new Geometry
   val mortality: Mortality = new MortalityConstant(
     config.larva.mortalityRate.getOrElse(1)
   )
@@ -74,7 +75,7 @@ class BiologicalModel(
     val dampeningFactor: List[Double] = List(1.0)
     val swimmingVelocity = larva.swim()
     def moveLarva(larva: Larva, dampeningFactor: List[Double]): Unit = {
-      if (dampeningFactor.nonEmpty) {
+      if (dampeningFactor.nonEmpty) then {
         integrator.integrate(
           larva.position,
           clock.now,
@@ -98,10 +99,10 @@ class BiologicalModel(
       larva: Larva,
       recentlyDeveloped: Boolean
   ): Unit = {
-    if (clock.isSunRising(larva.position)) {
-      larva.dielMigrate(DayMigration)
-    } else if (clock.isSunSetting(larva.position)) {
-      larva.dielMigrate(NightMigration)
+    if (clock.isSunRising(larva.position)) then {
+      larva.dielMigrate(DielVerticalMigrationType.Day)
+    } else if (clock.isSunSetting(larva.position)) then {
+      larva.dielMigrate(DielVerticalMigrationType.Night)
     }
     larva.ovmMigrate(
       new OntogeneticMigrationVariables(recentlyDeveloped, clock.isMidnight)
@@ -111,10 +112,10 @@ class BiologicalModel(
   private def canDielMigrate(larva: Larva): Unit = {
     larva.diel match {
       case Some(diel) => {
-        if (clock.isSunRising(larva.position)) {
-          larva.dielMigrate(DayMigration)
-        } else if (clock.isSunSetting(larva.position)) {
-          larva.dielMigrate(NightMigration)
+        if (clock.isSunRising(larva.position)) then {
+          larva.dielMigrate(DielVerticalMigrationType.Day)
+        } else if (clock.isSunSetting(larva.position)) then {
+          larva.dielMigrate(DielVerticalMigrationType.Night)
         }
       }
       case None => throw new NotImplementedError
@@ -126,18 +127,18 @@ class BiologicalModel(
   }
 
   private def mortality(larva: Larva): Unit = {
-    if (RandomNumberGenerator.get < mortality.getRate) {
+    if (RandomNumberGenerator.get < mortality.getRate) then {
       larva.kill()
     }
   }
 
   private def sense(larva: Larva): Unit = {
-    if (larva.isSettlementAge() || larva.isSensingAge()) {
+    if (larva.isSettlementAge() || larva.isSensingAge()) then {
       val index = habitatManager.getClosestHabitat(larva.position)
-      if (index._1 != NoReefToSettleException && larva.isSettlementAge()) {
+      if (index._1 != NoReefToSettleException && larva.isSettlementAge()) then {
         larva.settle(index._1, clock.now)
       } else {
-        if (index._2 != NoReefSensedException && larva.isSensingAge()) {
+        if (index._2 != NoReefSensedException && larva.isSensingAge()) then {
           larva.direction = index._3
         } else {
           larva.direction = RandomNumberGenerator.getAngle
@@ -147,23 +148,22 @@ class BiologicalModel(
   }
 
   private def mortalityDueToOldAgeCheck(larva: Larva): Unit = {
-    if (larva.isPelagic && larva.isTooOld) {
+    if (larva.isPelagic && larva.isTooOld) then {
       larva.kill()
     }
   }
 
   private def spawnLarvae(): Unit = {
     val spawningSites = spawn.getSitesWhereFishAreSpawning(clock.now)
-    if (spawningSites.nonEmpty) {
+    if (spawningSites.nonEmpty) then {
       spawnFish(spawningSites)
     }
   }
 
   private def spawnFish(sites: List[SpawningLocation]) = {
-    val spawn = sites.flatMap(
-      site =>
-        for (i <- 1 to site.numberOfLarvae)
-          yield factory.create(site, clock.now)
+    val spawn = sites.flatMap(site =>
+      for (i <- 1 to site.numberOfLarvae)
+        yield factory.create(site, clock.now)
     )
     pelagicLarvae ++= spawn
   }

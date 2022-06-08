@@ -29,7 +29,8 @@ lazy val zissou = (project in file("."))
     libraryDependencies += ("org.clapper" %% "grizzled-slf4j" % "1.3.4")
       .cross(CrossVersion.for3Use2_13),
     libraryDependencies += ("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4")
-      .cross(CrossVersion.for3Use2_13)
+      .cross(CrossVersion.for3Use2_13),
+    maxErrors := 5
   )
 
 ThisBuild / assemblyMergeStrategy := {
@@ -58,8 +59,17 @@ scalacOptions ++= {
     (CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((3, _)) =>
         Seq(
-          "-unchecked",
-          "-source:3.0-migration"
+          "-deprecation", // emit warning and location for usages of deprecated APIs
+          "-explain", // explain errors in more detail
+          "-explain-types", // explain type errors in more detail
+          "-feature", // emit warning and location for usages of features that should be imported explicitly
+          "-indent", // allow significant indentation.
+          "-new-syntax", // require `then` and `do` in control expressions.
+          "-print-lines", // show source code line numbers.
+          "-unchecked", // enable additional warnings where generated code depends on assumptions
+          "-Ykind-projector", // allow `*` as wildcard to be compatible with kind projector
+          "-Xfatal-warnings", // fail the compilation if there are any warnings
+          "-Xmigration" // warn about constructs whose behavior may have changed since version
         )
       case _ =>
         Seq(
@@ -71,7 +81,7 @@ scalacOptions ++= {
     })
 }
 
-scalacOptions ++= Seq("-Xmax-inlines", "50")
+//scalacOptions ++= Seq("-Xmax-inlines", "50")
 
 Test / parallelExecution := false
 

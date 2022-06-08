@@ -43,7 +43,7 @@ class RungeKuttaIntegration(
       time,
       swimming
     )
-    if (step1.velocity.isDefined) {
+    if (step1.velocity.isDefined) then {
       val step2 = performRungeKuttaIteration(
         coordinate,
         Some(step1.velocity.get * dampening),
@@ -51,7 +51,7 @@ class RungeKuttaIntegration(
         time,
         swimming
       )
-      if (step2.velocity.isDefined) {
+      if (step2.velocity.isDefined) then {
         val step3 = performRungeKuttaIteration(
           coordinate,
           Some(step2.velocity.get * dampening),
@@ -59,7 +59,7 @@ class RungeKuttaIntegration(
           time,
           swimming
         )
-        if (step3.velocity.isDefined) {
+        if (step3.velocity.isDefined) then {
           val step4 = performRungeKuttaIteration(
             coordinate,
             Some(step3.velocity.get * dampening),
@@ -67,14 +67,17 @@ class RungeKuttaIntegration(
             time,
             swimming
           )
-          if (step4.velocity.isDefined) {
-            val u = (step1.velocity.get.u + (2 * step2.velocity.get.u) + (2 * step3.velocity.get.u) + step4.velocity.get.u) * 0.16666
-            val v = (step1.velocity.get.v + (2 * step2.velocity.get.v) + (2 * step3.velocity.get.v) + step4.velocity.get.v) * 0.16666
-            val w = (step1.velocity.get.w + (2 * step2.velocity.get.w) + (2 * step3.velocity.get.w) + step4.velocity.get.w) * 0.16666
+          if (step4.velocity.isDefined) then {
+            val u =
+              (step1.velocity.get.u + (2 * step2.velocity.get.u) + (2 * step3.velocity.get.u) + step4.velocity.get.u) * 0.16666
+            val v =
+              (step1.velocity.get.v + (2 * step2.velocity.get.v) + (2 * step3.velocity.get.v) + step4.velocity.get.v) * 0.16666
+            val w =
+              (step1.velocity.get.w + (2 * step2.velocity.get.w) + (2 * step3.velocity.get.w) + step4.velocity.get.w) * 0.16666
 
             var integratedVelocity = new Velocity(u, v, w)
 
-            if (turbulence.isDefined)
+            if (turbulence.isDefined) then
               integratedVelocity = turbulence.get.apply(integratedVelocity)
 
             val point = geometry.translatePoint(
@@ -86,7 +89,7 @@ class RungeKuttaIntegration(
               backtracking
             )
 
-            if (flow.getVelocity(point).isDefined) Some(point)
+            if (flow.getVelocity(point).isDefined) then Some(point)
             else tryMovingLarvaeUp(point, 10.0)
 
           } else {
@@ -107,13 +110,13 @@ class RungeKuttaIntegration(
       position: GeoCoordinate,
       amount: Double
   ): Option[GeoCoordinate] = {
-    if (position.depth > amount) {
+    if (position.depth > amount) then {
       val higherPoint = new GeoCoordinate(
         position.latitude,
         position.longitude,
         position.depth - amount
       )
-      if (flow.getVelocity(higherPoint).isDefined) Some(higherPoint)
+      if (flow.getVelocity(higherPoint).isDefined) then Some(higherPoint)
       else None
     } else None
   }
@@ -125,7 +128,7 @@ class RungeKuttaIntegration(
       time: LocalDateTime,
       swimming: Option[Velocity]
   ): RungeKuttaStepDerivative = {
-    if (velocity.isDefined) {
+    if (velocity.isDefined) then {
       val normalisedTime = partialTimeStep - timeStep
       val newCoordinate = geometry.translatePoint(
         coordinate,

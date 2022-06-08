@@ -31,7 +31,7 @@ class ResultsWriter(larvae: Array[Larva], output: OutputFiles, name: String)
     info("Finished writing connectivity matrix")
     writeDispersalKernel()
     info("Finished writing dispersal kernel")
-    if (output.includeLarvaeMovements) {
+    if (output.includeLarvaeMovements) then {
       writeLarvaeHistoryToCsvFile()
       info("Finished writing larvae history")
     }

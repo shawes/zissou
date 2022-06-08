@@ -1,6 +1,6 @@
 package biology.swimming
 
-import locals._
+import locals.Enums._
 
 import maths.{ContinuousRange, RandomNumberGenerator}
 
@@ -12,7 +12,7 @@ class DielMigration(
 
   val probabilities: List[DielMigrationProbability] = {
     for (i <- 0 until depths.length) yield {
-      if (i == 0) {
+      if (i == 0) then {
         new DielMigrationProbability(
           new ContinuousRange(0, depths(i), true),
           day(i),
@@ -30,7 +30,7 @@ class DielMigration(
 
   def enabled: Boolean = probabilities.nonEmpty
 
-  //TODO: Reduce complexity of this method
+  // TODO: Reduce complexity of this method
   def apply(dielMigration: DielVerticalMigrationType): Double = {
     var cumulativeProbability = 0.0
     val number = RandomNumberGenerator.get
@@ -39,16 +39,16 @@ class DielMigration(
       new Tuple2(new ContinuousRange(), 0)
     val probability = iterator.next()
 
-    if (dielMigration == DayMigration) {
+    if (dielMigration == DielVerticalMigrationType.Day) then {
       currentDepth = (probability.depth, probability.day)
     } else {
       currentDepth = (probability.depth, probability.night)
     }
 
     cumulativeProbability += currentDepth._2
-    while (number > cumulativeProbability && iterator.hasNext) {
+    while number > cumulativeProbability && iterator.hasNext do {
       val probability = iterator.next()
-      if (dielMigration == DayMigration) {
+      if (dielMigration == DielVerticalMigrationType.Day) then {
         currentDepth = (probability.depth, probability.day)
       } else {
         currentDepth = (probability.depth, probability.night)

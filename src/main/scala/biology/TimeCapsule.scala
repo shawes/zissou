@@ -1,6 +1,6 @@
 package biology
 
-import locals._
+import locals.Enums._
 import physical.GeoCoordinate
 import scala.collection.mutable.ArrayBuffer
 

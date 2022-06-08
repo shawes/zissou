@@ -15,7 +15,7 @@ class Geometry() extends Logging {
       backtracking: Boolean
   ): GeoCoordinate = {
 
-    if (velocity.isUndefined) return point
+    if (velocity.isUndefined) then return point
 
     val distances = calculateDistance(
       velocity,
@@ -24,7 +24,8 @@ class Geometry() extends Logging {
       includeVerticalVelocity,
       backtracking
     )
-    val newLatitude = point.latitude + (distances._2 / Constants.EarthsRadius) * (180 / Math.PI)
+    val newLatitude =
+      point.latitude + (distances._2 / Constants.EarthsRadius) * (180 / Math.PI)
     val newLongitude =
       point.longitude + (distances._1 / Constants.EarthsRadius) * (180 / Math.PI) /
         Math.cos(point.latitude * Math.PI / 180)
@@ -45,7 +46,7 @@ class Geometry() extends Logging {
       backtracking: Boolean
   ): GeoCoordinate = {
 
-    if (velocity.isUndefined) return point
+    if (velocity.isUndefined) then return point
 
     val distances = calculateDistance(
       velocity,
@@ -55,10 +56,12 @@ class Geometry() extends Logging {
       backtracking
     )
 
-    val kmLatitude = (-0.00000344188 * math.pow(point.latitude, 3)) + (0.000466 * math
-      .pow(point.latitude, 2)) + (-0.001537 * point.latitude) + 110.572356
-    val kmLongitude = (0.000068 * Math.pow(point.latitude, 3)) + (-0.020724 * Math
-      .pow(point.latitude, 2)) + (0.08253 * point.latitude) + 110.806595
+    val kmLatitude =
+      (-0.00000344188 * math.pow(point.latitude, 3)) + (0.000466 * math
+        .pow(point.latitude, 2)) + (-0.001537 * point.latitude) + 110.572356
+    val kmLongitude =
+      (0.000068 * Math.pow(point.latitude, 3)) + (-0.020724 * Math
+        .pow(point.latitude, 2)) + (0.08253 * point.latitude) + 110.806595
     val newLatitude = point.latitude + distances._2 / (kmLatitude * 1000)
     val newLongitude = point.longitude + distances._1 / (kmLongitude * 1000)
     new GeoCoordinate(
@@ -78,7 +81,7 @@ class Geometry() extends Logging {
       backtracking: Boolean
   ): GeoCoordinate = {
 
-    if (velocity.isUndefined) return point
+    if (velocity.isUndefined) then return point
 
     val distances =
       calculateDistance(
@@ -115,9 +118,7 @@ class Geometry() extends Logging {
 
   }
 
-  /**
-    *
-    * Returns units of metres
+  /** Returns units of metres
     *
     * @param p1
     * @param p2
@@ -136,7 +137,7 @@ class Geometry() extends Logging {
     Math.acos(
       Math.sin(lat1) * Math.sin(lat2) +
         Math.cos(lat1) * Math.cos(lat2) *
-          Math.cos(lon2 - lon1)
+        Math.cos(lon2 - lon1)
     ) * Constants.EarthsRadius
   }
 
@@ -153,7 +154,7 @@ class Geometry() extends Logging {
     Math.acos(
       Math.sin(lat1) * Math.sin(lat2) +
         Math.cos(lat1) * Math.cos(lat2) *
-          Math.cos(lon2 - lon1)
+        Math.cos(lon2 - lon1)
     ) * Constants.EarthsRadius
   }
 
@@ -163,8 +164,8 @@ class Geometry() extends Logging {
 
   private def ceilingDepth(depth: Double): Double = {
     var newDepth = depth
-    if (depth < 0) newDepth = 0
-    if (depth > 100) newDepth = 100
+    if (depth < 0) then newDepth = 0
+    if (depth > 100) then newDepth = 100
     newDepth
   }
 
@@ -177,15 +178,16 @@ class Geometry() extends Logging {
   ): (Double, Double, Double) = {
     val xDistance = {
       val distance = (velocity.u + swimming.u) * timeStep
-      if (backtracking) applyBacktracking(distance) else distance
+      if (backtracking) then applyBacktracking(distance) else distance
     }
     val yDistance = {
       val distance = (velocity.v + swimming.v) * timeStep
-      if (backtracking) applyBacktracking(distance) else distance
+      if (backtracking) then applyBacktracking(distance) else distance
     }
     val zDistance = {
-      val distance = if (includeVerticalVelocity) velocity.w * timeStep else 0
-      if (backtracking) applyBacktracking(distance) else distance
+      val distance =
+        if (includeVerticalVelocity) then velocity.w * timeStep else 0
+      if (backtracking) then applyBacktracking(distance) else distance
     }
     (xDistance, yDistance, zDistance)
   }

@@ -40,7 +40,7 @@ class DispersalKernel(larvae: Array[Larva], csvFile: File) extends Logging {
   private def calculateDispersalDistance(larva: Larva): Double = {
     var distance: Double = 0.0
     var lastPos = larva.birthplace.location
-    if (larva.history.size > 1) {
+    if (larva.history.size > 1) then {
       larva.history.foreach(t => {
         distance += geometry.getDistanceBetweenTwoPoints(lastPos, t.position)
         lastPos = t.position

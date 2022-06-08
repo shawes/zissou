@@ -1,6 +1,7 @@
 package biology.swimming
 
-import locals._
+import locals.Enums._
+import locals.Enums.OntogeneticState._
 import io.config._
 import maths.{ContinuousRange, RandomNumberGenerator}
 import scala.collection.mutable.ListBuffer
@@ -10,15 +11,15 @@ class OntogeneticMigration(
 ) {
 
   val implementation = config.implementation match {
-    case "stage"    => OntogeneticStageMigration
-    case "daily"    => DailyMigration
-    case "timestep" => TimeStepMigration
-    case _          => OntogeneticStageMigration
+    case "stage"    => OntogeneticMigrationType.Stage
+    case "daily"    => OntogeneticMigrationType.Daily
+    case "timestep" => OntogeneticMigrationType.TimeStep
+    case _          => OntogeneticMigrationType.Stage
   }
 
   val probabilities: List[OntogeneticMigrationProbability] = {
     for (i <- 0 until config.depths.length) yield {
-      if (i == 0) {
+      if (i == 0) then {
         new OntogeneticMigrationProbability(
           new ContinuousRange(0, config.depths(i), true),
           config.hatching(i),
@@ -42,8 +43,9 @@ class OntogeneticMigration(
 
   def apply(ontogeny: OntogeneticState, currentDepth: Double): Double = {
     implementation match {
-      case TimeStepMigration => getDepthRestricted(ontogeny, currentDepth)
-      case _                 => getDepthRandom(ontogeny)
+      case OntogeneticMigrationType.TimeStep =>
+        getDepthRestricted(ontogeny, currentDepth)
+      case _ => getDepthRandom(ontogeny)
     }
   }
 
@@ -62,14 +64,14 @@ class OntogeneticMigration(
       new Tuple2(new ContinuousRange(), 0)
     currentDepth = iterator.next()
     cumulativeProbability += currentDepth._2
-    while (number > cumulativeProbability && iterator.hasNext) {
+    while (number > cumulativeProbability && iterator.hasNext) do {
       currentDepth = iterator.next()
       cumulativeProbability += currentDepth._2
     }
     calculateDepthInRange(currentDepth._1)
   }
 
-  //TODO: Remove the complexity from this method
+  // TODO: Remove the complexity from this method
   private def getDepthRestricted(
       ontogeny: OntogeneticState,
       depth: Double
@@ -84,42 +86,47 @@ class OntogeneticMigration(
     val depthIndex = list.indexOf(depthBin)
     val number = RandomNumberGenerator.get
 
-    if (depthBin != None && depthIndex > 0 && depthIndex < list.size - 1) {
+    if (depthBin != None && depthIndex > 0 && depthIndex < list.size - 1) then {
       val upperDepthBin = list(depthIndex - 1)
       val lowerDepthBin = list(depthIndex + 1)
-      val probabilitiesTotal = lowerDepthBin._2 + depthBin.get._2 + upperDepthBin._2
+      val probabilitiesTotal =
+        lowerDepthBin._2 + depthBin.get._2 + upperDepthBin._2
       val newProbabilities = Tuple3(
         upperDepthBin._2 / probabilitiesTotal,
         depthBin.get._2 / probabilitiesTotal,
         lowerDepthBin._2 / probabilitiesTotal
       )
-      if (number < newProbabilities._1) {
+      if (number < newProbabilities._1) then {
         return calculateDepthInRange(upperDepthBin._1)
-      } else if (number < (newProbabilities._1 + newProbabilities._2)) {
+      } else if (number < (newProbabilities._1 + newProbabilities._2)) then {
         return calculateDepthInRange(depthBin.get._1)
       } else {
         return calculateDepthInRange(lowerDepthBin._1)
       }
-    } else if (depthBin != None && depthIndex == 0 && depthIndex < list.size - 1) {
+    } else if (
+      depthBin != None && depthIndex == 0 && depthIndex < list.size - 1
+    ) then {
       val lowerDepthBin = list(depthIndex + 1)
       val probabilitiesTotal = lowerDepthBin._2 + depthBin.get._2
       val newProbabilities = Tuple2(
         depthBin.get._2 / probabilitiesTotal,
         lowerDepthBin._2 / probabilitiesTotal
       )
-      if (number < newProbabilities._1) {
+      if (number < newProbabilities._1) then {
         return calculateDepthInRange(depthBin.get._1)
       } else {
         return calculateDepthInRange(lowerDepthBin._1)
       }
-    } else if (depthBin != None && depthIndex > 0 && depthIndex == list.size - 1) {
+    } else if (
+      depthBin != None && depthIndex > 0 && depthIndex == list.size - 1
+    ) then {
       val upperDepthBin = list(depthIndex - 1)
       val probabilitiesTotal = upperDepthBin._2 + depthBin.get._2
       val newProbabilities = Tuple2(
         upperDepthBin._2 / probabilitiesTotal,
         depthBin.get._2 / probabilitiesTotal
       )
-      if (number < newProbabilities._1) {
+      if (number < newProbabilities._1) then {
         return calculateDepthInRange(upperDepthBin._1)
       } else {
         return calculateDepthInRange(depthBin.get._1)

@@ -4,11 +4,15 @@ import exceptions.InterpolationNotImplementedException
 import grizzled.slf4j.Logging
 import locals.Constants.NetcdfIndex
 import locals._
+import locals.Enums.InterpolationTime
+import locals.Enums.InterpolationType
+import locals.Enums.QuadrantLocation
 import physical.adaptors.LatLonPointToGeoCoordinateAdaptor
 import physical.{GeoCoordinate, Velocity}
 import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.GeoGrid
 import scala.collection.parallel.mutable._
+import Ordering.Double.IeeeOrdering
 
 class FlowGridWrapper(
     val depths: List[Double],
@@ -30,7 +34,7 @@ class FlowGridWrapper(
       buildVelocity(1).toDouble,
       buildVelocity(2).toDouble
     )
-    if (velocity.isDefined) Some(velocity) else None
+    if (velocity.isDefined) then Some(velocity) else None
   }
 
   private def readData(
@@ -66,7 +70,7 @@ class FlowGridWrapper(
   }
 
   def getIndex(coordinate: GeoCoordinate): (Int, Int, Int, Boolean) = {
-    getIndex(coordinate, InterpolateToday)
+    getIndex(coordinate, InterpolationTime.Today)
   }
 
   def getIndex(
@@ -82,9 +86,8 @@ class FlowGridWrapper(
   }
 
   private def timeIndex(day: InterpolationTime): Boolean = day match {
-    case InterpolateToday    => true
-    case InterpolateTomorrow => false
-    case _                   => throw new RuntimeException("Day not implemented")
+    case InterpolationTime.Today    => true
+    case InterpolationTime.Tomorrow => false
   }
 
   private def neighbourhood(
@@ -102,7 +105,7 @@ class FlowGridWrapper(
           ).getOrElse(new Velocity(Double.NaN, Double.NaN))
         }
       }
-      if (neighbourhood.flatten.exists(v => v.isUndefined)) {
+      if (neighbourhood.flatten.exists(v => v.isUndefined)) then {
         None
       } else {
         Some(neighbourhood)
@@ -115,24 +118,24 @@ class FlowGridWrapper(
   private def findQuadrantCoordinateIsIn(
       coordinate: GeoCoordinate
   ): QuadrantLocation = {
-    //this.synchronized {
+    // this.synchronized {
     val index = getIndex(coordinate)
     val centroid = data.head.head._2.getLatLon(index._1, index._2)
 
-    if (coordinate.latitude > centroid.getLatitude) {
-      if (coordinate.longitude < centroid.getLongitude) {
-        TopLeft
+    if (coordinate.latitude > centroid.getLatitude) then {
+      if (coordinate.longitude < centroid.getLongitude) then {
+        QuadrantLocation.TopLeft
       } else {
-        TopRight
+        QuadrantLocation.TopRight
       }
     } else {
-      if (coordinate.longitude < centroid.getLongitude) {
-        BottomLeft
+      if (coordinate.longitude < centroid.getLongitude) then {
+        QuadrantLocation.BottomLeft
       } else {
-        BottomRight
+        QuadrantLocation.BottomRight
       }
     }
-    //}
+    // }
   }
 
   private def quadrantPosition(
@@ -140,21 +143,20 @@ class FlowGridWrapper(
       size: Int
   ): (Int, Int) =
     quadrant match {
-      case TopLeft    => (-1 * size / 2, -1 * size / 2)
-      case TopRight   => ((-1 * size / 2) + 1, -1 * size / 2)
-      case BottomLeft => (-1 * size / 2, (-1 * size / 2) + 1)
-      case BottomRight =>
+      case QuadrantLocation.TopLeft    => (-1 * size / 2, -1 * size / 2)
+      case QuadrantLocation.TopRight   => ((-1 * size / 2) + 1, -1 * size / 2)
+      case QuadrantLocation.BottomLeft => (-1 * size / 2, (-1 * size / 2) + 1)
+      case QuadrantLocation.BottomRight =>
         ((-1 * size / 2) + 1, (-1 * size / 2) + 1)
-      case _ => throw new RuntimeException("Wrong quadrant")
     }
 
   private def neighbourhoodSize(interpolation: InterpolationType): Int =
     interpolation match {
-      case Bilinear =>
+      case InterpolationType.Bilinear =>
         math.sqrt(Constants.Interpolation.CubicPoints).toInt
-      case Bicubic =>
+      case InterpolationType.Bicubic =>
         math.sqrt(Constants.Interpolation.BicubicPoints).toInt
-      case Tricubic =>
+      case InterpolationType.Tricubic =>
         math.sqrt(Constants.Interpolation.TricubicPoints).toInt
       case _ => throw new InterpolationNotImplementedException()
     }

@@ -4,6 +4,8 @@ import grizzled.slf4j._
 import io.config.ConfigMappings._
 import io.config.LarvaConfig
 import locals._
+import locals.Enums.SwimmingStrategy
+import locals.Enums.Swims
 import maths.{RandomNumberGenerator}
 import org.apache.commons.math3.distribution.NormalDistribution
 import com.github.nscala_time.time.Imports._
@@ -23,14 +25,14 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
       Some(
         new HorizontalSwimming(
           swim.ability.getOrElse("") match {
-            case "directed"   => Directed
-            case "undirected" => Undirected
-            case _            => Passive
+            case "directed"   => Swims.Directed
+            case "undirected" => Swims.Undirected
+            case _            => Swims.Passive
           },
           swim.strategy match {
-            case "one"   => StrategyOne
-            case "two"   => StrategyTwo
-            case "three" => StrategyThree
+            case "one"   => SwimmingStrategy.One
+            case "two"   => SwimmingStrategy.Two
+            case "three" => SwimmingStrategy.Three
           },
           swim.criticalSwimmingSpeed.getOrElse(0),
           swim.inSituSwimmingPotential.getOrElse(1),
@@ -95,7 +97,7 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
 
     def getNonSettlementPeriod(): Int = {
       val settlement = config.pelagicLarvalDuration.nonSettlementPeriod
-      if (settlement < pld) {
+      if (settlement < pld) then {
         Time.convertDaysToSeconds(settlement)
       } else {
         pld
@@ -119,7 +121,7 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
       horizontalSwimming,
       nonSettlementPeriod
     )
-    //info("Just created the fish: " + fish)
+    // info("Just created the fish: " + fish)
     fish
   }
 }
