@@ -12,6 +12,9 @@ case object SubtidalSand extends HabitatType
 case object Ocean extends HabitatType
 case object Other extends HabitatType
 
+enum Bob:
+    case Frank, Steve
+
 sealed trait PelagicLarvalDurationType
 case object Random extends PelagicLarvalDurationType
 case object Fixed extends PelagicLarvalDurationType
@@ -27,6 +30,9 @@ case object NightMigration extends DielVerticalMigrationType
 
 sealed trait LarvaType
 case object Fish extends LarvaType
+
+// enum LarvaType:
+//     case Fish, Invertebrate
 
 sealed trait PelagicLarvaeState
 case object Pelagic extends PelagicLarvaeState

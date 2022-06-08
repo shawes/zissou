@@ -1,17 +1,38 @@
-name := "zissou"
+ThisBuild / scalaVersion := "3.1.1"
+ThisBuild / organization := "hawes.zissou"
+ThisBuild / version := "3.0"
 
-version := "3.0"
+crossScalaVersions ++= Seq("2.13.8", "3.0.0")
 
-scalaVersion := "3.0.0"
-crossScalaVersions ++= Seq("2.13.6", "3.0.0")
+lazy val zissou = (project in file("."))
+  .settings(
+    name := "zissou",
+    assembly / mainClass := Some("model.Simulator"),
+    assembly / assemblyJarName := "zissou.jar",
+    libraryDependencies ++= Seq(
+      "junit" % "junit" % "4.13.2" % "test",
+      "org.apache.commons" % "commons-math3" % "3.6.1",
+      "org.slf4j" % "slf4j-api" % "1.7.30",
+      "org.slf4j" % "slf4j-simple" % "1.7.30",
+      "edu.ucar" % "netcdfAll" % "5.4.1",
+      "org.geotools" % "gt-shapefile" % "25.0",
+      "org.geotools" % "gt-main" % "25.0",
+      "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
+      "org.scalatestplus" %% "mockito-4-5" % "3.2.12.0" % "test",
+      "org.scalatestplus" %% "scalacheck-1-16" % "3.2.12.0" % "test",
+      "org.scalatest" %% "scalatest" % "3.2.12" % "test",
+      "io.circe" %% "circe-core" % "0.14.0-M7",
+      "io.circe" %% "circe-generic" % "0.14.1",
+      "com.github.nscala-time" %% "nscala-time" % "2.28.0",
+      "io.circe" %% "circe-yaml" % "0.14.0"
+    ),
+    libraryDependencies += ("org.clapper" %% "grizzled-slf4j" % "1.3.4")
+      .cross(CrossVersion.for3Use2_13),
+    libraryDependencies += ("org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4")
+      .cross(CrossVersion.for3Use2_13)
+  )
 
-assembly / assemblyJarName := "zissou.jar"
-
-assembly / test := {}
-
-assembly / mainClass := Some("model.Simulator")
-
-assembly / assemblyMergeStrategy := {
+ThisBuild / assemblyMergeStrategy := {
   case PathList("uom-se", xs @ _*) => MergeStrategy.discard
   case PathList("META-INF", xs @ _*) =>
     (xs map { _.toLowerCase }) match {
@@ -23,48 +44,38 @@ assembly / assemblyMergeStrategy := {
   case x => MergeStrategy.first
 }
 
-logLevel in assembly := Level.Debug
+//logLevel / assembly := Level.Debug
 
-scalacOptions ++= Seq(
-  "-deprecation",
-  "-feature",
-  "-language:implicitConversions",
-  "-source:3.0-migration"
-)
+scalacOptions ++= {
+  Seq(
+    "-encoding",
+    "UTF-8"
+    // "-feature",
+    // "-language:implicitConversions"
+    // disabled during the migration
+    // "-Xfatal-warnings"
+  ) ++
+    (CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((3, _)) =>
+        Seq(
+          "-unchecked",
+          "-source:3.0-migration"
+        )
+      case _ =>
+        Seq(
+          "-deprecation",
+          "-Xfatal-warnings",
+          "-Wunused:imports,privates,locals",
+          "-Wvalue-discard"
+        )
+    })
+}
 
 scalacOptions ++= Seq("-Xmax-inlines", "50")
 
 Test / parallelExecution := false
 
-libraryDependencies ++= Seq(
-  //"org.scalatest" %% "scalatest" % "3.2.8",
-  "junit" % "junit" % "4.13.2" % "test",
-  "org.apache.commons" % "commons-math3" % "3.6.1",
-  "org.slf4j" % "slf4j-api" % "1.7.30",
-  "org.slf4j" % "slf4j-simple" % "1.7.30",
-  "edu.ucar" % "netcdfAll" % "5.4.1",
-  "org.geotools" % "gt-shapefile" % "25.0",
-  "org.geotools" % "gt-main" % "25.0",
-  "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3",
-  "org.scalatestplus" %% "mockito-3-4" % "3.2.9.0" % "test",
-  "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test",
-  "org.scalactic" %% "scalactic" % "3.2.9" % "test",
-  "org.scalatest" %% "scalatest" % "3.2.9" % "test",
-  "io.circe" %% "circe-core" % "0.14.0-M7",
-  "io.circe" %% "circe-generic" % "0.14.1",
-  "com.github.nscala-time" %% "nscala-time" % "2.28.0"
-)
-
-libraryDependencies += ("org.mockito" %% "mockito-scala" % "1.16.37")
-  .cross(CrossVersion.for3Use2_13)
-libraryDependencies += ("org.clapper" %% "grizzled-slf4j" % "1.3.4")
-  .cross(CrossVersion.for3Use2_13)
-libraryDependencies += ("io.circe" %% "circe-yaml" % "0.13.1")
-  .cross(CrossVersion.for3Use2_13)
-
 resolvers ++= Seq(
   Resolver.sonatypeRepo("public"),
-  "Artima Maven Repository" at "https://repo.artima.com/releases",
   "osgeo" at "https://repo.osgeo.org/repository/release/"
 )
