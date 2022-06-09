@@ -1,4 +1,4 @@
-ThisBuild / scalaVersion := "3.1.1"
+ThisBuild / scalaVersion := "3.1.2"
 ThisBuild / organization := "hawes.zissou"
 ThisBuild / version := "3.0"
 
@@ -14,15 +14,16 @@ lazy val zissou = (project in file("."))
       "org.apache.commons" % "commons-math3" % "3.6.1",
       "org.slf4j" % "slf4j-api" % "1.7.30",
       "org.slf4j" % "slf4j-simple" % "1.7.30",
-      "edu.ucar" % "netcdfAll" % "5.4.1",
-      "org.geotools" % "gt-shapefile" % "25.0",
-      "org.geotools" % "gt-main" % "25.0",
+      "edu.ucar" % "netcdfAll" % "5.5.2",
+      "org.geotools" % "gt-shapefile" % "27.0",
+      "org.geotools" % "gt-main" % "27.0",
       "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
       "org.scalatestplus" %% "mockito-4-5" % "3.2.12.0" % "test",
       "org.scalatestplus" %% "scalacheck-1-16" % "3.2.12.0" % "test",
+      "org.scalactic" %% "scalactic" % "3.2.12",
       "org.scalatest" %% "scalatest" % "3.2.12" % "test",
-      "io.circe" %% "circe-core" % "0.14.0-M7",
-      "io.circe" %% "circe-generic" % "0.14.1",
+      "io.circe" %% "circe-core" % "0.14.2",
+      "io.circe" %% "circe-generic" % "0.14.2",
       "com.github.nscala-time" %% "nscala-time" % "2.28.0",
       "io.circe" %% "circe-yaml" % "0.14.0"
     ),
@@ -80,8 +81,6 @@ scalacOptions ++= {
         )
     })
 }
-
-//scalacOptions ++= Seq("-Xmax-inlines", "50")
 
 Test / parallelExecution := false
 
