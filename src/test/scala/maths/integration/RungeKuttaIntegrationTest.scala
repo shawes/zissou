@@ -6,8 +6,8 @@ import io.FlowFileIterator
 import locals.{Constants, TimeStepType}
 import org.scalatest.flatspec.AnyFlatSpec
 import physical.flow.{Flow, FlowController}
-import physical.{GeoCoordinate, TimeStep}
-import tools.UniformFlowDataset
+import physical.{GeoCoordinate, TimeStep, Velocity}
+import tools.{EddyFlowDataset, UniformFlowDataset}
 
 class RungeKuttaIntegrationTest extends AnyFlatSpec {
 
@@ -46,5 +46,76 @@ class RungeKuttaIntegrationTest extends AnyFlatSpec {
       larva = moved
       time = time.plusSeconds(seconds)
     }
+  }
+
+  // ---- round an eddy -----------------------------------------------------------
+
+  /**
+    * Carries a larva that starts 50 km east of the centre of a steady eddy for a number of days
+    * and says how far from the centre it ends up, in km, and how many radians it has gone
+    * round by compared with the angle the flow gives (omega times the time).
+    */
+  private def aroundAnEddy(omega: Double, hours: Int, days: Int): (Double, Double) = {
+    val root = Files.createTempDirectory("zissou-eddy-test")
+    EddyFlowDataset.write(root.toFile, Seq((2002, 1), (2002, 2)), omega)
+    val timeStep = new TimeStep(hours, TimeStepType.Hour)
+    val first = new LocalDateTime(2002, 1, 5, 12, 0)
+    val flow = new Flow(root.toString, first.toDateTime(DateTimeZone.UTC) to first.toDateTime(DateTimeZone.UTC).plusDays(40), timeStep, false)
+    val controller = new FlowController(new FlowFileIterator(flow), flow)
+    val integrator = new RungeKuttaIntegration(controller, None, timeStep.totalSeconds)
+
+    val start = EddyFlowDataset.CentreLongitude +
+      50000 / (Constants.EarthsRadius * math.cos(EddyFlowDataset.CentreLatitude * math.Pi / 180)) * 180 / math.Pi
+    var larva = new GeoCoordinate(EddyFlowDataset.CentreLatitude, start, 5.0)
+    var time = first
+    for (step <- 0 until days * 24 / hours) {
+      controller.advanceTo(time)
+      larva = integrator.integrate(larva, time, None, 1.0).getOrElse(fail(s"step $step went nowhere"))
+      time = time.plusHours(hours)
+    }
+    val (east, north) = EddyFlowDataset.metresFromCentre(larva.longitude, larva.latitude)
+    val expectedAngle = omega * days * 86400
+    val angleError = math.atan2(math.sin(math.atan2(north, east) - expectedAngle), math.cos(math.atan2(north, east) - expectedAngle))
+    (math.hypot(east, north) / 1000, angleError)
+  }
+
+  "A larva carried round a strong eddy" should "stay on its circle, as the exact path does, not spiral in" in {
+    // 0.5 m/s at a radius of 50 km, a turn in a week; five days in two hour steps
+    val (radius, angleError) = aroundAnEddy(1.0e-5, 2, 5)
+    assert(math.abs(radius - 50.0) < 1.0, f"$radius%.2f km from the centre, where the exact path stays at 50")
+    assert(math.abs(angleError) < 0.03, f"$angleError%.3f radians off the exact angle")
+  }
+
+  "A larva carried round a moderate eddy" should "stay on its circle for as long as a larva drifts" in {
+    // 0.15 m/s at a radius of 50 km; fifteen days in two hour steps
+    val (radius, angleError) = aroundAnEddy(3.0e-6, 2, 15)
+    assert(math.abs(radius - 50.0) < 1.0, f"$radius%.2f km from the centre, where the exact path stays at 50")
+    assert(math.abs(angleError) < 0.05, f"$angleError%.3f radians off the exact angle")
+  }
+
+  it should "come out the same with half the time step, as a scheme of this order does" in {
+    val (twoHours, _) = aroundAnEddy(3.0e-6, 2, 15)
+    val (hour, _) = aroundAnEddy(3.0e-6, 1, 15)
+    assert(math.abs(twoHours - hour) < 0.2, f"$twoHours%.3f km with 2 hour steps, $hour%.3f km with 1 hour steps")
+  }
+
+  "A larva that swims" should "move with the flow and its own velocity added" in {
+    val root = Files.createTempDirectory("zissou-swim-integration-test")
+    UniformFlowDataset.write(root.toFile, Seq((2002, 1), (2002, 2)))
+    val timeStep = new TimeStep(6, TimeStepType.Hour)
+    val first = new LocalDateTime(2002, 1, 8, 12, 0)
+    val flow = new Flow(root.toString, first.toDateTime(DateTimeZone.UTC) to first.toDateTime(DateTimeZone.UTC).plusDays(10), timeStep, false)
+    val controller = new FlowController(new FlowFileIterator(flow), flow)
+    val integrator = new RungeKuttaIntegration(controller, None, timeStep.totalSeconds)
+    val larva = new GeoCoordinate(-28.0, 153.2, 5.0)
+
+    controller.advanceTo(first)
+    val drifting = integrator.integrate(larva, first, None, 1.0).get
+    val swimming = integrator.integrate(larva, first, Some(new Velocity(0.1, -0.05, 0.0)), 1.0).get
+    val seconds = timeStep.totalSeconds
+    val eastDegrees = 0.1 * seconds / Constants.EarthsRadius * (180 / math.Pi) / math.cos(larva.latitude * math.Pi / 180)
+    val northDegrees = -0.05 * seconds / Constants.EarthsRadius * (180 / math.Pi)
+    assert(math.abs((swimming.longitude - drifting.longitude) - eastDegrees) < 1e-6)
+    assert(math.abs((swimming.latitude - drifting.latitude) - northDegrees) < 1e-6)
   }
 }

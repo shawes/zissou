@@ -54,6 +54,12 @@ Earlier versions of Zissou took the flow from one to two days ahead of the clock
 
 The files must follow on month after month, one for each month from the one the run starts in, with no gap; Zissou stops with a message if one is missing. If the flow files end before the run does, the simulation stops there with a warning in its log and the results of what it simulated are still written. Earlier versions never read the last file in the folder, and when the months ran out silently started the last month's flow again.
 
+### Moving the larvae
+
+Each time step a larva is moved by the classical fourth order Runge-Kutta method. The flow is sampled four times: where the larva is at the start of the step (k1); at the middle of the step, from where k1 would have carried it by then (k2); at the middle again, from where k2 would have (k3); and at the end, from where k3 would have (k4). The larva then moves at the weighted mean (k1 + 2·k2 + 2·k3 + k4) / 6, with turbulence added to the mean and its swimming velocity added to that. Each sample is the flow at its own time as well as its own place. If the step would take a larva into land, the sea floor or the coast, it goes 10 m higher than that instead if there is sea there, and otherwise stays where it was.
+
+Earlier versions sampled the flow a whole step too far along each leg (at 1, 1.5, 1.5 and 2 steps' worth of travel from the start, where the method has 0, 0.5, 0.5 and 1), took the starting flow from the nearest cell and left it out of the mean. That made a larva carried round an eddy spiral in towards its centre: one that the exact flow takes round a circle of radius 50 km was 36 km from the centre after five days of 2-hour steps, and where it ended depended on the length of the step. Results that depended on larvae dispersing through eddies will move.
+
 ## Building and running
 
 Zissou needs a JDK (17 or later) and [sbt](https://www.scala-sbt.org/).

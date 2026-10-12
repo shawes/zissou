@@ -6,8 +6,9 @@ import grizzled.slf4j.Logging
 
 class Geometry extends Logging {
 
+  /** The position a point reaches in `timeStep` seconds moving at a velocity (m/s) and swimming. */
   def translatePoint(point: GeoCoordinate, velocity: Velocity,
-                     timeStep: Int, swimming: Velocity, includeVerticalVelocity : Boolean): GeoCoordinate  = {
+                     timeStep: Double, swimming: Velocity, includeVerticalVelocity : Boolean): GeoCoordinate  = {
 
     if (velocity.isUndefined) return point
 
