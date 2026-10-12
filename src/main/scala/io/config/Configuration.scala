@@ -1,5 +1,6 @@
 package io.config
 
+import io.circe.Decoder
 import locals._
 case class Configuration(
     settings: SettingsConfig,
@@ -9,11 +10,11 @@ case class Configuration(
     flow: FlowConfig,
     habitat: HabitatConfig,
     output: OutputFilesConfig
-)
+) derives Decoder
 
 case class SettingsConfig(
     randomSeed: Int
-)
+) derives Decoder
 
 case class SpawningLocationConfig(
     name: String,
@@ -22,43 +23,43 @@ case class SpawningLocationConfig(
     numberOfLarvae: Int,
     releasePeriod: ReleasePeriodConfig,
     interval: Int
-)
+) derives Decoder
 
-case class SpawnConfig(spawningLocation: List[SpawningLocationConfig])
+case class SpawnConfig(spawningLocation: List[SpawningLocationConfig]) derives Decoder
 
 case class SiteConfig(
     longitude: Double,
     latitude: Double,
     depth: Double,
     flowId: Option[Int]
-)
+) derives Decoder
 
-case class ReleasePeriodConfig(start: String, end: String)
+case class ReleasePeriodConfig(start: String, end: String) derives Decoder
 
 case class TurbulenceConfig(
     horizontalDiffusionCoefficient: Double,
     verticalDiffusionCoefficient: Double,
     applyTurbulence: Boolean,
     interval: Int
-)
+) derives Decoder
 
 case class FlowConfig(
     netcdfFilePath: String,
     period: PeriodConfig,
     timeStep: TimeStepConfig,
     includeVerticalVelocity: Boolean
-)
+) derives Decoder
 
-case class PeriodConfig(start: String, end: String)
+case class PeriodConfig(start: String, end: String) derives Decoder
 
-case class TimeStepConfig(unit: String, duration: Int)
+case class TimeStepConfig(unit: String, duration: Int) derives Decoder
 
-case class HabitatConfig(shapeFilePath: String, buffer: BufferConfig)
+case class HabitatConfig(shapeFilePath: String, buffer: BufferConfig) derives Decoder
 
 case class BufferConfig(
     settlement: Double,
     olfactory: Double
-)
+) derives Decoder
 
 case class OutputFilesConfig(
     includeLarvaeHistory: Boolean,
@@ -67,7 +68,7 @@ case class OutputFilesConfig(
     prefix: String,
     logLevel: String,
     logFile: String
-)
+) derives Decoder
 
 case class LarvaConfig(
     species: String,
@@ -78,14 +79,14 @@ case class LarvaConfig(
     pelagicLarvalDuration: PelagicLarvalDurationConfig,
     isMortal: Option[Boolean],
     mortalityRate: Option[Double]
-)
+) derives Decoder
 
 case class OntogenyConfig(
     hatching: Int,
     preflexion: Int,
     flexion: Int,
     postflexion: Int
-)
+) derives Decoder
 
 case class SwimmingConfig(
     strategy: String,
@@ -95,14 +96,14 @@ case class SwimmingConfig(
     endurance: Option[Double],
     reynoldsEffect: Option[Boolean],
     hatchSwimmingSpeed: Option[Double]
-)
+) derives Decoder
 
 case class PelagicLarvalDurationConfig(
     mean: Double,
     stdev: Double,
     pldType: String,
     nonSettlementPeriod: Double
-)
+) derives Decoder
 
 case class OntogeneticMigrationConfig(
     implementation: String,
@@ -111,10 +112,10 @@ case class OntogeneticMigrationConfig(
     preflexion: List[Double],
     flexion: List[Double],
     postflexion: List[Double]
-)
+) derives Decoder
 
 case class DielMigrationConfig(
     depths: List[Double],
     day: List[Double],
     night: List[Double]
-)
+) derives Decoder

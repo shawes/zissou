@@ -13,7 +13,7 @@ import org.apache.commons.math3.distribution.NormalDistribution
 import physical.flow.{Flow}
 import physical.habitat.Buffer
 import physical.{GeoCoordinate, TimeStep}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.language.implicitConversions
 
 /**

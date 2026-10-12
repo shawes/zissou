@@ -4,14 +4,16 @@ import java.io.File
 import grizzled.slf4j.Logging
 import io.config.{Configuration, ConfigurationFile}
 
-object Simulator extends App with Logging {
+object Simulator extends Logging {
 
-  readConfigurationFile match {
-    case Some(config) => new CoupledBiophysicalModel(config._1,config._2).run()
-    case None => error("Please supply a valid configuration file.")
+  def main(args: Array[String]): Unit = {
+    readConfigurationFile(args) match {
+      case Some(config) => new CoupledBiophysicalModel(config._1,config._2).run()
+      case None => error("Please supply a valid configuration file.")
+    }
   }
 
-  private def readConfigurationFile: Option[(Configuration,String)] = {
+  private def readConfigurationFile(args: Array[String]): Option[(Configuration,String)] = {
     val configurationFile = new ConfigurationFile()
     if(args.nonEmpty) {
       val testConfigPathDesktop = args(0)

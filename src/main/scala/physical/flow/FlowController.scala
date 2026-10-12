@@ -12,7 +12,7 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow)
     extends Logging {
 
   private val interpolation = new Interpolation()
-  private var hydrodynamicFlow = reader.next
+  private var hydrodynamicFlow = reader.next()
   flow.dimensions = reader.flow.dimensions
 
   def getVelocityOfCoordinate(

@@ -59,7 +59,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -78,7 +78,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -92,7 +92,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
   }
 
   /*  it should "know when it has attained pelagic larval duration" in {
-      val fish = new Fish(id, pld, maximumLifespan, birthplace, LocalDateTime.now,
+      val fish = new Fish(id, pld, maximumLifespan, birthplace, LocalDateTime.now(),
         ontogeny, new OntogeneticMigration(new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
       assert(!fish.hasBeenPelagicTooLong)
       fish.growOlder(29) // below PLD
@@ -104,7 +104,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
     }*/
 
   /*  it should "know when it is in the competency window" in {
-      val fish = new Fish(id, pld, maximumLifespan, birthplace, LocalDateTime.now,
+      val fish = new Fish(id, pld, maximumLifespan, birthplace, LocalDateTime.now(),
         ontogeny, new OntogeneticMigration(new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
       assert(fish.inCompetencyWindow)
       fish.growOlder(29) // below PLD
@@ -121,7 +121,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -146,7 +146,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -156,7 +156,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]),
       0
     )
-    val now = LocalDateTime.now
+    val now = LocalDateTime.now()
     assert(fish.birthday.dayOfMonth() == now.dayOfMonth())
     assert(fish.birthday.dayOfWeek() == now.dayOfWeek())
     assert(fish.birthday.year() == now.year())
@@ -168,7 +168,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -187,7 +187,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -201,7 +201,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
   }
 
   // it should "not move when there is an invalid position" in {
-  //   val fish = new Fish(id, pld, maximumLifespan, birthplace, LocalDateTime.now,
+  //   val fish = new Fish(id, pld, maximumLifespan, birthplace, LocalDateTime.now(),
   //     ontogeny, swimming, new OntogeneticMigration(List.empty[OntogeneticMigrationProbability]), new VerticalMigrationDiel(List.empty[VerticalMigrationDielProbability]))
   //   val invalidPoint = new GeoCoordinate(Double.NaN, Double.NaN, 0)
   //   fish.move(invalidPoint)
@@ -214,7 +214,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -236,7 +236,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -259,7 +259,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       mockOntogeneticVerticalMigration,
@@ -277,7 +277,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -297,7 +297,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -318,7 +318,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -339,7 +339,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -360,7 +360,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -371,7 +371,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       0
     )
     //val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
-    val settleTime = LocalDateTime.now
+    val settleTime = LocalDateTime.now()
     fish.settle(116, settleTime)
     assert(fish.polygon == 116)
     assert(fish.settlementDate == settleTime)
@@ -384,7 +384,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       pld,
       maximumLifespan,
       birthplace,
-      LocalDateTime.now,
+      LocalDateTime.now(),
       ontogeny,
       swimming,
       new OntogeneticMigration(
@@ -395,7 +395,7 @@ class FishTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
       0
     )
     //val reef = new GeometryAdaptor(null, 116, HabitatType.Reef)
-    val settleTime = LocalDateTime.now
+    val settleTime = LocalDateTime.now()
     assert(!fish.isSettled)
     fish.settle(116, settleTime)
     assert(fish.isSettled)

@@ -38,7 +38,7 @@ class LarvaeDisperserTest extends AnyFlatSpec with PrivateMethodTester {
 
 
     it should "calculate the mortality rate using the step" in {
-      val calculateMortalityRate = PrivateMethod[Double]('calculateMortalityRate)
+      val calculateMortalityRate = PrivateMethod[Double](Symbol("calculateMortalityRate"))
       val step = 5
       //assertResult(ld.mortality.calculateMortalityRate(step)) {
         //ld invokePrivate calculateMortalityRate(step)

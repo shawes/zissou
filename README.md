@@ -43,7 +43,7 @@ When the particles reach land they can either be killed, remain in the current p
 Zissou needs a JDK (17 or later) and [sbt](https://www.scala-sbt.org/).
 
 ```
-sbt assembly                       # builds target/scala-2.13/zissou.jar
+sbt assembly                       # builds target/zissou.jar
 scripts/zissou.sh my-config.yaml   # runs it with suitable JVM flags
 ```
 

@@ -35,7 +35,7 @@ trait Random {
   */
 object RandomNumberGenerator extends Random {
 
-  private var masterSeed: Long = DateTime.now.getMillisOfSecond
+  private var masterSeed: Long = DateTime.now().getMillisOfSecond
   private var random: RandomGenerator = newGenerator(masterSeed)
   private val stream = new ThreadLocal[SplittableRandom]
 

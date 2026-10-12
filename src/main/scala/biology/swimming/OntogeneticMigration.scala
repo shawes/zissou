@@ -60,10 +60,10 @@ class OntogeneticMigration(
     val iterator = list.iterator
     var currentDepth: (ContinuousRange, Double) =
       new Tuple2(new ContinuousRange(), 0)
-    currentDepth = iterator.next
+    currentDepth = iterator.next()
     cumulativeProbability += currentDepth._2
     while (number > cumulativeProbability && iterator.hasNext) {
-      currentDepth = iterator.next
+      currentDepth = iterator.next()
       cumulativeProbability += currentDepth._2
     }
     calculateDepthInRange(currentDepth._1)

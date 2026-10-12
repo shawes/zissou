@@ -12,6 +12,5 @@ trait LarvaeFactory {
 object LarvaeFactory {
   def apply(s: LarvaType, config: LarvaConfig) = s match {
     case Fish => new FishFactory(config)
-    case _    => null
   }
 }

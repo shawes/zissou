@@ -15,7 +15,7 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-jar="${ZISSOU_JAR:-$root/target/scala-2.13/zissou.jar}"
+jar="${ZISSOU_JAR:-$root/target/zissou.jar}"
 java_bin="${JAVA_HOME:+$JAVA_HOME/bin/}java"
 
 if [ ! -f "$jar" ]; then

@@ -6,19 +6,19 @@ import physical.GeoCoordinate
 
 class SpawningLocationTest extends AnyFlatSpec {
 
-  val spawningLocation = new SpawningLocation("lizard island", 1000, 202,new GeoCoordinate(1, 2),  DateTime.now.minusDays(5) to DateTime.now.plusDays(1), 5)
+  val spawningLocation = new SpawningLocation("lizard island", 1000, 202,new GeoCoordinate(1, 2),  DateTime.now().minusDays(5) to DateTime.now().plusDays(1), 5)
 
   "A spawning location" should "be able to construct" in {
     assert(spawningLocation != null)
   }
 
   it should "return true if it can spawn" in {
-    val can = spawningLocation.canSpawn(LocalDateTime.now)
+    val can = spawningLocation.canSpawn(LocalDateTime.now())
     assert(can)
   }
 
   it should "return false if it cannot spawn" in {
-    val cannot = !spawningLocation.canSpawn(LocalDateTime.now.plusDays(10))
+    val cannot = !spawningLocation.canSpawn(LocalDateTime.now().plusDays(10))
     assert(cannot)
   }
 
