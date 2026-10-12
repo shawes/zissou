@@ -14,6 +14,7 @@ trait HabitatPolygon {
   def contains(coordinate: GeoCoordinate): Boolean
   def distance(coordinate: GeoCoordinate): Double
   def isWithinBuffer(coordinate: GeoCoordinate, buffer: Double): Boolean
+  /** Degrees counter-clockwise from east, from the position towards the polygon. */
   def direction(coordinate : GeoCoordinate) : Double
 }
 

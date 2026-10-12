@@ -13,6 +13,8 @@ trait Larva extends Swimming with History with Ontogeny {
   val id: String
   val birthday: LocalDateTime
   var age: Int = 0
+  // The heading to swim at, in degrees counter-clockwise from east (towards a reef it
+  // can sense, or a random one), or NoSwimmingAngleException when there is none yet
   var direction: Double =
     Constants.LightWeightException.NoSwimmingAngleException
   var larvaState: PelagicLarvaeState = Pelagic

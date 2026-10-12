@@ -35,6 +35,8 @@ class GeometryAdaptor(val g: Geometry, val id: Int, val habitat: HabitatType) ex
   def isWithinBuffer(coordinate: GeoCoordinate, buffer: Double): Boolean =
      distance(coordinate) <= buffer
 
+  // The direction from a position to the centre of this polygon, in degrees
+  // counter-clockwise from east (0 is east, 90 is north), measured in longitude and latitude
   def direction(coordinate : GeoCoordinate) : Double = {
     Angle.toDegrees(Angle.angle(GeometryToGeoCoordinateAdaptor.toPoint(coordinate).getCoordinate,
     g.getCentroid.getCoordinate))

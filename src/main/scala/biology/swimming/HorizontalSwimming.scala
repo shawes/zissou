@@ -38,7 +38,12 @@ class HorizontalSwimming(
     }
   }
 
-  private def calculateVelocity(angle: Double, speed: Double): Velocity = {
+  // Angles are kept in degrees, counter-clockwise from east, as the habitat reports the
+  // direction to a reef and as RandomNumberGenerator.getAngle draws them. sin and cos take
+  // radians: given degrees they send a larva off at an unrelated heading (45 became 58,
+  // 180 became 233), so a larva told to swim at a reef did not.
+  private def calculateVelocity(angleInDegrees: Double, speed: Double): Velocity = {
+    val angle = math.toRadians(angleInDegrees)
     val uOrientated = speed * math.cos(angle)
     val vOrientated = speed * math.sin(angle)
     new Velocity(uOrientated, vOrientated, 0)
@@ -89,6 +94,8 @@ class HorizontalSwimming(
 }
 
 class HorizontalSwimmingVariables(
+    // the heading to swim at, in degrees counter-clockwise from east, or
+    // LightWeightException.NoSwimmingAngleException when there is none
     val angle: Double,
     val age: Int,
     val preflexion: Int,
