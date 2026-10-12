@@ -97,4 +97,12 @@ class FlowControllerTest extends AnyFlatSpec {
     controller.advanceTo(new LocalDateTime(2002, 1, 5, 0, 0))
     assert(math.abs(dayNumberOf(controller.getVelocity(point)) - UniformFlowDataset.dayNumber(2002, 1, 5)) < 1e-6)
   }
+
+  it should "say when the files have nothing for the time, and be as it was" in {
+    val controller = controllerStartingAt(utc(2002, 3, 28))
+    controller.advanceTo(new LocalDateTime(2002, 3, 30, 13, 0)) // the pair for 30 and 31 March
+    val before = dayNumberOf(controller.getVelocity(point))
+    intercept[exceptions.FlowDataExhaustedException](controller.advanceTo(new LocalDateTime(2002, 3, 31, 12, 0)))
+    assert(dayNumberOf(controller.getVelocity(point)) == before)
+  }
 }

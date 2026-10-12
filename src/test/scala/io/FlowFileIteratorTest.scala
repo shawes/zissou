@@ -2,6 +2,7 @@ package io
 
 import java.nio.file.Files
 import com.github.nscala_time.time.Imports._
+import exceptions.FlowDataExhaustedException
 import locals.TimeStepType
 import org.scalatest.flatspec.AnyFlatSpec
 import physical.flow.{Flow, FlowGridWrapper}
@@ -53,5 +54,49 @@ class FlowFileIteratorTest extends AnyFlatSpec {
       assert(window.earlierStamp == new LocalDateTime(2002, 1, 25, 12, 0).plusDays(k), s"after $k days")
       assert(window.laterStamp == window.earlierStamp.plusDays(1), s"after $k days")
     }
+  }
+
+  "A run that starts on the last day of a month" should "carry on into the next month's file" in {
+    val window = iterator(utc(2002, 1, 31), Seq((2002, 1), (2002, 2), (2002, 3))).current
+    assert(days(window) == (UniformFlowDataset.dayNumber(2002, 1, 31), UniformFlowDataset.dayNumber(2002, 2, 1)))
+    assert(window.laterStamp == new LocalDateTime(2002, 2, 1, 12, 0))
+  }
+
+  "Reading the files" should "use every file in the folder, the last one too, month after month" in {
+    val flow = iterator(utc(2002, 2, 20), Seq((2002, 1), (2002, 2), (2002, 3)))
+    val first = UniformFlowDataset.dayNumber(2002, 2, 20)
+    assert(days(flow.current) == (first, first + 1))
+    // 20 February to the last pair, 30 and 31 March: 38 days, over two changes of month
+    for (k <- 1 to 38) {
+      assert(days(flow.next()) == (first + k, first + k + 1), s"after $k days")
+    }
+    assert(days(flow.current) == (UniformFlowDataset.dayNumber(2002, 3, 30), UniformFlowDataset.dayNumber(2002, 3, 31)))
+  }
+
+  it should "say when the files run out, not start the month again" in {
+    val flow = iterator(utc(2002, 3, 29), Seq((2002, 1), (2002, 2), (2002, 3)))
+    flow.next() // 30 and 31 March: the last pair there is
+    val last = days(flow.current)
+    val problem = intercept[FlowDataExhaustedException](flow.next())
+    assert(problem.getMessage.contains("2002-03-31"), problem.getMessage)
+    assert(days(flow.current) == last, "the window is as it was")
+    intercept[FlowDataExhaustedException](flow.next()) // and it says so again
+  }
+
+  it should "say so at the start when the run begins on the last day there is data for" in {
+    val problem = intercept[FlowDataExhaustedException](iterator(utc(2002, 3, 31), Seq((2002, 1), (2002, 2), (2002, 3))))
+    assert(problem.getMessage.contains("2002-03-31"))
+  }
+
+  it should "refuse a gap in the months, not carry on with the wrong file" in {
+    val flow = iterator(utc(2002, 1, 29), Seq((2002, 1), (2002, 3), (2002, 4)))
+    flow.next() // 30 and 31 January
+    val problem = intercept[IllegalStateException](flow.next())
+    assert(problem.getMessage.contains("2002-02"), problem.getMessage)
+  }
+
+  it should "say which month has no file when the run starts in one" in {
+    val problem = intercept[IllegalArgumentException](iterator(utc(2002, 5, 1), Seq((2002, 1), (2002, 2), (2002, 3))))
+    assert(problem.getMessage.contains("2002-05"), problem.getMessage)
   }
 }

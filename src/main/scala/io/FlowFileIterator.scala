@@ -3,6 +3,7 @@ package io
 import java.io.File
 import scala.collection.mutable.{ListBuffer, Queue}
 import com.github.nscala_time.time.Imports._
+import exceptions.FlowDataExhaustedException
 import grizzled.slf4j._
 import physical.flow.{Flow, FlowGridWrapper}
 import ucar.ma2.Range
@@ -18,6 +19,8 @@ class FlowFileIterator(val flow: Flow) extends Logging {
     new Queue[(List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)]
   val depths = List(2.5, 7.5, 12.5, 17.5, 22.7, 28.2, 34.2, 41.0, 48.5, 56.7,
     65.7, 75.2, 85.0, 95.0, 105.0) //TODO: Get this info from the netcdf file
+  // the month of the file read last; declared before initialFlowData runs, which reads a file
+  private var loadedMonth: Option[java.time.YearMonth] = None
   val netcdfHandler = new NetcdfFileHandler()
   val getFileInformation = initialiseFiles()
   var currentFile: Int = getFileInformation._2
@@ -33,10 +36,9 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   private def initialFlowData(): Unit = {
     readMonth()
     val startDay: Int = flow.period.getStart.toLocalDate.dayOfMonth.get
-    val day1 = readDay(startDay, latLonBounds, depthRange)
-    val day2 = readDay(startDay + 1, latLonBounds, depthRange)
-    grids.enqueue((day1, startDay, getDaysInMonth))
-    grids.enqueue((day2, startDay + 1, getDaysInMonth))
+    grids.enqueue((readDay(startDay, latLonBounds, depthRange), startDay, getDaysInMonth))
+    ensureFollowingDayExists()
+    loadFollowingDay()
   }
 
   /** The two daily fields held now: the day the run starts on and the day after. */
@@ -50,9 +52,10 @@ class FlowFileIterator(val flow: Flow) extends Logging {
 
   /** Moves on a day: the later field becomes the earlier, and the day after it is read. */
   def next(): FlowGridWrapper = {
+    // checked first, so that running out of data leaves the window as it was
+    ensureFollowingDayExists()
     clearYesterday()
-    if (isEndOfMonth && hasNext) readMonth()
-    getNextFlowData()
+    loadFollowingDay()
     current
   }
 
@@ -67,7 +70,8 @@ class FlowFileIterator(val flow: Flow) extends Logging {
     new LocalDateTime(axis.getCalendarDate(0).getMillis, DateTimeZone.UTC)
   }
 
-  def hasNext: Boolean = currentFile < files.size - 1
+  /** Whether there is a file that has not been read yet: currentFile is the one after the last read. */
+  def hasNext: Boolean = currentFile < files.size
 
   def closeAllOpenDatasets(): Unit = {
     if (dataset.nonEmpty) {
@@ -122,19 +126,49 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   }
 
   private def readMonth(): Unit = {
+    val month = monthOf(files(currentFile))
+    loadedMonth.foreach { previous =>
+      if (month != previous.plusMonths(1)) {
+        throw new IllegalStateException(
+          s"The flow files go from $previous to $month: there is no file for ${previous.plusMonths(1)}."
+        )
+      }
+    }
     val nextDayData = ListBuffer.empty[(GridDataset, String)]
     variables.foreach(
       variable => nextDayData += ((loadNextFlowFile(variable), variable))
     )
     closeAllOpenDatasets()
     dataset = nextDayData.toList
+    loadedMonth = Some(month)
     currentFile += 1
   }
 
-  private def getNextFlowData(): Unit = {
-    val nextDay = readDay(getNextDayOfMonth, latLonBounds, depthRange)
-    grids.enqueue((nextDay, getNextDayOfMonth, getDaysInMonth))
+  private def monthOf(filename: String): java.time.YearMonth = {
+    val date = getDateFromFileName(filename)
+    java.time.YearMonth.of(date.getYear, date.getMonthOfYear)
   }
+
+  // the day after the newest one held is in this month's file, or in the next month's
+  private def ensureFollowingDayExists(): Unit = {
+    if (isLastDayOfMonth(grids.last) && !hasNext) {
+      throw new FlowDataExhaustedException(
+        s"The flow files hold nothing after ${stampOf(grids.last).toLocalDate}."
+      )
+    }
+  }
+
+  private def loadFollowingDay(): Unit = {
+    val newest = grids.last
+    val startsNextMonth = isLastDayOfMonth(newest)
+    if (startsNextMonth) readMonth()
+    val day = if (startsNextMonth) 1 else newest._2 + 1
+    grids.enqueue((readDay(day, latLonBounds, depthRange), day, getDaysInMonth))
+  }
+
+  private def isLastDayOfMonth(
+      day: (List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)
+  ): Boolean = day._2 == day._3
 
   private def loadNextFlowFile(prefix: String): GridDataset = {
     val path = flow.netcdfFilePath + "/" + prefix
@@ -149,16 +183,20 @@ class FlowFileIterator(val flow: Flow) extends Logging {
     val files =
       new File(path).list().filter(p => p.endsWith(NetcdfExtension)).sorted
     files.foreach(f => info(s"$f"))
-    (
-      files,
-      files.indexWhere(
-        file =>
-          isFileForDate(
-            flow.period.getStart.toLocalDate,
-            getDateFromFileName(file)
-          )
-      )
+    val startMonth = files.indexWhere(
+      file =>
+        isFileForDate(
+          flow.period.getStart.toLocalDate,
+          getDateFromFileName(file)
+        )
     )
+    if (startMonth < 0) {
+      val start = flow.period.getStart.toLocalDate
+      throw new IllegalArgumentException(
+        f"There is no flow file for ${start.getYear}%d-${start.getMonthOfYear}%02d in $path"
+      )
+    }
+    (files, startMonth)
   }
 
   private def getDateFromFileName(filename: String): LocalDate = {
@@ -175,16 +213,7 @@ class FlowFileIterator(val flow: Flow) extends Logging {
     startDate.year == fileDate.year && startDate.monthOfYear.get == fileDate.monthOfYear.get
   }
 
-  private def getDayOfMonth: Int = grids.front._2
-
-  private def getNextDayOfMonth: Int = isEndOfMonth match {
-    case true  => 1
-    case false => getDayOfMonth + 1
-  }
-
   private def getDaysInMonth: Int =
     dataset.head._1.getCalendarDateEnd.getDayOfMonth()
-
-  private def isEndOfMonth: Boolean = getDayOfMonth == grids.front._3
 
 }

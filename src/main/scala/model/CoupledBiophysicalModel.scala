@@ -1,5 +1,7 @@
 package model
 
+import com.github.nscala_time.time.Imports.LocalDateTime
+import exceptions.FlowDataExhaustedException
 import grizzled.slf4j.Logging
 import io._
 import io.config.ConfigMappings._
@@ -47,8 +49,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       info("Simulation run started")
       val stepTimer = new SimpleTimer()
       stepTimer.start()
-      while (clock.stillTime && biology.isDispersing(clock.now)) {
-        ocean.update(clock.now)
+      while (clock.stillTime && biology.isDispersing(clock.now) && flowReaches(clock.now)) {
         biology()
         if (clock.isMidnight) {
           if (config.larva.isMortal.getOrElse(false)) {
@@ -84,6 +85,18 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       ocean.shutdown()
     }
   }
+
+  // False, with a warning, once the flow files have nothing for the time: the simulation
+  // stops there and what it has done is kept
+  private def flowReaches(time: LocalDateTime): Boolean =
+    try {
+      ocean.update(time)
+      true
+    } catch {
+      case e: FlowDataExhaustedException =>
+        warn(s"${e.getMessage} The simulation stops at $time, before the end of its period.")
+        false
+    }
 
   private def setConfiguredLogLevel(): Unit = {
     //val logFile = config.output.logFile

@@ -50,6 +50,8 @@ The flow is read as daily fields, from monthly files laid out as `<flow folder>/
 
 Earlier versions of Zissou took the flow from one to two days ahead of the clock and used one day's field for the whole day: the interpolation between today's and tomorrow's field read today's field twice.
 
+The files must follow on month after month, one for each month from the one the run starts in, with no gap; Zissou stops with a message if one is missing. If the flow files end before the run does, the simulation stops there with a warning in its log and the results of what it simulated are still written. Earlier versions never read the last file in the folder, and when the months ran out silently started the last month's flow again.
+
 ## Building and running
 
 Zissou needs a JDK (17 or later) and [sbt](https://www.scala-sbt.org/).

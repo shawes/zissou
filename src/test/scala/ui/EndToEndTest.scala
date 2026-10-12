@@ -49,4 +49,30 @@ class EndToEndTest extends AnyFlatSpec {
     val firstRecordType = ByteBuffer.wrap(Files.readAllBytes(shapefile), 108, 4).order(ByteOrder.LITTLE_ENDIAN).getInt
     assert(firstRecordType == 3, s"the first record has shape type $firstRecordType, expected 3 (a line)")
   }
+
+  it should "stop, with a warning, when the flow files run out, and keep the results of what it simulated" in {
+    val base = Files.createTempDirectory("zissou-e2e-flow-ends-test")
+    tools.SyntheticDataset.main(Array(base.toString))
+    // January and February only, so the flow ends on 28 February
+    for (variable <- Seq("u", "v", "w")) Files.delete(base.resolve("flow").resolve(variable).resolve(s"ocean_${variable}_2002_03.nc"))
+    val configs = new ConfigStore(base, base)
+    // larvae are still being released on 25 February, so some are in the water when the flow stops
+    val text = configs.read("smoke.yaml").get
+      .replace("end: 2002-01-20", "end: 2002-02-25")
+      .replace("end: 2002-02-20", "end: 2002-03-10")
+    assert(configs.validate(text).ok)
+
+    val runs = new RunManager(base.resolve("runs"), base, RunManager.jvmCommand)
+    val started = runs.start("smoke.yaml", text).toOption.get
+    val deadline = System.currentTimeMillis() + 120000
+    while (System.currentTimeMillis() < deadline && runs.get(started.id).exists(_.status == "running")) Thread.sleep(100)
+
+    val done = runs.get(started.id).get
+    assert(done.status == "succeeded", s"${done.status}: ${done.message}\n${runs.log(started.id, 0).map(_._1).getOrElse("")}")
+    val warnings = runs.detail(started.id).get.log.warnings
+    assert(warnings.exists(w => w.contains("hold nothing after 2002-02-28") && w.contains("The simulation stops at 2002-02-28T12:00")), warnings.toString)
+    val results = runs.results(started.id).get
+    assert(results.settled > 0, "what was simulated before the flow ran out is kept")
+    assert(!runs.log(started.id, 0).get._1.contains("Exception"))
+  }
 }
