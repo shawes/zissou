@@ -135,4 +135,14 @@ class ConfigStoreTest extends AnyFlatSpec {
     assert(configs.validate(SampleConfig.yaml(pldType = "Fixed")).warnings.exists(_.contains("case-sensitive")))
     assert(!configs.validate(SampleConfig.yaml(pldType = "fixed")).warnings.exists(_.contains("case-sensitive")))
   }
+
+  it should "reject a negative diffusion coefficient, which has no square root" in {
+    val (configs, _) = store()
+    for (name <- Seq("horizontalDiffusionCoefficient", "verticalDiffusionCoefficient")) {
+      val broken = SampleConfig.yaml().replaceAll(s"$name: [0-9.]+", s"$name: -1")
+      val result = configs.validate(broken)
+      assert(!result.ok && result.error.exists(_.contains(s"turbulence.$name must be zero or more")), name)
+    }
+    assert(configs.validate(SampleConfig.yaml().replaceAll("horizontalDiffusionCoefficient: [0-9.]+", "horizontalDiffusionCoefficient: 0")).ok, "zero is allowed")
+  }
 }

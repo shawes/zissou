@@ -38,6 +38,12 @@ Zissou models connectivity patterns of marine larvae using offline hydrodynamic 
 When the particles reach land they can either be killed, remain in the current position or move with a muted velocity
 
 
+### Turbulence
+
+Turbulent mixing is a random walk, set by `turbulence.horizontalDiffusionCoefficient` and `turbulence.verticalDiffusionCoefficient` in m2/s. Every time step moves each larva a normally distributed distance east-west, north-south and vertically, drawn independently, with variance 2·K·Δt along each axis, so a patch of larvae spreads with variance 2·K·t however long the step is. The vertical part only acts when `flow.includeVerticalVelocity` is true.
+
+Earlier versions of Zissou drew a uniform number instead, which carries a third of the variance, and added the same number east-west and north-south, so larvae were only ever pushed along a diagonal. A coefficient chosen for those runs spreads larvae about three times as far now; dividing it by 3 reproduces the old mean squared spread, though not the old direction.
+
 ## Building and running
 
 Zissou needs a JDK (17 or later) and [sbt](https://www.scala-sbt.org/).

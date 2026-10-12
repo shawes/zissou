@@ -77,4 +77,34 @@ class RandomNumberGeneratorTest extends AnyFlatSpec with BeforeAndAfterEach {
     assert(RandomNumberGenerator.keyFor("abc") == RandomNumberGenerator.keyFor("abc"))
     assert(RandomNumberGenerator.keyFor("abc") != RandomNumberGenerator.keyFor("abd"))
   }
+
+  "A normal draw" should "have mean 0 and variance 1" in {
+    val draws = Seq.fill(100000)(RandomNumberGenerator.gaussian)
+    val mean = draws.sum / draws.size
+    val variance = draws.map(d => (d - mean) * (d - mean)).sum / draws.size
+    assert(math.abs(mean) < 0.02 && math.abs(variance - 1) < 0.02, s"mean $mean, variance $variance")
+  }
+
+  it should "repeat for the same seed, and in a stream for the same key and step" in {
+    RandomNumberGenerator.setSeed(11)
+    val first = Seq.fill(5)(RandomNumberGenerator.gaussian)
+    RandomNumberGenerator.setSeed(11)
+    assert(Seq.fill(5)(RandomNumberGenerator.gaussian) == first)
+    def inStream(key: Long) = RandomNumberGenerator.withStream(key, 4)(Seq.fill(5)(RandomNumberGenerator.gaussian))
+    assert(inStream(3) == inStream(3) && inStream(3) != inStream(4))
+  }
+
+  it should "not use up numbers from the sequential generator when drawn in a stream" in {
+    RandomNumberGenerator.setSeed(5)
+    val expected = Seq.fill(3)(RandomNumberGenerator.gaussian)
+    RandomNumberGenerator.setSeed(5)
+    RandomNumberGenerator.withStream(1, 1)(Seq.fill(10)(RandomNumberGenerator.gaussian))
+    assert(Seq.fill(3)(RandomNumberGenerator.gaussian) == expected)
+  }
+
+  it should "give the same draws whatever order the threads run in" in {
+    val keys = (1L to 500L).toList
+    def draw(k: Long) = RandomNumberGenerator.withStream(k, 9)(RandomNumberGenerator.gaussian)
+    assert(keys.par.map(k => k -> draw(k)).seq.toMap == keys.map(k => k -> draw(k)).toMap)
+  }
 }

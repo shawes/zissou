@@ -20,6 +20,9 @@ trait Random {
 
   def getAngle: Double
 
+  /** A draw from the standard normal distribution: mean 0, standard deviation 1. */
+  def gaussian: Double
+
   def coinToss: Boolean
 
   def setSeed(seed: Int): Unit
@@ -85,6 +88,11 @@ object RandomNumberGenerator extends Random {
   def coinToss: Boolean = {
     val current = stream.get
     if (current != null) current.nextBoolean() else random.nextBoolean()
+  }
+
+  def gaussian: Double = {
+    val current = stream.get
+    if (current != null) current.nextGaussian() else random.nextGaussian()
   }
 
   def getPercent: Double = get(0, 100)

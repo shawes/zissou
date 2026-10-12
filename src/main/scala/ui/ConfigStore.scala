@@ -82,7 +82,7 @@ class ConfigStore(val dir: Path, baseDir: Path) {
     new ConfigurationFile().parse(text) match {
       case Left(failure) => Validation(false, Some(describe(failure)), None, Seq.empty)
       case Right(config) =>
-        invalidDate(config).orElse(invalidInterval(config)) match {
+        invalidDate(config).orElse(invalidInterval(config)).orElse(invalidDiffusion(config)) match {
           case Some(problem) => Validation(false, Some(problem), None, Seq.empty)
           case None => Validation(true, None, Some(summarise(config)), warningsFor(config))
         }
@@ -128,6 +128,13 @@ class ConfigStore(val dir: Path, baseDir: Path) {
     config.spawn.spawningLocation.collectFirst {
       case site if site.interval < 1 => s"The release interval of ${site.name} must be at least 1 day."
     }
+
+  // the random walk takes the square root of the diffusion coefficient
+  private def invalidDiffusion(config: Configuration): Option[String] = {
+    val t = config.turbulence
+    Seq("horizontalDiffusionCoefficient" -> t.horizontalDiffusionCoefficient, "verticalDiffusionCoefficient" -> t.verticalDiffusionCoefficient)
+      .collectFirst { case (name, value) if value < 0 || value.isNaN => s"turbulence.$name must be zero or more." }
+  }
 
   private def summarise(config: Configuration): ConfigSummary =
     ConfigSummary(
