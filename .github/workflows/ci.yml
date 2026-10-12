@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: JDK ${{ matrix.java }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, java: 17 }
+          - { os: ubuntu-latest, java: 21 }
+          - { os: macos-latest, java: 21 }
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: sbt
+
+      - uses: sbt/setup-sbt@v1
+
+      - name: Run the tests
+        run: sbt -batch test
+
+      - name: Build the jar
+        run: sbt -batch assembly
+
+      # An end-to-end check on generated data, since the original model inputs
+      # are not in the repository
+      - name: Generate the synthetic dataset
+        run: sbt -batch "Test/runMain tools.SyntheticDataset"
+
+      - name: Run the smoke simulation
+        run: |
+          scripts/zissou.sh data/synthetic/smoke.yaml 2>&1 | tee run.log
+          if grep -q "Exception" run.log; then
+            echo "The simulation reported an exception"
+            exit 1
+          fi
+          settled=$(( $(wc -l < data/synthetic/output/smoke/smoke-connectivity-matrix.csv) - 1 ))
+          echo "$settled larvae settled"
+          test "$settled" -ge 10
+
+      # With a fixed seed, repeated runs must give identical output
+      - name: Check that runs are reproducible
+        run: |
+          cp -R data/synthetic/output/smoke first-run
+          scripts/zissou.sh data/synthetic/smoke.yaml > /dev/null 2>&1
+          diff -r first-run data/synthetic/output/smoke
