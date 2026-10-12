@@ -1,5 +1,6 @@
 package model
 
+import com.github.nscala_time.time.Imports.LocalDateTime
 import grizzled.slf4j.Logging
 import io.FlowFileIterator
 import io.config.ConfigMappings._
@@ -11,8 +12,9 @@ class PhysicalModel(val config: Configuration) extends Logging {
   val flowFile = new FlowFileIterator(config.flow)
   val flowController = new FlowController(flowFile, config.flow)
 
-  def circulate(): Unit = {
-    flowController.updateHydrodynamicFlow(flowFile.next())
+  /** Brings the flow up to a time: the pair of daily fields the time lies between. */
+  def update(time: LocalDateTime): Unit = {
+    flowController.advanceTo(time)
   }
 
   def shutdown(): Unit = {

@@ -48,6 +48,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       val stepTimer = new SimpleTimer()
       stepTimer.start()
       while (clock.stillTime && biology.isDispersing(clock.now)) {
+        ocean.update(clock.now)
         biology()
         if (clock.isMidnight) {
           if (config.larva.isMortal.getOrElse(false)) {
@@ -58,7 +59,6 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
               .stop() + " secs with " + biology.pelagicLarvae.size + " larvae."
           )
           stepTimer.start()
-          ocean.circulate()
         }
         clock.tick()
       }

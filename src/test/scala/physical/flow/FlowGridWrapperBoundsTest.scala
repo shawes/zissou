@@ -1,5 +1,6 @@
 package physical.flow
 
+import com.github.nscala_time.time.Imports.LocalDateTime
 import exceptions.CoordinateOutOfBoundsException
 import org.mockito.ArgumentMatchers.{any, anyDouble}
 import org.mockito.Mockito.when
@@ -18,7 +19,7 @@ class FlowGridWrapperBoundsTest extends AnyFlatSpec with MockitoSugar {
     val coordinateSystem = mock[GridCoordSystem]
     when(coordinateSystem.findXYindexFromLatLon(anyDouble(), anyDouble(), any()))
       .thenReturn(Array(x, y))
-    new FlowGridWrapper(depths, List(List((slice, coordinateSystem))))
+    new FlowGridWrapper(depths, List(List((slice, coordinateSystem))), new LocalDateTime(2002, 1, 5, 12, 0), new LocalDateTime(2002, 1, 6, 12, 0))
   }
 
   private val coordinate = new GeoCoordinate(-28.0, 154.0, 5.0)

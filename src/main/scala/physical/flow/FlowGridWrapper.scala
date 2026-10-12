@@ -1,5 +1,6 @@
 package physical.flow
 
+import com.github.nscala_time.time.Imports.{DateTimeZone, LocalDateTime}
 import exceptions.{CoordinateOutOfBoundsException, InterpolationNotImplementedException}
 import grizzled.slf4j.Logging
 import locals.Constants.NetcdfIndex
@@ -10,10 +11,36 @@ import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.GeoGrid
 import scala.collection.parallel.mutable._
 
+/**
+  * Two daily flow fields, the earlier first, and the times they are for.
+  *
+  * @param data the u, v and w grids of the earlier field, then those of the later
+  * @param earlierStamp the time the earlier field is for, from the time axis of the data
+  * @param laterStamp the time the later field is for
+  */
 class FlowGridWrapper(
     val depths: List[Double],
-    val data: List[List[(Array[Array[Array[Float]]], GridCoordSystem)]]
+    val data: List[List[(Array[Array[Array[Float]]], GridCoordSystem)]],
+    val earlierStamp: LocalDateTime,
+    val laterStamp: LocalDateTime
 ) extends Logging {
+
+  private lazy val earlierMillis = earlierStamp.toDateTime(DateTimeZone.UTC).getMillis
+  private lazy val laterMillis = laterStamp.toDateTime(DateTimeZone.UTC).getMillis
+
+  /**
+    * How far a time lies between the two fields: 0 at or before the earlier one's time,
+    * 1 at or after the later one's, and in proportion in between, so that the flow can
+    * be blended in time instead of jumping from one day's field to the next.
+    */
+  def weightOfLater(time: LocalDateTime): Double = {
+    val span = (laterMillis - earlierMillis).toDouble
+    if (span <= 0) 0.0
+    else {
+      val elapsed = (time.toDateTime(DateTimeZone.UTC).getMillis - earlierMillis).toDouble
+      math.min(1.0, math.max(0.0, elapsed / span))
+    }
+  }
 
   def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
     val gridIndex = getIndex(coordinate)
@@ -134,7 +161,7 @@ class FlowGridWrapper(
       while (!undefined && j < startIndexLat + number) {
         var i = startIndexLon
         while (!undefined && i < startIndexLon + number) {
-          velocityAt(gridIndex._1 + i, gridIndex._2 + j, gridIndex._3, true) match {
+          velocityAt(gridIndex._1 + i, gridIndex._2 + j, gridIndex._3, gridIndex._4) match {
             case Some(velocity) =>
               neighbourhood(i - startIndexLon)(j - startIndexLat) = velocity
             case None => undefined = true

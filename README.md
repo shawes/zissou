@@ -44,6 +44,12 @@ Turbulent mixing is a random walk, set by `turbulence.horizontalDiffusionCoeffic
 
 Earlier versions of Zissou drew a uniform number instead, which carries a third of the variance, and added the same number east-west and north-south, so larvae were only ever pushed along a diagonal. A coefficient chosen for those runs spreads larvae about three times as far now; dividing it by 3 reproduces the old mean squared spread, though not the old direction.
 
+### Flow and time
+
+The flow is read as daily fields, from monthly files laid out as `<flow folder>/{u,v,w}/<name>_<variable>_<year>_<month>.nc`. Each field is for the time stamped on it in the file (noon, for daily means), and the flow a larva feels at any moment is a straight-line blend of the two fields either side of that moment, in proportion to how near the moment is to each, so it changes smoothly through the day and does not jump at midnight. Until the time of the first field the first field is held. The simulation clock is compared with the time axis of the files as UTC.
+
+Earlier versions of Zissou took the flow from one to two days ahead of the clock and used one day's field for the whole day: the interpolation between today's and tomorrow's field read today's field twice.
+
 ## Building and running
 
 Zissou needs a JDK (17 or later) and [sbt](https://www.scala-sbt.org/).

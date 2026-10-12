@@ -12,7 +12,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Option[Turbulence]
   val geometry = new Geometry
 
   def integrate(coordinate: GeoCoordinate, time: LocalDateTime, swimming: Option[Velocity], dampening: Double): Option[GeoCoordinate] = {
-    flow.getVelocity(coordinate) match {
+    flow.getVelocity(coordinate, time) match {
       case Some(velocity) => performRungeKuttaSteps(velocity, coordinate, time, swimming, dampening)
       case None => None
     }
@@ -27,9 +27,9 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Option[Turbulence]
         if (step3.velocity.isDefined) {
           val step4 = performRungeKuttaIteration(coordinate, Some(step3.velocity.get*dampening), timeStep * 2, time, swimming)
           if (step4.velocity.isDefined) {
-            val u = (step1.velocity.get.u + (2 * step2.velocity.get.u) + (2 * step3.velocity.get.u) + step4.velocity.get.u) * 0.16666
-            val v = (step1.velocity.get.v + (2 * step2.velocity.get.v) + (2 * step3.velocity.get.v) + step4.velocity.get.v) * 0.16666
-            val w = (step1.velocity.get.w + (2 * step2.velocity.get.w) + (2 * step3.velocity.get.w) + step4.velocity.get.w) * 0.16666
+            val u = (step1.velocity.get.u + (2 * step2.velocity.get.u) + (2 * step3.velocity.get.u) + step4.velocity.get.u) / 6.0
+            val v = (step1.velocity.get.v + (2 * step2.velocity.get.v) + (2 * step3.velocity.get.v) + step4.velocity.get.v) / 6.0
+            val w = (step1.velocity.get.w + (2 * step2.velocity.get.w) + (2 * step3.velocity.get.w) + step4.velocity.get.w) / 6.0
 
             var integratedVelocity = new Velocity(u, v, w)
 
@@ -69,7 +69,7 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Option[Turbulence]
     if (velocity.isDefined) {
       val normalisedTime = partialTimeStep - timeStep
       val newCoordinate = geometry.translatePoint(coordinate, velocity.get, partialTimeStep, swimming.getOrElse(new Velocity(0,0,0)), flow.flow.includeVerticalVelocity)
-      val newVelocity = flow.getVelocityOfCoordinate(newCoordinate, time.plusSeconds(normalisedTime), time, partialTimeStep)
+      val newVelocity = flow.getVelocityOfCoordinate(newCoordinate, time.plusSeconds(normalisedTime))
       new RungeKuttaStepDerivative(newVelocity, newCoordinate)
     } else {
       new RungeKuttaStepDerivative(None, coordinate)

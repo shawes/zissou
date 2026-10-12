@@ -8,65 +8,62 @@ import maths.RandomNumberGenerator
 import maths.interpolation.Interpolation
 import physical.{GeoCoordinate, Velocity}
 
+/**
+  * The flow the larvae are carried by.
+  *
+  * The ocean model's daily fields are held two at a time, the pair whose times the clock
+  * lies between, and the flow at a time is a blend of the two in proportion to how far
+  * the time is from each.
+  */
 class FlowController(val reader: FlowFileIterator, var flow: Flow)
     extends Logging {
 
   private val interpolation = new Interpolation()
-  private var hydrodynamicFlow = reader.next()
+  private var hydrodynamicFlow = reader.current
   flow.dimensions = reader.flow.dimensions
 
-  def getVelocityOfCoordinate(
-      coordinate: GeoCoordinate,
-      future: LocalDateTime,
-      now: LocalDateTime,
-      timeStep: Int
-  ): Option[Velocity] = {
-    if (future == now) {
-      getInterpolatedVelocity(coordinate, InterpolateToday)
-    } else if (future == now.plusSeconds(timeStep)) {
-      getInterpolatedVelocity(coordinate, InterpolateTomorrow)
-    } else {
-      derivePartialTimeStepVelocity(coordinate, future, now, timeStep)
+  /** Moves on to the pair of daily fields that the time lies between. */
+  def advanceTo(time: LocalDateTime): Unit =
+    while (!time.isBefore(hydrodynamicFlow.laterStamp)) {
+      hydrodynamicFlow = reader.next()
     }
-  }
 
-  private def derivePartialTimeStepVelocity(
-      coordinate: GeoCoordinate,
-      future: LocalDateTime,
-      now: LocalDateTime,
-      timeStep: Int
-  ): Option[Velocity] = {
-    val velocityNow = getInterpolatedVelocity(coordinate, InterpolateToday)
-    val velocityFuture =
-      getInterpolatedVelocity(coordinate, InterpolateTomorrow)
-
-    if (velocityNow.isDefined && velocityFuture.isDefined) {
-      val divisor = 1 / timeStep.toDouble
-      val period = now.toDateTime(DateTimeZone.UTC) to future.toDateTime(
-        DateTimeZone.UTC
-      )
-
-      val ratioA = period.toPeriod.getSeconds
-      val ratioB = timeStep - ratioA
-
-      Some(
-        velocityNow.get * (ratioA * divisor) + velocityFuture.get * (ratioB * divisor)
-      )
-    } else {
-      None
-    }
-  }
-
+  /** The flow at the nearest grid cell, from the earlier field only: enough to tell land from sea. */
   def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
     hydrodynamicFlow.getVelocity(coordinate)
   }
 
-  private def getInterpolatedVelocity(
+  /** The flow at the nearest grid cell at a time, blended between the two fields. */
+  def getVelocity(coordinate: GeoCoordinate, time: LocalDateTime): Option[Velocity] = {
+    val index = hydrodynamicFlow.getIndex(coordinate)
+    blend(time)(isEarlier =>
+      hydrodynamicFlow.getVelocity((index._1, index._2, index._3, isEarlier))
+    )
+  }
+
+  /** The flow at a position and time: interpolated across the grid, and blended between the two fields. */
+  def getVelocityOfCoordinate(
       coordinate: GeoCoordinate,
-      day: InterpolationTime
+      time: LocalDateTime
   ): Option[Velocity] = {
-    val index = hydrodynamicFlow.getIndex(coordinate, day)
-    interpolation(coordinate, hydrodynamicFlow, index)
+    val index = hydrodynamicFlow.getIndex(coordinate)
+    blend(time)(isEarlier =>
+      interpolation(coordinate, hydrodynamicFlow, (index._1, index._2, index._3, isEarlier))
+    )
+  }
+
+  // Only the field(s) the time needs are read; where either one is missing (land) so is the flow
+  private def blend(time: LocalDateTime)(
+      at: Boolean => Option[Velocity]
+  ): Option[Velocity] = {
+    val laterWeight = hydrodynamicFlow.weightOfLater(time)
+    if (laterWeight <= 0.0) at(true)
+    else if (laterWeight >= 1.0) at(false)
+    else
+      for {
+        earlier <- at(true)
+        later <- at(false)
+      } yield earlier * (1.0 - laterWeight) + later * laterWeight
   }
 
   def updateHydrodynamicFlow(next: FlowGridWrapper): Unit = {

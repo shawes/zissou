@@ -39,11 +39,32 @@ class FlowFileIterator(val flow: Flow) extends Logging {
     grids.enqueue((day2, startDay + 1, getDaysInMonth))
   }
 
+  /** The two daily fields held now: the day the run starts on and the day after. */
+  def current: FlowGridWrapper =
+    new FlowGridWrapper(
+      depths,
+      grids.map(grid => grid._1.toList).toList,
+      stampOf(grids.front),
+      stampOf(grids.last)
+    )
+
+  /** Moves on a day: the later field becomes the earlier, and the day after it is read. */
   def next(): FlowGridWrapper = {
     clearYesterday()
     if (isEndOfMonth && hasNext) readMonth()
     getNextFlowData()
-    new FlowGridWrapper(depths, grids.map(grid => grid._1.toList).toList)
+    current
+  }
+
+  // The time a day's field is for, read from the time axis of the data (noon, for daily means)
+  private def stampOf(
+      day: (List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)
+  ): LocalDateTime = {
+    val axis = day._1.head._2.getTimeAxis1D
+    if (axis == null) {
+      throw new IllegalStateException("The flow data has no time axis, so the time of each day's field is not known")
+    }
+    new LocalDateTime(axis.getCalendarDate(0).getMillis, DateTimeZone.UTC)
   }
 
   def hasNext: Boolean = currentFile < files.size - 1

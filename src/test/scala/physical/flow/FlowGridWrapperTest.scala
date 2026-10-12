@@ -1,5 +1,6 @@
 package physical.flow
 
+import com.github.nscala_time.time.Imports.LocalDateTime
 import locals._
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.PrivateMethodTester
@@ -12,100 +13,102 @@ class FlowGridWrapperTest
     with MockitoSugar
     with PrivateMethodTester {
   val depths = List(5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0)
+  private val earlier = new LocalDateTime(2002, 1, 5, 12, 0)
+  private val later = new LocalDateTime(2002, 1, 6, 12, 0)
   private val mockDatasets =
     mock[List[List[(Array[Array[Array[Float]]], GridCoordSystem)]]]
 
   "The flow grid wrapper" should "intialise" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     assert(flowGridWrapper != null)
   }
 
   it should "get the correct quadrant position for bicubic integration in the top left" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(TopLeft, 4)
     assert(result == (-2, -2))
   }
 
   it should "get the correct quadrant position for bicubic integration in the top right" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(TopRight, 4)
     assert(result == (-1, -2))
   }
 
   it should "get the correct quadrant position for bicubic integration in the bottom right" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(BottomRight, 4)
     assert(result == (-1, -1))
   }
 
   it should "get the correct quadrant position for bicubic integration in the bottom left" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(BottomLeft, 4)
     assert(result == (-2, -1))
   }
 
   it should "get the correct quadrant position for bilinear integration in the top left" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(TopLeft, 2)
     assert(result == (-1, -1))
   }
 
   it should "get the correct quadrant position for bilinear integration in the top right" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(TopRight, 2)
     assert(result == (0, -1))
   }
 
   it should "get the correct quadrant position for bilinear integration in the bottom right" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(BottomRight, 2)
     assert(result == (0, 0))
   }
 
   it should "get the correct quadrant position for bilinear integration in the bottom left" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(BottomLeft, 2)
     assert(result == (-1, 0))
   }
 
   it should "get the correct quadrant position for tricubic integration in the top left" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(TopLeft, 8)
     assert(result == (-4, -4))
   }
 
   it should "get the correct quadrant position for tricubic integration in the top right" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(TopRight, 8)
     assert(result == (-3, -4))
   }
 
   it should "get the correct quadrant position for tricubic integration in the bottom right" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(BottomRight, 8)
     assert(result == (-3, -3))
   }
 
   it should "get the correct quadrant position for tricubic integration in the bottom left" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val quadrantPosition = PrivateMethod[(Int, Int)](Symbol("quadrantPosition"))
     val result = flowGridWrapper invokePrivate quadrantPosition(BottomLeft, 8)
     assert(result == (-4, -3))
   }
 
   it should "get the correct neighbourhood size for tricubic integration" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val neighbourhoodSize = PrivateMethod[Int](Symbol("neighbourhoodSize"))
     val result = flowGridWrapper invokePrivate neighbourhoodSize(
       Tricubic
@@ -113,7 +116,7 @@ class FlowGridWrapperTest
     assert(result == 8)
   }
   it should "get the correct neighbourhood size for bicubic integration" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val neighbourhoodSize = PrivateMethod[Int](Symbol("neighbourhoodSize"))
     val result = flowGridWrapper invokePrivate neighbourhoodSize(
       Bicubic
@@ -122,11 +125,42 @@ class FlowGridWrapperTest
   }
 
   it should "get the correct neighbourhood size for bilinear integration" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets)
+    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     val neighbourhoodSize = PrivateMethod[Int](Symbol("neighbourhoodSize"))
     val result = flowGridWrapper invokePrivate neighbourhoodSize(
       Bilinear
     )
     assert(result == 2)
+  }
+
+  "The weight of the later field" should "be 0 at the time of the earlier field, and before it" in {
+    val wrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
+    assert(wrapper.weightOfLater(earlier) == 0.0)
+    assert(wrapper.weightOfLater(earlier.minusHours(5)) == 0.0)
+    assert(wrapper.weightOfLater(earlier.minusDays(40)) == 0.0)
+  }
+
+  it should "be 1 at the time of the later field, and after it" in {
+    val wrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
+    assert(wrapper.weightOfLater(later) == 1.0)
+    assert(wrapper.weightOfLater(later.plusHours(5)) == 1.0)
+  }
+
+  it should "grow in proportion to the time between the two fields" in {
+    val wrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
+    assert(wrapper.weightOfLater(earlier.plusHours(6)) == 0.25)
+    assert(wrapper.weightOfLater(earlier.plusHours(12)) == 0.5)
+    assert(wrapper.weightOfLater(earlier.plusHours(18)) == 0.75)
+    assert(math.abs(wrapper.weightOfLater(earlier.plusMinutes(1)) - 1.0 / 1440) < 1e-12)
+  }
+
+  it should "follow the times it is given, whatever the gap between the fields" in {
+    val threeHourly = new FlowGridWrapper(depths, mockDatasets, earlier, earlier.plusHours(3))
+    assert(threeHourly.weightOfLater(earlier.plusMinutes(45)) == 0.25)
+    assert(threeHourly.weightOfLater(earlier.plusHours(2)) == 2.0 / 3)
+  }
+
+  it should "be 0 when both fields are for the same time" in {
+    assert(new FlowGridWrapper(depths, mockDatasets, earlier, earlier).weightOfLater(earlier.plusHours(1)) == 0.0)
   }
 }
