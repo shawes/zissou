@@ -109,11 +109,20 @@ class ConfigStoreTest extends AnyFlatSpec {
     assert(!configs.validate(SampleConfig.yaml()).warnings.exists(_.contains("end immediately")))
   }
 
-  it should "warn about release intervals that are miscounted, but not 1 or 7" in {
+  it should "accept any release interval of at least a day" in {
     val (configs, _) = store()
-    assert(configs.validate(SampleConfig.yaml(interval = 5)).warnings.exists(_.contains("every 5 days")))
-    assert(!configs.validate(SampleConfig.yaml(interval = 7)).warnings.exists(_.contains("every")))
-    assert(!configs.validate(SampleConfig.yaml(interval = 1)).warnings.exists(_.contains("every")))
+    for (interval <- Seq(1, 3, 5, 7, 14)) {
+      val result = configs.validate(SampleConfig.yaml(interval = interval))
+      assert(result.ok && !result.warnings.exists(_.contains("interval")), s"interval $interval")
+    }
+  }
+
+  it should "reject a release interval that would divide by zero" in {
+    val (configs, _) = store()
+    for (interval <- Seq(0, -3)) {
+      val result = configs.validate(SampleConfig.yaml(interval = interval))
+      assert(!result.ok && result.error.exists(_.contains("must be at least 1 day")), s"interval $interval")
+    }
   }
 
   it should "warn about a site outside the supported grid" in {

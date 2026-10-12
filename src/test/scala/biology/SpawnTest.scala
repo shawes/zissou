@@ -1,6 +1,7 @@
 package biology
 
 import com.github.nscala_time.time.Imports._
+import org.joda.time.Days
 import org.scalatest.flatspec.AnyFlatSpec
 import physical.GeoCoordinate
 
@@ -43,7 +44,7 @@ class SpawnTest extends AnyFlatSpec {
     val spawn = new Spawn(spawningLocations.toList)
     val sites = spawn.getSitesWhereFishAreSpawning(date.plusDays(4).toLocalDateTime)
     assert(releasePeriod2.contains(date))
-    assert((releasePeriod1.getStart() to date.toDateTime(DateTimeZone.UTC)).toPeriod.getDays % 5 == 0)
+    assert(Days.daysBetween(releasePeriod1.getStart().toLocalDate, date.toLocalDate).getDays == 5)
     assert(sites.size == 1)
   }
 

@@ -15,8 +15,8 @@ class EndToEndTest extends AnyFlatSpec {
 
     val check = configs.validate(configs.read("smoke.yaml").get)
     assert(check.ok, check.error.toString)
-    // the generated configs do trip two known-issue warnings (interval 5, pldType Fixed),
-    // but nothing may be wrong with their files, grid or period
+    // the generated configs do trip the pldType warning, but nothing may be wrong with
+    // their files, grid or period
     val problems = check.warnings.filter(w =>
       Seq("does not exist", "sub-folder", "end immediately", "outside the supported").exists(w.contains))
     assert(problems.isEmpty, problems.toString)

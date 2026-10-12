@@ -82,7 +82,7 @@ class ConfigStore(val dir: Path, baseDir: Path) {
     new ConfigurationFile().parse(text) match {
       case Left(failure) => Validation(false, Some(describe(failure)), None, Seq.empty)
       case Right(config) =>
-        invalidDate(config) match {
+        invalidDate(config).orElse(invalidInterval(config)) match {
           case Some(problem) => Validation(false, Some(problem), None, Seq.empty)
           case None => Validation(true, None, Some(summarise(config)), warningsFor(config))
         }
@@ -122,6 +122,12 @@ class ConfigStore(val dir: Path, baseDir: Path) {
         )
     dates.collectFirst { case (where, value) if !isDate(value) => s"'$value' is not a valid date ($where)" }
   }
+
+  // the release schedule divides by the interval, so zero would crash the run
+  private def invalidInterval(config: Configuration): Option[String] =
+    config.spawn.spawningLocation.collectFirst {
+      case site if site.interval < 1 => s"The release interval of ${site.name} must be at least 1 day."
+    }
 
   private def summarise(config: Configuration): ConfigSummary =
     ConfigSummary(
@@ -168,11 +174,6 @@ class ConfigStore(val dir: Path, baseDir: Path) {
       if (s.site.latitude < south || s.site.latitude > north || s.site.longitude < west || s.site.longitude > east) {
         warnings += s"${s.name} lies outside the supported flow grid (latitude $south to $north, longitude $west to $east)."
       }
-    }
-    // release days are counted with Period.getDays, which only works out for 1 and 7
-    sites.filterNot(s => s.interval == 1 || s.interval == 7).foreach { s =>
-      warnings += s"${s.name} releases every ${s.interval} days: release days are currently miscounted " +
-        "for any interval other than 1 or 7."
     }
     if (config.larva.pelagicLarvalDuration.pldType.equalsIgnoreCase("fixed") &&
       config.larva.pelagicLarvalDuration.pldType != "fixed") {
