@@ -38,6 +38,26 @@ Zissou models connectivity patterns of marine larvae using offline hydrodynamic 
 When the particles reach land they can either be killed, remain in the current position or move with a muted velocity
 
 
+## Building and running
+
+Zissou needs a JDK (17 or later) and [sbt](https://www.scala-sbt.org/).
+
+```
+sbt assembly                       # builds target/scala-2.13/zissou.jar
+scripts/zissou.sh my-config.yaml   # runs it with suitable JVM flags
+```
+
+The launcher uses the throughput (Parallel) garbage collector, which suits a batch job, and leaves the heap at the JVM default (a quarter of the machine's memory). Give a large run more with `ZISSOU_JAVA_OPTS="-Xmx12g" scripts/zissou.sh my-config.yaml`.
+
+To try it without the original model data, generate a small synthetic dataset (flow files, a reef shapefile and ready-made configs) and run one of its configs:
+
+```
+sbt "Test/runMain tools.SyntheticDataset"
+scripts/zissou.sh data/synthetic/smoke.yaml
+```
+
+For a fixed `randomSeed` in the config, runs are reproducible: the output files are identical every time.
+
 ## Versioning
 I use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/shawes/zissou/tags).
 
