@@ -39,8 +39,8 @@ jobs:
       - name: Run the tests
         run: sbt -batch test
 
-      - name: Build the jar
-        run: sbt -batch assembly
+      - name: Stage the program
+        run: sbt -batch stage
 
       # An end-to-end check on generated data, since the original model inputs
       # are not in the repository
@@ -57,6 +57,11 @@ jobs:
           settled=$(( $(wc -l < data/synthetic/output/smoke/smoke-connectivity-matrix.csv) - 1 ))
           echo "$settled larvae settled"
           test "$settled" -ge 10
+          # the first record of the settled-larvae shapefile must be a PolyLine (3);
+          # 0 is an empty geometry, which is what a broken GeoTools setup writes
+          shape=$(od -An -t d4 -j 108 -N 4 data/synthetic/output/smoke/smoke-settled.shp | tr -d ' ')
+          echo "settled shapefile geometry type: $shape"
+          test "$shape" = "3"
 
       # With a fixed seed, repeated runs must give identical output
       - name: Check that runs are reproducible

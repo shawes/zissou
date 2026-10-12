@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-# Runs Zissou with the JVM flags that suit it:
+# Runs Zissou with the JVM flags that suit it.
 #
-#   scripts/zissou.sh path/to/config.yaml
+#   scripts/zissou.sh path/to/config.yaml     run a simulation from the command line
+#   scripts/zissou.sh ui [options]            start the local web UI (see --help)
+#
+# Build first with `sbt stage`, which lays the program out in target/universal/stage.
 #
 # Zissou is a batch job, so it uses the throughput (Parallel) collector. On the
 # bench configuration this was ~15% faster and steadier than the default G1.
@@ -10,18 +13,24 @@
 #
 #   ZISSOU_JAVA_OPTS="-Xmx12g" scripts/zissou.sh config.yaml
 #
-# JAVA_HOME is used if set, and ZISSOU_JAR overrides the jar (default: the
-# one built by `sbt assembly`).
+# JAVA_HOME is used if set, and ZISSOU_HOME overrides the staged program
+# (default: target/universal/stage).
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-jar="${ZISSOU_JAR:-$root/target/zissou.jar}"
+stage="${ZISSOU_HOME:-$root/target/universal/stage}"
 java_bin="${JAVA_HOME:+$JAVA_HOME/bin/}java"
 
-if [ ! -f "$jar" ]; then
-  echo "Cannot find $jar - build it with 'sbt assembly'" >&2
+if [ ! -d "$stage/lib" ]; then
+  echo "Cannot find $stage/lib - build it with 'sbt stage'" >&2
   exit 1
 fi
 
+main=model.Simulator
+if [ "${1:-}" = "ui" ]; then
+  main=ui.Server
+  shift
+fi
+
 # shellcheck disable=SC2086  # ZISSOU_JAVA_OPTS is meant to word-split
-exec "$java_bin" -XX:+UseParallelGC ${ZISSOU_JAVA_OPTS:-} -jar "$jar" "$@"
+exec "$java_bin" -XX:+UseParallelGC ${ZISSOU_JAVA_OPTS:-} -cp "$stage/lib/*" "$main" "$@"
