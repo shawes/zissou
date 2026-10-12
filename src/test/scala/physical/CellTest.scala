@@ -1,9 +1,10 @@
 package physical
 
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest.PrivateMethodTester
+import org.scalatest.flatspec.AnyFlatSpec
 
-class CellTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+class CellTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
 
   "A cell" should "not be null" in {
     val cell = new Cell(3,4,5)

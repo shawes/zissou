@@ -2,6 +2,7 @@ package model
 
 import java.io.File
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.parallel.CollectionConverters._
 import biology._
 import biology.fish._
 import biology.swimming._

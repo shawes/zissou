@@ -1,9 +1,10 @@
 package physical.habitat
 
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest.PrivateMethodTester
+import org.scalatest.flatspec.AnyFlatSpec
 
-class BufferTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+class BufferTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
 
   val buffer = new Buffer(5, 10)
 

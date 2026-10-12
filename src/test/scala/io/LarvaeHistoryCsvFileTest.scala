@@ -1,13 +1,14 @@
 package io
 
-import org.scalatest.Matchers._
+import org.scalatest.matchers.should.Matchers._
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest.PrivateMethodTester
+import org.scalatest.flatspec.AnyFlatSpec
 
 /**
   * Created by steve on 27/01/2016.
   */
-class LarvaeHistoryCsvFileTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+class LarvaeHistoryCsvFileTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
 
   "The larval file writer" should "initialise with nulls" in {
     val larvalHistoryCsvFile = new LarvaeHistoryCsvFile(null, null, 0)

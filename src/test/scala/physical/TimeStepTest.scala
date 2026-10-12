@@ -1,11 +1,12 @@
 package physical
 
 import locals.TimeStepType
-import org.scalatest.Matchers._
+import org.scalatest.matchers.should.Matchers._
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest.PrivateMethodTester
+import org.scalatest.flatspec.AnyFlatSpec
 
-class TimeStepTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+class TimeStepTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
 
   "The timestep" should " not initialise to null" in {
     val result = new TimeStep(1.0, TimeStepType.Hour)

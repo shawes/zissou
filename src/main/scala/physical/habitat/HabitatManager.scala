@@ -10,7 +10,7 @@ import locals.Constants.LightWeightException._
 import maths.Geometry
 import org.geotools.data.simple.SimpleFeatureCollection
 import org.geotools.data.collection.ListFeatureCollection
-import org.opengis.filter
+import org.geotools.api.filter
 import physical.GeoCoordinate
 import physical.adaptors._
 import scala.collection.mutable.ListBuffer

@@ -1,8 +1,9 @@
 package main
 
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest.PrivateMethodTester
+import org.scalatest.flatspec.AnyFlatSpec
 
-class LarvaeDisperserTest extends FlatSpec with PrivateMethodTester {
+class LarvaeDisperserTest extends AnyFlatSpec with PrivateMethodTester {
 
 
   /*  val context = JAXBContext.newInstance(classOf[Configuration])

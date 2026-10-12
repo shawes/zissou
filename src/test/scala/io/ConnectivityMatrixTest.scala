@@ -1,10 +1,11 @@
 package io
 
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest.PrivateMethodTester
+import org.scalatest.flatspec.AnyFlatSpec
 
 class ConnectivityMatrixTest
-    extends FlatSpec
+    extends AnyFlatSpec
     with MockitoSugar
     with PrivateMethodTester {
 

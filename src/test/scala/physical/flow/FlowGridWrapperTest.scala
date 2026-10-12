@@ -2,12 +2,13 @@ package physical.flow
 
 import locals._
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest.PrivateMethodTester
+import org.scalatest.flatspec.AnyFlatSpec
 import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.GeoGrid
 
 class FlowGridWrapperTest
-    extends FlatSpec
+    extends AnyFlatSpec
     with MockitoSugar
     with PrivateMethodTester {
   val depths = List(5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0)

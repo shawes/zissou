@@ -2,7 +2,7 @@ package physical.habitat
 
 import org.locationtech.jts.geom.{Geometry, MultiPolygon}
 import locals.{Constants, HabitatType, Reef, Other, RockyIntertidal, Ocean}
-import org.opengis.feature.simple.SimpleFeature
+import org.geotools.api.feature.simple.SimpleFeature
 
 object SimpleFeatureAdaptor {
   def getGeometry(sf: SimpleFeature) : Geometry = sf.getAttribute(Constants.ShapeAttribute.Geometry._1).asInstanceOf[Geometry]

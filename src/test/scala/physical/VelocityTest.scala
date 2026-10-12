@@ -1,8 +1,8 @@
 package physical
 
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 
-class VelocityTest extends FlatSpec {
+class VelocityTest extends AnyFlatSpec {
 
   "The constructor" should "default width to zero if not passed as parameter" in {
     val velocity = new Velocity(1, 2)

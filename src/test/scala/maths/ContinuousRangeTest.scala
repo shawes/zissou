@@ -1,9 +1,10 @@
 package maths
 
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest.PrivateMethodTester
+import org.scalatest.flatspec.AnyFlatSpec
 
-class ContinuousRangeTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+class ContinuousRangeTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
 
   val start = 1.0
   val end = 10.0

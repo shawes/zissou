@@ -6,11 +6,12 @@ import java.util
 import biology.{Larva, TimeCapsule}
 import org.locationtech.jts.geom.{Coordinate, LineString}
 import maths.RandomNumberGenerator
+import org.geotools.api.data._
 import org.geotools.data._
 import grizzled.slf4j.Logging
 import org.geotools.data.simple._
 import org.geotools.data.collection._
-import org.opengis.feature.simple._
+import org.geotools.api.feature.simple._
 import org.geotools.feature.simple._
 import org.geotools.data.shapefile._
 import org.locationtech.jts.{geom => jts}

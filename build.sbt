@@ -2,14 +2,17 @@ name := "zissou"
 
 version := "2.1"
 
-scalaVersion := "2.12.8"
+scalaVersion := "2.13.18"
 
-assemblyJarName in assembly := "zissou.jar"
+assembly / assemblyJarName := "zissou.jar"
 
-test in assembly := {}
+assembly / test := {}
 
-assemblyMergeStrategy in assembly := {
+assembly / assemblyMergeStrategy := {
   case PathList("uom-se", xs @ _*) => MergeStrategy.discard
+  case PathList("META-INF", xs @ _*)
+      if xs.lastOption.exists(f => Seq(".sf", ".dsa", ".rsa").exists(f.toLowerCase.endsWith)) =>
+    MergeStrategy.discard
   case PathList("META-INF", xs @ _*) =>
     (xs map { _.toLowerCase }) match {
       case ("manifest.mf" :: Nil) | ("index.list" :: Nil) |
@@ -21,50 +24,39 @@ assemblyMergeStrategy in assembly := {
   case x => MergeStrategy.first
 }
 
-//logLevel in assembly := Level.Debug
-
 scalacOptions ++= Seq(
   "-deprecation",
   "-feature",
   "-language:implicitConversions"
 )
 
-parallelExecution in Test := false
+Test / parallelExecution := false
+
+val geotoolsVersion = "35.1"
+val netcdfVersion = "5.11.0"
 
 libraryDependencies ++= Seq(
-  "org.scalactic" %% "scalactic" % "3.0.7",
-  "org.scalatest" %% "scalatest" % "3.0.7" % "test",
-  "junit" % "junit" % "4.12" % "test",
-  "org.mockito" % "mockito-core" % "2.28.2" % "test",
-  "com.github.nscala-time" %% "nscala-time" % "2.22.0",
+  "org.scalatest" %% "scalatest" % "3.2.20" % Test,
+  "junit" % "junit" % "4.13.2" % Test,
+  "org.scalatestplus" %% "mockito-5-23" % "3.2.20.0" % Test,
+  "com.github.nscala-time" %% "nscala-time" % "3.2.0",
   "org.apache.commons" % "commons-math3" % "3.6.1",
-  "org.clapper" %% "grizzled-slf4j" % "1.3.1",
-  "org.slf4j" % "slf4j-api" % "1.7.25",
-  "org.slf4j" % "slf4j-simple" % "1.7.25",
-  //"org.slf4j" % "slf4j-jdk14" % "latest.integration",
-  "edu.ucar" % "netcdf4" % "4.6.10",
-  "edu.ucar" % "cdm" % "4.6.10",
-  //"edu.ucar" % "opendap" % "latest.integration",
-  //"org.scala-lang" % "scala-library" % "2.12.3",
-  "org.geotools" % "gt-shapefile" % "21.1",
-  "org.geotools" % "gt-main" % "21.1",
-  "javax.media" % "jai_core" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
-  "javax.media" % "jai_codec" % "1.1.3" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_codec/1.1.3/jai_codec-1.1.3.jar",
-  "javax.media" % "jai_imageio" % "1.1" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_imageio/1.1/jai_imageio-1.1.jar",
+  "org.clapper" %% "grizzled-slf4j" % "1.3.4",
+  "org.slf4j" % "slf4j-api" % "2.0.17",
+  "org.slf4j" % "slf4j-simple" % "2.0.17",
+  "org.scala-lang.modules" %% "scala-xml" % "2.5.0",
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.2.0",
+  "edu.ucar" % "cdm-core" % netcdfVersion,
+  "org.geotools" % "gt-shapefile" % geotoolsVersion,
+  "org.geotools" % "gt-main" % geotoolsVersion,
+  "org.geotools" % "gt-referencing" % geotoolsVersion,
   "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
-  "org.scala-debugger" %% "scala-debugger-api" % "1.1.0-M3",
-  "io.circe" %% "circe-yaml" % "0.10.0",
-  "io.circe" %% "circe-generic" % "0.11.1",
-  "io.circe" %% "circe-core" % "0.11.1"
+  "io.circe" %% "circe-yaml" % "0.16.1",
+  "io.circe" %% "circe-generic" % "0.14.17",
+  "io.circe" %% "circe-core" % "0.14.17"
 )
 
 resolvers ++= Seq(
-  Resolver.sonatypeRepo("public"),
-  "Locationtech-releases" at "https://repo.locationtech.org/content/groups/releases",
-  "OpenGeo Maven Repository" at "http://repo.boundlessgeo.com/main/",
-  "Unidata Releases" at "https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases",
-  "Artima Maven Repository" at "http://repo.artima.com/releases",
-  "geosolutions" at "http://maven.geo-solutions.it/",
-  "osgeo" at "http://download.osgeo.org/webdav/geotools/",
-  "maven" at "http://central.maven.org/maven2/"
+  "OSGeo" at "https://repo.osgeo.org/repository/release/",
+  "Unidata" at "https://artifacts.unidata.ucar.edu/repository/unidata-releases/"
 )

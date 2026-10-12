@@ -1,12 +1,12 @@
 package biology
 
 import com.github.nscala_time.time.Imports._
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 import physical.GeoCoordinate
 
 import scala.collection.mutable._
 
-class SpawnTest extends FlatSpec {
+class SpawnTest extends AnyFlatSpec {
 
   val spawningLocations = new ListBuffer[SpawningLocation]
   val date = DateTime.now.minusHours(DateTime.now.getHourOfDay)

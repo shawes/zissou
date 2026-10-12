@@ -1,9 +1,10 @@
 package physical
 
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.{FlatSpec, PrivateMethodTester}
+import org.scalatest.PrivateMethodTester
+import org.scalatest.flatspec.AnyFlatSpec
 
-class GeoCoordinateTest extends FlatSpec with MockitoSugar with PrivateMethodTester {
+class GeoCoordinateTest extends AnyFlatSpec with MockitoSugar with PrivateMethodTester {
 
   "A geocoordinate" should "not be null" in {
     val coordinate = new GeoCoordinate(1,2,3)
