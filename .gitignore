@@ -93,3 +93,4 @@ project/project/
 
 # Generated synthetic dataset (see src/test/scala/tools/SyntheticDataset.scala)
 data/
+runs/

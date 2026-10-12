@@ -43,13 +43,35 @@ When the particles reach land they can either be killed, remain in the current p
 Zissou needs a JDK (17 or later) and [sbt](https://www.scala-sbt.org/).
 
 ```
-sbt assembly                       # builds target/zissou.jar
-scripts/zissou.sh my-config.yaml   # runs it with suitable JVM flags
+sbt stage                          # lays the program out in target/universal/stage
+scripts/zissou.sh my-config.yaml   # runs one simulation from the command line
+scripts/zissou.sh ui               # starts the web interface
 ```
+
+There is no single "fat" jar: the program is a folder of jars (`target/universal/stage/lib`) that the scripts put on the classpath. Merging everything into one jar broke GeoTools, which finds its plug-ins through `META-INF/services` files that the merge discards, so the shapefiles it wrote held empty geometries.
 
 The launcher uses the throughput (Parallel) garbage collector, which suits a batch job, and leaves the heap at the JVM default (a quarter of the machine's memory). Give a large run more with `ZISSOU_JAVA_OPTS="-Xmx12g" scripts/zissou.sh my-config.yaml`.
 
-To try it without the original model data, generate a small synthetic dataset (flow files, a reef shapefile and ready-made configs) and run one of its configs:
+### The web interface
+
+`scripts/zissou.sh ui` serves a page at <http://127.0.0.1:8787/> where you can:
+
+- pick a configuration, edit it, and see straight away whether it is valid, what it will release and where, and anything that looks wrong (missing input files, a flow period that would end the run at once, a site outside the supported grid)
+- start a run and watch it: the day it has reached, the larvae in the water, and the log as it is written
+- cancel a run, and keep a history of runs, each with its own folder holding the exact configuration, the log and the results
+- look at what a finished run produced (settlement by release site, the connectivity matrix, how far larvae travelled) and download its files
+
+Each run is a separate process, so a failure or running out of memory in a simulation cannot take the page down. One run goes at a time.
+
+```
+scripts/zissou.sh ui --port 8787 --configs data/synthetic --runs runs
+```
+
+Run it from the folder the configurations' relative paths refer to (the repository folder, for the bundled examples). By default it listens on this machine only. `--host 0.0.0.0` makes it reachable from other machines, for example to drive a Mac mini from a laptop, but **there is no login**: anyone who can reach the port can start runs and write configuration files, so only do that on a network you trust. Requests that do not come from the page itself (another website, an unexpected `Host`) are refused.
+
+### Trying it without the original data
+
+Generate a small synthetic dataset (flow files, a reef shapefile and ready-made configurations) and run one of its configurations:
 
 ```
 sbt "Test/runMain tools.SyntheticDataset"

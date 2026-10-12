@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zissou</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">Zissou</span><span class="brand-sub">larval dispersal</span></div>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+  </header>
+  <div id="offline" class="offline" hidden>Lost contact with the Zissou server. Retrying&hellip;</div>
+  <div class="layout">
+    <aside class="sidebar">
+      <section>
+        <h2>Configurations</h2>
+        <ul id="configs" class="list"></ul>
+      </section>
+      <section>
+        <h2>Runs</h2>
+        <ul id="runs" class="list"></ul>
+      </section>
+    </aside>
+    <main id="main" class="main"></main>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

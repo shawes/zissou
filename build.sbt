@@ -4,26 +4,11 @@ version := "2.1"
 
 scalaVersion := "3.10.0"
 
-// a fixed location, so scripts do not depend on the Scala version
-assembly / assemblyOutputPath := baseDirectory.value / "target" / "zissou.jar"
+enablePlugins(JavaAppPackaging)
 
-assembly / test := {}
-
-assembly / assemblyMergeStrategy := {
-  case PathList("uom-se", xs @ _*) => MergeStrategy.discard
-  case PathList("META-INF", xs @ _*)
-      if xs.lastOption.exists(f => Seq(".sf", ".dsa", ".rsa").exists(f.toLowerCase.endsWith)) =>
-    MergeStrategy.discard
-  case PathList("META-INF", xs @ _*) =>
-    (xs map { _.toLowerCase }) match {
-      case ("manifest.mf" :: Nil) | ("index.list" :: Nil) |
-          ("dependencies" :: Nil) =>
-        MergeStrategy.discard
-      case _ => MergeStrategy.last
-    }
-
-  case x => MergeStrategy.first
-}
+// `sbt stage` lays the program out as target/universal/stage/lib/*.jar, which the
+// scripts in scripts/ run directly; there is no fat jar
+Compile / mainClass := Some("model.Simulator")
 
 scalacOptions ++= Seq(
   "-deprecation",
@@ -32,6 +17,10 @@ scalacOptions ++= Seq(
 )
 
 Test / parallelExecution := false
+
+// the web interface starts the simulator in a second JVM, which needs the project's
+// classpath; a forked test JVM has it, sbt's own does not
+Test / fork := true
 
 val geotoolsVersion = "35.1"
 val netcdfVersion = "5.11.0"
