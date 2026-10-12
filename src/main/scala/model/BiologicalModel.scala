@@ -121,10 +121,13 @@ class BiologicalModel(
       larva: Larva,
       recentlyDeveloped: Boolean
   ): Unit = {
-    if (clock.isSunRising(larva.position)) {
-      larva.dielMigrate(Day)
-    } else if (clock.isSunSetting(larva.position)) {
-      larva.dielMigrate(Night)
+    // Diel migration only reacts to dawn and dusk, so skip the sun maths without it
+    if (larva.diel.isDefined) {
+      clock.sunEvent(larva.position) match {
+        case Some(Sun.Rising)  => larva.dielMigrate(Day)
+        case Some(Sun.Setting) => larva.dielMigrate(Night)
+        case None              =>
+      }
     }
     larva.ovmMigrate(
       new OntogeneticMigrationVariables(recentlyDeveloped, clock.isMidnight)

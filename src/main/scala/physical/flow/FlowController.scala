@@ -11,6 +11,7 @@ import physical.{GeoCoordinate, Velocity}
 class FlowController(val reader: FlowFileIterator, var flow: Flow)
     extends Logging {
 
+  private val interpolation = new Interpolation()
   private var hydrodynamicFlow = reader.next
   flow.dimensions = reader.flow.dimensions
 
@@ -65,7 +66,6 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow)
       day: InterpolationTime
   ): Option[Velocity] = {
     val index = hydrodynamicFlow.getIndex(coordinate, day)
-    val interpolation = new Interpolation()
     interpolation(coordinate, hydrodynamicFlow, index)
   }
 

@@ -29,31 +29,41 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Loggin
   def isMidnight: Boolean = now.getHourOfDay == 0
 
   def isSunSetting(location : GeoCoordinate) : Boolean = {
-    isSunSettingOrRising(location, Sun.Setting)
+    new SunTimes(location).isNear(Sun.Setting)
   }
 
   def isSunRising(location : GeoCoordinate) : Boolean = {
-    isSunSettingOrRising(location, Sun.Rising)
+    new SunTimes(location).isNear(Sun.Rising)
   }
 
-  private def isSunSettingOrRising(location : GeoCoordinate, sun : Sun) : Boolean = {
-    val timezone = getTimeZone(location)
-    val sunriseSunsetCalculator = new SunriseSunsetCalculator(new Location(location.latitude, location.longitude), timezone.toTimeZone)
+  /** Which sun event, if any, the location is near, sharing one calculator for both checks. */
+  def sunEvent(location : GeoCoordinate) : Option[Sun] = {
+    val sunTimes = new SunTimes(location)
+    if (sunTimes.isNear(Sun.Rising)) Some(Sun.Rising)
+    else if (sunTimes.isNear(Sun.Setting)) Some(Sun.Setting)
+    else None
+  }
 
-    val nowDateTime : DateTime = now.toDateTime(timezone)
+  // Building the calculator is the expensive part, so it is made once per location
+  private class SunTimes(location : GeoCoordinate) {
+    private val timezone = getTimeZone(location)
+    private val calculator = new SunriseSunsetCalculator(new Location(location.latitude, location.longitude), timezone.toTimeZone)
+    private val nowDateTime : DateTime = now.toDateTime(timezone)
 
-    val sunsetOrSunrise = sun match {
-      case Sun.Setting => new DateTime(sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(
-      nowDateTime.toCalendar(Locale.getDefault())))
-      case Sun.Rising => new DateTime(sunriseSunsetCalculator.getOfficialSunriseCalendarForDate(nowDateTime.toCalendar(Locale.getDefault())))
+    def isNear(sun : Sun) : Boolean = {
+      val sunsetOrSunrise = sun match {
+        case Sun.Setting => new DateTime(calculator.getOfficialSunsetCalendarForDate(
+        nowDateTime.toCalendar(Locale.getDefault())))
+        case Sun.Rising => new DateTime(calculator.getOfficialSunriseCalendarForDate(nowDateTime.toCalendar(Locale.getDefault())))
+      }
+
+      val timeToSunsetOrSunrise = nowDateTime.isBefore(sunsetOrSunrise) match {
+        case true => (nowDateTime to sunsetOrSunrise).toPeriod.getSeconds()
+        case false => (sunsetOrSunrise to nowDateTime).toPeriod.getSeconds()
+      }
+
+      timeToSunsetOrSunrise <= Constants.DuskOrDawn || timeToSunsetOrSunrise < timeStep.totalSeconds
     }
-
-    val timeToSunsetOrSunrise = nowDateTime.isBefore(sunsetOrSunrise) match {
-      case true => (nowDateTime to sunsetOrSunrise).toPeriod.getSeconds()
-      case false => (sunsetOrSunrise to nowDateTime).toPeriod.getSeconds()
-    }
-
-    timeToSunsetOrSunrise <= Constants.DuskOrDawn || timeToSunsetOrSunrise < timeStep.totalSeconds
   }
 
   def getTimeZone(location : GeoCoordinate) : DateTimeZone = {

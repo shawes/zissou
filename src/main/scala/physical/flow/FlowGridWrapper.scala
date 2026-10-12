@@ -20,15 +20,17 @@ class FlowGridWrapper(
     getVelocity(gridIndex)
   }
 
+  // The u, v and w grids for today and tomorrow, read straight from the arrays
+  private lazy val today = data.head.map(_._1).toArray
+  private lazy val tomorrow = data.last.map(_._1).toArray
+  private lazy val depthArray = depths.toArray
+
   def getVelocity(index: (Int, Int, Int, Boolean)): Option[Velocity] = {
-    val buildVelocity = index._4 match {
-      case true  => data.head.map(datasets => readData(datasets._1, index))
-      case false => data.last.map(datasets => readData(datasets._1, index))
-    }
+    val components = if (index._4) today else tomorrow
     val velocity = new Velocity(
-      buildVelocity.head.toDouble,
-      buildVelocity(1).toDouble,
-      buildVelocity(2).toDouble
+      readData(components(0), index).toDouble,
+      readData(components(1), index).toDouble,
+      readData(components(2), index).toDouble
     )
     if (velocity.isDefined) Some(velocity) else None
   }
@@ -40,8 +42,20 @@ class FlowGridWrapper(
     dataset(index._3)(index._2)(index._1)
   }
 
+  // The nearest depth level; a tie goes to the shallower level
   private def closestDepthIndex(depth: Double): Int = {
-    depths.map(v => math.abs(v - depth)).zipWithIndex.min._2
+    var closest = 0
+    var closestDistance = math.abs(depthArray(0) - depth)
+    var i = 1
+    while (i < depthArray.length) {
+      val distance = math.abs(depthArray(i) - depth)
+      if (distance < closestDistance) {
+        closest = i
+        closestDistance = distance
+      }
+      i += 1
+    }
+    closest
   }
 
   def getCentroid(index: (Int, Int, Int, Boolean)): GeoCoordinate = {
