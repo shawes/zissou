@@ -57,10 +57,10 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Loggin
         case Sun.Rising => new DateTime(calculator.getOfficialSunriseCalendarForDate(nowDateTime.toCalendar(Locale.getDefault())))
       }
 
-      val timeToSunsetOrSunrise = nowDateTime.isBefore(sunsetOrSunrise) match {
-        case true => (nowDateTime to sunsetOrSunrise).toPeriod.getSeconds()
-        case false => (sunsetOrSunrise to nowDateTime).toPeriod.getSeconds()
-      }
+      // The whole number of seconds between now and the event. Period.getSeconds
+      // is only the 0-59 seconds field, which made every time look like dawn.
+      val timeToSunsetOrSunrise =
+        math.abs((sunsetOrSunrise.getMillis - nowDateTime.getMillis) / 1000)
 
       timeToSunsetOrSunrise <= Constants.DuskOrDawn || timeToSunsetOrSunrise < timeStep.totalSeconds
     }
