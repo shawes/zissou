@@ -75,7 +75,7 @@ const state = {
   running: false,
   selected: null, // { type: 'config', name } or { type: 'run', id }
   editor: { name: null, text: '', saved: '', validation: null, message: null, timer: null, refs: {} },
-  run: { id: null, detail: null, results: null, logOffset: 0, refs: {} },
+  run: { id: null, detail: null, results: null, map: undefined, mapOptions: { settled: true, sampled: false }, logOffset: 0, refs: {} },
 };
 
 // ---- sidebar --------------------------------------------------------------
@@ -245,7 +245,7 @@ async function selectRun(id, force = false) {
   if (!force && state.selected?.type === 'run' && state.selected.id === id) return;
   if (state.selected?.type === 'config' && isDirty() && !confirm('Discard your unsaved changes?')) return;
   state.selected = { type: 'run', id };
-  state.run = { id, detail: null, results: null, logOffset: 0, refs: {} };
+  state.run = { id, detail: null, results: null, map: undefined, mapOptions: { settled: true, sampled: false }, logOffset: 0, refs: {} };
   renderSidebar();
   buildRunPanel();
   await refreshRun();
@@ -262,8 +262,9 @@ function buildRunPanel() {
   refs.metrics = h('div', { class: 'metrics' });
   refs.chart = h('div', { class: 'card' });
   refs.results = h('div');
+  refs.mapCard = h('div', { class: 'card', hidden: true });
   refs.log = h('pre', { class: 'log', tabindex: '0', 'aria-label': 'Run log' });
-  clear($('#main'), refs.head, refs.progress, refs.metrics, refs.chart, refs.results,
+  clear($('#main'), refs.head, refs.progress, refs.metrics, refs.chart, refs.mapCard, refs.results,
     h('div', { class: 'card' }, h('h3', {}, 'Log'), refs.log));
 }
 
@@ -284,6 +285,12 @@ async function refreshRun() {
     state.run.logOffset = log.next;
     if (detail.run.status === 'succeeded' && !state.run.results) {
       state.run.results = await api('GET', `/api/runs/${id}/results`).catch(() => null);
+    }
+    if (detail.run.status === 'succeeded' && state.run.map === undefined) {
+      state.run.map = 'loading';
+      api('GET', `/api/runs/${id}/map?tracks=400`)
+        .then((map) => { if (id === state.run.id) { state.run.map = map; renderRun(); } })
+        .catch(() => { if (id === state.run.id) { state.run.map = null; renderRun(); } });
     }
     renderRun();
   } catch (e) { /* the connection banner covers this */ }
@@ -330,7 +337,87 @@ function renderRun() {
 
   redraw(refs.chart, detail.log.days.length, () => clear(refs.chart, h('h3', {}, 'Larvae in the water'),
     detail.log.days.length > 1 ? lineChart(detail.log.days) : h('p', { class: 'hint' }, 'Waiting for the first days to complete…')));
+  renderMap();
   redraw(refs.results, results ? results.settled + ':' + results.files.length : '', () => clear(refs.results, results ? resultsView(results) : null));
+}
+
+// ---- map --------------------------------------------------------------------
+
+function renderMap() {
+  const { refs, map, mapOptions, detail } = state.run;
+  const wanted = detail.run.status === 'succeeded' && map !== undefined && map !== null;
+  refs.mapCard.hidden = !wanted;
+  if (!wanted) return;
+  if (!refs.mapHost) {
+    refs.mapHost = h('div');
+    refs.mapControls = h('div', { class: 'map-controls' });
+    refs.mapLegend = h('div', { class: 'legend' });
+    clear(refs.mapCard, h('h3', {}, 'Where larvae went'), refs.mapControls, refs.mapHost, refs.mapLegend);
+  }
+  redraw(refs.mapControls, map === 'loading' ? 'loading' : [map.settled.total, map.sampled.total], () => {
+    if (map === 'loading') return clear(refs.mapControls, h('span', { class: 'hint' }, 'Loading the map…'));
+    const option = (key, label, set) => h('label', {},
+      h('input', { type: 'checkbox', checked: mapOptions[key] ? true : null, disabled: set.total === 0 ? true : null,
+        onchange: (event) => { mapOptions[key] = event.target.checked; drawMap(); } }),
+      `${label} (${set.tracks.length === set.total ? set.total : `${set.tracks.length} of ${set.total}`})`);
+    clear(refs.mapControls, option('settled', 'Larvae that settled', map.settled), option('sampled', 'A sample of all larvae', map.sampled));
+  });
+  if (map !== 'loading') redraw(refs.mapHost, 'drawn', drawMap);
+}
+
+function drawMap() {
+  const { refs, map, mapOptions } = state.run;
+  if (!refs.mapHost || !map || map === 'loading') return;
+  clear(refs.mapHost,
+    ...map.notes.map((n) => h('div', { class: 'notice warn' }, n)),
+    mapSvg(map, mapOptions));
+  clear(refs.mapLegend, map.sites.map((site, i) => h('span', {},
+    h('span', { class: 'swatch', style: `background: var(--c${i % 8})` }), site.name.includes(String(site.patch)) ? site.name : `${site.name} (patch ${site.patch})`)));
+}
+
+function niceStep(span) {
+  const steps = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20];
+  return steps.find((s) => s >= span / 5) || 20;
+}
+
+function mapSvg(map, options) {
+  const [west, south, east, north] = map.bounds;
+  const k = Math.cos((((south + north) / 2) * Math.PI) / 180);
+  const pixelsPerDegree = Math.min(900 / (east - west), 1100 / ((north - south) / k));
+  const width = (east - west) * pixelsPerDegree;
+  const height = ((north - south) / k) * pixelsPerDegree;
+  const x = (lon) => ((lon - west) * pixelsPerDegree).toFixed(1);
+  const y = (lat) => (((north - lat) / k) * pixelsPerDegree).toFixed(1);
+  const path = (points) => points.map((p, i) => `${i ? 'L' : 'M'}${x(p[0])},${y(p[1])}`).join('');
+
+  const grid = [];
+  const lonStep = niceStep(east - west), latStep = niceStep(north - south);
+  for (let lon = Math.ceil(west / lonStep) * lonStep; lon < east; lon += lonStep) {
+    grid.push(svg('line', { class: 'grid', x1: x(lon), y1: 0, x2: x(lon), y2: height }), textNode(Number(x(lon)) + 4, height - 6, `${lon.toFixed(2)}°`, 'start'));
+  }
+  for (let lat = Math.ceil(south / latStep) * latStep; lat < north; lat += latStep) {
+    grid.push(svg('line', { class: 'grid', x1: 0, y1: y(lat), x2: width, y2: y(lat) }), textNode(4, Number(y(lat)) - 4, `${lat.toFixed(2)}°`, 'start'));
+  }
+
+  const reefs = map.reefs.flatMap((reef) => {
+    const outline = svg('path', { class: `reef ${reef.habitat === 'Reef' ? '' : 'other'}`, d: reef.rings.map((ring) => path(ring) + 'Z').join('') },
+      svg('title', {}, document.createTextNode(`Patch ${reef.patch}${reef.habitat ? ` (${reef.habitat})` : ''}`)));
+    const points = reef.rings[0];
+    const centre = [(Math.min(...points.map((p) => p[0])) + Math.max(...points.map((p) => p[0]))) / 2, Math.min(...points.map((p) => p[1]))];
+    return [outline, textNode(Number(x(centre[0])), Number(y(centre[1])) + 13, String(reef.patch), 'middle')];
+  });
+
+  const tracks = (set, extra) => set.tracks.map((t) =>
+    svg('path', { class: `track ${extra}`, d: path(t.points), style: `stroke: var(--c${t.site < 0 ? 7 : t.site % 8})` }));
+
+  const sites = map.sites.flatMap((site, i) => [
+    svg('circle', { class: 'site', cx: x(site.longitude), cy: y(site.latitude), r: 5, style: `fill: var(--c${i % 8})` },
+      svg('title', {}, document.createTextNode(`${site.name}, patch ${site.patch}`))),
+    (() => { const label = textNode(Number(x(site.longitude)) + 9, Number(y(site.latitude)) + 4, site.name, 'start'); label.setAttribute('class', 'site-label'); return label; })(),
+  ]);
+
+  return svg('svg', { class: 'map', viewBox: `0 0 ${width.toFixed(0)} ${height.toFixed(0)}`, role: 'img', 'aria-label': 'Map of the reefs, release sites and larva paths' },
+    ...grid, ...reefs, ...(options.sampled ? tracks(map.sampled, 'sampled') : []), ...(options.settled ? tracks(map.settled, '') : []), ...sites);
 }
 
 const metric = (value, label) => h('div', { class: 'metric' }, h('div', { class: 'value' }, value), h('div', { class: 'label' }, label));
@@ -419,7 +506,7 @@ async function deleteRun() {
   try {
     await api('DELETE', `/api/runs/${state.run.id}`);
     state.selected = null;
-    state.run = { id: null, detail: null, results: null, logOffset: 0, refs: {} };
+    state.run = { id: null, detail: null, results: null, map: undefined, mapOptions: { settled: true, sampled: false }, logOffset: 0, refs: {} };
     await refreshRuns();
     if (state.configs.length) { state.editor.name = null; selectConfig(state.configs[0].name); } else showWelcome();
   } catch (e) { alert(e.message); }

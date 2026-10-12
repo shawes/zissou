@@ -60,6 +60,7 @@ The launcher uses the throughput (Parallel) garbage collector, which suits a bat
 - start a run and watch it: the day it has reached, the larvae in the water, and the log as it is written
 - cancel a run, and keep a history of runs, each with its own folder holding the exact configuration, the log and the results
 - look at what a finished run produced (settlement by release site, the connectivity matrix, how far larvae travelled) and download its files
+- see a map of it: the reefs, the release sites, and the paths of the larvae that settled (and, optionally, a sample of all larvae), each coloured by the site it came from. To keep the page quick, a few hundred paths are drawn, thinned and simplified; the heading says how many there really were
 
 Each run is a separate process, so a failure or running out of memory in a simulation cannot take the page down. One run goes at a time.
 

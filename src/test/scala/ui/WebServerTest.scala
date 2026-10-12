@@ -126,6 +126,17 @@ class WebServerTest extends AnyFlatSpec with BeforeAndAfterAll {
     assert(Files.readString(base.resolve("runs").resolve(id).resolve("source.yaml")).contains("end: 2002-01-25"))
   }
 
+  it should "serve a map for a finished run, and 404 for an unknown one" in {
+    val id = runAndWait("c.yaml")
+    val response = get(s"/api/runs/$id/map?tracks=abc")
+    assert(response.statusCode() == 200, response.body())
+    val body = parse(response)
+    assert(body.hcursor.downField("sites").values.exists(_.size == 1))
+    assert(body.hcursor.downField("notes").values.exists(_.nonEmpty), "the fake run wrote no habitat shapefile, which it says")
+    assert(get(s"/api/runs/$id/map?tracks=-5").statusCode() == 200 && get(s"/api/runs/$id/map?tracks=999999").statusCode() == 200)
+    assert(get("/api/runs/20000101-000000-none/map").statusCode() == 404)
+  }
+
   it should "serve result files, and only result files" in {
     val id = runAndWait("c.yaml")
     assert(get(s"/api/runs/$id/files/x-connectivity-matrix.csv").body().startsWith("id,born"))

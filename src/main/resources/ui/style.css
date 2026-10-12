@@ -13,6 +13,7 @@
   --bad-bg: #fdecea;
   --code-bg: #f1f3f6;
   --radius: 8px;
+  --c0: #1d6fb8; --c1: #d9730d; --c2: #2f9e6a; --c3: #c0392b; --c4: #8e5bd6; --c5: #a67c00; --c6: #0f9fb0; --c7: #d6568b;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
@@ -30,6 +31,7 @@
     --bad: #ff7b72;
     --bad-bg: #2d1917;
     --code-bg: #141a22;
+    --c0: #5aa9f0; --c1: #f09a42; --c2: #4cc38a; --c3: #ff7b72; --c4: #b794f6; --c5: #e0b84a; --c6: #3fc7d6; --c7: #f27fb0;
   }
 }
 * { box-sizing: border-box; }
@@ -148,3 +150,17 @@ pre.log {
 .hint { color: var(--muted); font-size: 13px; }
 .welcome { max-width: 560px; margin: 8vh auto; text-align: center; color: var(--muted); }
 .welcome h1 { color: var(--ink); margin-bottom: 8px; }
+
+.map { width: 100%; height: auto; max-height: 82vh; display: block; background: var(--code-bg); border-radius: var(--radius); }
+.map .grid { stroke: var(--line); stroke-width: 1; }
+.map .reef { fill: color-mix(in srgb, var(--accent) 20%, transparent); stroke: var(--accent); stroke-width: 1; fill-rule: evenodd; }
+.map .reef.other { fill: color-mix(in srgb, var(--muted) 18%, transparent); stroke: var(--muted); }
+.map .track { fill: none; stroke-width: 1.1; stroke-linejoin: round; stroke-linecap: round; opacity: .55; }
+.map .track.sampled { opacity: .28; stroke-width: .9; }
+.map .site { stroke: var(--panel); stroke-width: 2; }
+.map text { fill: var(--muted); font-size: 11px; paint-order: stroke; stroke: var(--code-bg); stroke-width: 3px; stroke-linejoin: round; }
+.map text.site-label { fill: var(--ink); font-weight: 600; font-size: 12px; }
+.map-controls { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; margin-bottom: 10px; }
+.map-controls label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 13px; }
+.legend .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }

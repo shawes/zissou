@@ -32,6 +32,17 @@ class EndToEndTest extends AnyFlatSpec {
     assert(results.kernel.exists(_.count == results.settled))
     assert(runs.detail(started.id).get.log.finished)
 
+    // and the map is drawable from what was written: reefs, sites, and paths that start at a release site
+    val map = runs.map(started.id, 400).get
+    assert(map.notes.isEmpty, map.notes.toString)
+    assert(map.reefs.size == 8 && map.sites.size == 3)
+    assert(map.settled.total == results.settled && map.settled.tracks.nonEmpty)
+    assert(map.settled.tracks.forall(t => t.points.size >= 2 && t.points.forall(p => p(0) >= map.bounds(0) && p(0) <= map.bounds(2) && p(1) >= map.bounds(1) && p(1) <= map.bounds(3))))
+    assert(map.settled.tracks.forall { t =>
+      val site = map.sites(t.site)
+      math.abs(t.points.head(0) - site.longitude) < 0.02 && math.abs(t.points.head(1) - site.latitude) < 0.02
+    }, "every path should start at the release site it was assigned to")
+
     // The settled-larvae shapefile must hold real lines. GeoTools writes an empty
     // geometry (type 0) when its plug-in files are missing, as they were in a fat jar.
     val shapefile = ResultsReader.outputDir(runs.dirOf(started.id).get).get.resolve("smoke-settled.shp")

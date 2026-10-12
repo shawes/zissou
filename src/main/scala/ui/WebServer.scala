@@ -125,6 +125,9 @@ class WebServer(host: String, port: Int, configs: ConfigStore, runs: RunManager)
         if (runs.cancel(id)) json(200, Json.obj("cancelling" -> id.asJson)) else error(409, "That run is not in progress.")
       case ("GET", List("api", "runs", id, "results")) =>
         orNotFound(runs.results(id))(r => json(200, r.asJson))
+      case ("GET", List("api", "runs", id, "map")) =>
+        val limit = request.query.get("tracks").flatMap(_.toIntOption).getOrElse(400).max(1).min(2000)
+        orNotFound(runs.map(id, limit))(m => json(200, m.asJson))
       case ("GET", List("api", "runs", id, "files", name)) => download(id, name)
       case _ => error(404, "Not found.")
     }
