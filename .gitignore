@@ -90,3 +90,6 @@ project/project/
 
 # Classpath for Scalac
 .classpath
+
+# Generated synthetic dataset (see src/test/scala/tools/SyntheticDataset.scala)
+data/
