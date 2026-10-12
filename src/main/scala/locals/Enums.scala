@@ -49,12 +49,6 @@ case object Bicubic extends InterpolationType
 case object Trilinear extends InterpolationType
 case object Tricubic extends InterpolationType
 
-sealed trait QuadrantLocation
-case object TopLeft extends QuadrantLocation
-case object TopRight extends QuadrantLocation
-case object BottomLeft extends QuadrantLocation
-case object BottomRight extends QuadrantLocation
-
 sealed trait HorizontalSwimmingStrategy
 case object StrategyOne extends HorizontalSwimmingStrategy
 case object StrategyTwo extends HorizontalSwimmingStrategy

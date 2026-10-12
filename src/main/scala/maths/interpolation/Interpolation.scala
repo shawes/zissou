@@ -7,73 +7,27 @@ import maths.interpolation.linear.BilinearInterpolation
 import physical.flow.FlowGridWrapper
 import physical.{GeoCoordinate, Velocity}
 
+/**
+  * The flow at a position between grid nodes: bicubic where the 4 by 4 nodes round it all have
+  * flow, bilinear where only the 2 by 2 do, and the nearest node's flow where they do not.
+  */
 class Interpolation extends Logging {
 
   val bicubicInterpolation = new BicubicInterpolation()
   val bilinearInterpolation = new BilinearInterpolation()
-  //TODO: Get dimensions from flow grid
+
   def apply(
       coordinate: GeoCoordinate,
       grid: FlowGridWrapper,
       index: (Int, Int, Int, Boolean)
-  ): Option[Velocity] = {
-    val centroid = grid.getCentroid(index)
-    debug("Centroid of the grid is: " + centroid)
-    val latitudeDisplacement = math.abs(coordinate.latitude - centroid.latitude) * (1.0 / 0.1) + 1.0
-    val longitudeDisplacement = math.abs(
-      coordinate.longitude - centroid.longitude
-    ) * (1.0 / 0.1) + 1.0
-    debug(
-      "Latitude : " + latitudeDisplacement + ", long: " + longitudeDisplacement
-    )
-
-    val neighbourhood = grid.getInterpolationValues(coordinate, Bicubic, index)
-    if (neighbourhood.isDefined) {
-      debug("Can bicubic interpolate")
-      Some(
-        interpolate(
-          Bicubic,
-          neighbourhood.get,
-          longitudeDisplacement,
-          latitudeDisplacement
-        )
+  ): Option[Velocity] =
+    grid
+      .stencil(coordinate, Bicubic, index)
+      .map(s => bicubicInterpolation(s.nodes, s.longitudeFraction, s.latitudeFraction))
+      .orElse(
+        grid
+          .stencil(coordinate, Bilinear, index)
+          .map(s => bilinearInterpolation(s.nodes, s.longitudeFraction, s.latitudeFraction))
       )
-    } else {
-      val neighbourhood = grid.getInterpolationValues(coordinate, Bilinear, index)
-      if (neighbourhood.isDefined) {
-        debug("Can only bilnear interpolate")
-        Some(
-          interpolate(
-            Bilinear,
-            neighbourhood.get,
-            longitudeDisplacement,
-            latitudeDisplacement
-          )
-        )
-      } else {
-        debug("No interpolations")
-        grid.getVelocity(index)
-      }
-    }
-  }
-
-  private def interpolate(
-      interpolation: InterpolationType,
-      neighbourhood: Array[Array[Velocity]],
-      long: Double,
-      lat: Double
-  ): Velocity = interpolation match {
-    case Bicubic  => bicubicInterpolation(neighbourhood, long, lat)
-    case Bilinear => bilinearInterpolation(neighbourhood, long, lat)
-    //case Tricubic => new tricubicInterpolation(neighbourhood, long, lat)
-    //case Trilinear => new trilinearInterpolation(neighbourhood, long, lat)
-    case _ => throw new RuntimeException("Undefined interpolation method")
-  }
-
-  // TODO: Implement tricubic interpolation
-  // private def nextInterpolationStep(interpolation: InterpolationType): InterpolationType = interpolation match {
-  //   case Bicubic => Bilinear
-  //   case Tricubic => TriLinear
-  //   case _ => throw new RuntimeException("Undefined interpolation method")
-  // }
+      .orElse(grid.getVelocity(index))
 }

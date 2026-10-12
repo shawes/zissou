@@ -86,28 +86,94 @@ class FlowGridWrapper(
     closest
   }
 
-  def getCentroid(index: (Int, Int, Int, Boolean)): GeoCoordinate = {
-    LatLonPointToGeoCoordinateAdaptor.toGeoCoordinate(
-      data.head.head._2.getLatLon(index._1, index._2)
-    )
-  }
+  // The longitude of each column of nodes and the latitude of each row, read from the
+  // data's own coordinate axes, in whichever direction they run
+  private lazy val longitudes: Array[Double] =
+    Array.tabulate(data.head.head._1(0)(0).length)(x => data.head.head._2.getLatLon(x, 0).getLongitude)
+  private lazy val latitudes: Array[Double] =
+    Array.tabulate(data.head.head._1(0).length)(y => data.head.head._2.getLatLon(0, y).getLatitude)
 
-  def getInterpolationValues(
-      coordinate: GeoCoordinate,
-      interpolation: InterpolationType
-  ): Option[Array[Array[Velocity]]] =
-    getInterpolationValues(coordinate, interpolation, getIndex(coordinate))
+  /** The flow at the grid nodes round a position, and where the position is in the gap between the middle ones. */
+  final class Stencil(
+      val nodes: Array[Array[Velocity]], // indexed [longitude][latitude]
+      val longitudeFraction: Double, // 0 to 1, from the first middle node to the second
+      val latitudeFraction: Double
+  )
 
-  /** As above, for a caller that has already looked up the coordinate's grid index. */
-  def getInterpolationValues(
+  /**
+    * The flow at the `size` by `size` block of grid nodes with the position inside its middle
+    * gap, for interpolating it. That is not always the block centred on the nearest node: the
+    * position lies between that node and the next one, on whichever side it is. Nothing is
+    * returned where the block runs off the grid or takes in a node with no flow (land).
+    */
+  def stencil(
       coordinate: GeoCoordinate,
       interpolation: InterpolationType,
       index: (Int, Int, Int, Boolean)
-  ): Option[Array[Array[Velocity]]] = {
-    val quadrant = findQuadrantCoordinateIsIn(coordinate, index)
-    val numberOfNeighbours = neighbourhoodSize(interpolation)
-    val position = quadrantPosition(quadrant, numberOfNeighbours)
-    neighbourhood(numberOfNeighbours, index, position._1, position._2)
+  ): Option[Stencil] = {
+    val size = neighbourhoodSize(interpolation)
+    val before = size / 2 - 1 // nodes before the gap
+    val lonNode = gapStart(longitudes, index._1, coordinate.longitude)
+    val latNode = gapStart(latitudes, index._2, coordinate.latitude)
+    if (lonNode < 0 || latNode < 0) None
+    else {
+      val nodes = nodesFrom(lonNode - before, latNode - before, size, index._3, index._4)
+      if (nodes == null) None
+      else
+        Some(
+          new Stencil(
+            nodes,
+            fractionAcross(longitudes, lonNode, coordinate.longitude),
+            fractionAcross(latitudes, latNode, coordinate.latitude)
+          )
+        )
+    }
+  }
+
+  // The node k with the value between nodes k and k+1, or -1 if there is none, given the nearest
+  // node `cell`: the value is on one side of it, so in the gap above or the gap below. Signed
+  // differences make it the same for axes that run either way.
+  private def gapStart(nodes: Array[Double], cell: Int, value: Double): Int =
+    if (isInGap(nodes, cell, value)) cell
+    else if (isInGap(nodes, cell - 1, value)) cell - 1
+    else -1
+
+  private def isInGap(nodes: Array[Double], k: Int, value: Double): Boolean =
+    k >= 0 && k + 1 < nodes.length && {
+      val fraction = fractionAcross(nodes, k, value)
+      fraction >= 0.0 && fraction <= 1.0
+    }
+
+  private def fractionAcross(nodes: Array[Double], k: Int, value: Double): Double =
+    (value - nodes(k)) / (nodes(k + 1) - nodes(k))
+
+  // The flow at a block of nodes, indexed by [longitude][latitude]; null if any is off the grid or land
+  private def nodesFrom(
+      firstX: Int,
+      firstY: Int,
+      size: Int,
+      z: Int,
+      isEarlier: Boolean
+  ): Array[Array[Velocity]] = {
+    if (firstX < 0 || firstY < 0 || firstX + size > longitudes.length || firstY + size > latitudes.length) null
+    else {
+      // allocated directly: Array.ofDim looks up a class tag every time, which was a sixth of the run
+      val nodes = new Array[Array[Velocity]](size)
+      var i = 0
+      while (i < size) {
+        nodes(i) = new Array[Velocity](size)
+        var j = 0
+        while (j < size) {
+          velocityAt(firstX + i, firstY + j, z, isEarlier) match {
+            case Some(velocity) => nodes(i)(j) = velocity
+            case None           => return null
+          }
+          j += 1
+        }
+        i += 1
+      }
+      nodes
+    }
   }
 
   def getIndex(coordinate: GeoCoordinate): (Int, Int, Int, Boolean) = {
@@ -141,74 +207,6 @@ class FlowGridWrapper(
     case InterpolateToday    => true
     case InterpolateTomorrow => false
   }
-
-  private def neighbourhood(
-      number: Int,
-      gridIndex: (Int, Int, Int, Boolean),
-      startIndexLat: Int,
-      startIndexLon: Int
-  ): Option[Array[Array[Velocity]]] = {
-    val neighbourhood = new Array[Array[Velocity]](number)
-    var row = 0
-    while (row < number) {
-      neighbourhood(row) = new Array[Velocity](number)
-      row += 1
-    }
-    try {
-      // One undefined (land) cell rules out the whole neighbourhood
-      var undefined = false
-      var j = startIndexLat
-      while (!undefined && j < startIndexLat + number) {
-        var i = startIndexLon
-        while (!undefined && i < startIndexLon + number) {
-          velocityAt(gridIndex._1 + i, gridIndex._2 + j, gridIndex._3, gridIndex._4) match {
-            case Some(velocity) =>
-              neighbourhood(i - startIndexLon)(j - startIndexLat) = velocity
-            case None => undefined = true
-          }
-          i += 1
-        }
-        j += 1
-      }
-      if (undefined) None else Some(neighbourhood)
-    } catch {
-      case ex: IndexOutOfBoundsException => None
-    }
-  }
-
-  private def findQuadrantCoordinateIsIn(
-      coordinate: GeoCoordinate,
-      index: (Int, Int, Int, Boolean)
-  ): QuadrantLocation = {
-    val centroid = data.head.head._2.getLatLon(index._1, index._2)
-
-    if (coordinate.latitude > centroid.getLatitude) {
-      if (coordinate.longitude < centroid.getLongitude) {
-        TopLeft
-      } else {
-        TopRight
-      }
-    } else {
-      if (coordinate.longitude < centroid.getLongitude) {
-        BottomLeft
-      } else {
-        BottomRight
-      }
-    }
-    //}
-  }
-
-  private def quadrantPosition(
-      quadrant: QuadrantLocation,
-      size: Int
-  ): (Int, Int) =
-    quadrant match {
-      case TopLeft    => (-1 * size / 2, -1 * size / 2)
-      case TopRight   => ((-1 * size / 2) + 1, -1 * size / 2)
-      case BottomLeft => (-1 * size / 2, (-1 * size / 2) + 1)
-      case BottomRight =>
-        ((-1 * size / 2) + 1, (-1 * size / 2) + 1)
-    }
 
   private def neighbourhoodSize(interpolation: InterpolationType): Int =
     interpolation match {
