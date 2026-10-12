@@ -1,9 +1,11 @@
 package model
 
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.collection.parallel.CollectionConverters._
 import biology._
+import exceptions.CoordinateOutOfBoundsException
 import biology.fish._
 import biology.swimming._
 import com.github.nscala_time.time.Imports._
@@ -31,6 +33,10 @@ class BiologicalModel(
   )
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
+  private val lostFromDomain = new AtomicInteger(0)
+
+  /** The number of larvae that drifted off the edge of the flow grid and were killed. */
+  def larvaeLostFromDomain: Int = lostFromDomain.get
   val geometry = new Geometry
   val mortality: Mortality = new MortalityConstant(
     config.larva.mortalityRate.getOrElse(1)
@@ -72,11 +78,12 @@ class BiologicalModel(
   private def biology(larva: Larva): Unit = {
     val recentlyDeveloped = ageLarvae(larva)
     mortalityDueToOldAgeCheck(larva)
-    move(larva, recentlyDeveloped)
-    sense(larva)
+    // A larva that has left the flow grid is dead and must not settle
+    if (move(larva, recentlyDeveloped)) sense(larva)
   }
 
-  private def move(larva: Larva, recentlyDeveloped: Boolean): Unit = {
+  /** Moves the larva, returning false if it left the flow grid and was killed. */
+  private def move(larva: Larva, recentlyDeveloped: Boolean): Boolean = {
     val dampeningFactor: List[Double] = List(1.0)
     val swimmingVelocity = larva.swim()
     def moveLarva(larva: Larva, dampeningFactor: List[Double]): Unit = {
@@ -96,8 +103,18 @@ class BiologicalModel(
         larva.move(larva.position)
       }
     }
-    moveLarva(larva, dampeningFactor)
-    migrateLarvaVertically(larva, recentlyDeveloped)
+    val stillInDomain =
+      try {
+        moveLarva(larva, dampeningFactor)
+        true
+      } catch {
+        case _: CoordinateOutOfBoundsException =>
+          larva.kill()
+          lostFromDomain.incrementAndGet()
+          false
+      }
+    if (stillInDomain) migrateLarvaVertically(larva, recentlyDeveloped)
+    stillInDomain
   }
 
   private def migrateLarvaVertically(

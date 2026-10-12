@@ -66,6 +66,11 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       }
       val time: Double = simulationTimer.stop() / 60.0
       info(f"Simulation run completed in $time%.2f minutes")
+      if (biology.larvaeLostFromDomain > 0) {
+        warn(
+          s"${biology.larvaeLostFromDomain} larvae left the edge of the flow grid and were killed"
+        )
+      }
       val still = clock.stillTime
       val disperse = biology.isDispersing(clock.now)
       debug(s"Still movin': $still and dispersin': $disperse")

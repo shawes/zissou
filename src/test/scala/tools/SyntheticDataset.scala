@@ -20,7 +20,8 @@ import ucar.nc2.write.NetcdfFormatWriter
   *  - monthly NetCDF-3 u/v/w files laid out the way FlowFileIterator expects
   *    (`<flow>/{u,v,w}/ocean_<var>_<year>_<month>.nc`, OFAM-style names),
   *  - a reef polygon shapefile with HABITAT / PATCH_NUM attributes,
-  *  - YAML configs (a quick smoke run and a larger benchmark run).
+  *  - YAML configs: a quick smoke run, a larger benchmark run, and an edge run
+  *    whose larvae drift off the southern edge of the grid.
   *
   * Note the flow period must start no earlier than the first release date:
   * the simulation loop stops immediately when nothing is spawning or pelagic.
@@ -70,8 +71,15 @@ object SyntheticDataset {
 
     for (month <- Months) writeFlowMonth(root, month)
     writeHabitat(new File(root, "habitat/reefs.shp"))
-    writeConfig(root, "smoke", larvaePerSite = 100)
-    writeConfig(root, "bench", larvaePerSite = 20000)
+    val reefSites = Seq(Patches(0), Patches(3), Patches(6)) // patches 101, 104, 107
+    writeConfig(root, "smoke", reefSites, larvaePerSite = 100)
+    writeConfig(root, "bench", reefSites, larvaePerSite = 20000)
+    // released right at the southern edge of the grid, so larvae drift off it
+    val edgeSites = Seq(
+      (101, "Reef", 154.0, MinLat + 0.3),
+      (104, "Reef", 154.2, MinLat + 0.5)
+    )
+    writeConfig(root, "edge", edgeSites, larvaePerSite = 200)
     println(s"Synthetic dataset written to ${root.getAbsolutePath}")
   }
 
@@ -265,8 +273,12 @@ object SyntheticDataset {
 
   // --- config ---------------------------------------------------------------
 
-  private def writeConfig(root: File, name: String, larvaePerSite: Int): Unit = {
-    val sites = Seq(Patches(0), Patches(3), Patches(6)) // patches 101, 104, 107
+  private def writeConfig(
+      root: File,
+      name: String,
+      sites: Seq[(Int, String, Double, Double)],
+      larvaePerSite: Int
+  ): Unit = {
     val spawning = sites
       .map {
         case (patch, _, lon, lat) =>

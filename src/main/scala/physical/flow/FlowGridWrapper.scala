@@ -1,6 +1,6 @@
 package physical.flow
 
-import exceptions.InterpolationNotImplementedException
+import exceptions.{CoordinateOutOfBoundsException, InterpolationNotImplementedException}
 import grizzled.slf4j.Logging
 import locals.Constants.NetcdfIndex
 import locals._
@@ -75,10 +75,21 @@ class FlowGridWrapper(
   ): (Int, Int, Int, Boolean) = {
     val indexXY = data.head.head._2
       .findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
+    if (!isInsideGrid(indexXY(0), indexXY(1))) {
+      throw new CoordinateOutOfBoundsException(
+        s"(${coordinate.latitude}, ${coordinate.longitude}) is outside the flow grid"
+      )
+    }
     val indexZ = closestDepthIndex(coordinate.depth)
     val indexT = timeIndex(day)
     // (x, y, z ,t)
     (indexXY(0), indexXY(1), indexZ, indexT)
+  }
+
+  // The index lookup answers -1 for a point outside the grid
+  private def isInsideGrid(x: Int, y: Int): Boolean = {
+    val surface = data.head.head._1(0)
+    x >= 0 && y >= 0 && y < surface.length && x < surface(0).length
   }
 
   private def timeIndex(day: InterpolationTime): Boolean = day match {
