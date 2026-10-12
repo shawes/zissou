@@ -55,4 +55,25 @@ class SimulationClockPrefilterTest extends AnyFlatSpec {
     // the grid must include plenty of both outcomes for the comparison to mean anything
     assert(checked > 50000 && near > 5000 && near < checked - 5000)
   }
+
+  it should "match the exact calculator minute by minute around the cut-off" in {
+    // the shortcuts only trust the approximation away from the cut-off, so the
+    // times around it, where the exact calculator decides, must still agree
+    var checked = 0
+    for {
+      hours <- Seq(1, 2, 6)
+      clock = new SimulationClock(interval, new TimeStep(hours, TimeStepType.Hour))
+      (lat, lon) <- Seq((-28.0, 154.0), (-45.0, 146.0), (-12.0, 175.0), (-33.0, 151.0))
+      day <- Seq(5, 80, 172, 266, 355)
+      place = new GeoCoordinate(lat, lon, 5.0)
+      start = new LocalDateTime(2002, 1, 1, 0, 0).plusDays(day - 1)
+      minute <- 0 until 1440 by 2
+    } {
+      clock.now = start.plusMinutes(minute)
+      assert(clock.sunEvent(place) == exactSunEvent(place, clock.now, hours * 3600),
+        s"lat $lat lon $lon at ${clock.now} step ${hours}h")
+      checked += 1
+    }
+    assert(checked > 40000)
+  }
 }

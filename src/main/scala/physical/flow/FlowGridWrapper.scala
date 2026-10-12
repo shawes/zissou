@@ -25,21 +25,22 @@ class FlowGridWrapper(
   private lazy val tomorrow = data.last.map(_._1).toArray
   private lazy val depthArray = depths.toArray
 
-  def getVelocity(index: (Int, Int, Int, Boolean)): Option[Velocity] = {
-    val components = if (index._4) today else tomorrow
+  def getVelocity(index: (Int, Int, Int, Boolean)): Option[Velocity] =
+    velocityAt(index._1, index._2, index._3, index._4)
+
+  private def velocityAt(
+      x: Int,
+      y: Int,
+      z: Int,
+      isToday: Boolean
+  ): Option[Velocity] = {
+    val components = if (isToday) today else tomorrow
     val velocity = new Velocity(
-      readData(components(0), index).toDouble,
-      readData(components(1), index).toDouble,
-      readData(components(2), index).toDouble
+      components(0)(z)(y)(x).toDouble,
+      components(1)(z)(y)(x).toDouble,
+      components(2)(z)(y)(x).toDouble
     )
     if (velocity.isDefined) Some(velocity) else None
-  }
-
-  private def readData(
-      dataset: Array[Array[Array[Float]]],
-      index: (Int, Int, Int, Boolean)
-  ): Float = {
-    dataset(index._3)(index._2)(index._1)
   }
 
   // The nearest depth level; a tie goes to the shallower level
@@ -67,16 +68,19 @@ class FlowGridWrapper(
   def getInterpolationValues(
       coordinate: GeoCoordinate,
       interpolation: InterpolationType
+  ): Option[Array[Array[Velocity]]] =
+    getInterpolationValues(coordinate, interpolation, getIndex(coordinate))
+
+  /** As above, for a caller that has already looked up the coordinate's grid index. */
+  def getInterpolationValues(
+      coordinate: GeoCoordinate,
+      interpolation: InterpolationType,
+      index: (Int, Int, Int, Boolean)
   ): Option[Array[Array[Velocity]]] = {
-    val quadrant = findQuadrantCoordinateIsIn(coordinate)
+    val quadrant = findQuadrantCoordinateIsIn(coordinate, index)
     val numberOfNeighbours = neighbourhoodSize(interpolation)
     val position = quadrantPosition(quadrant, numberOfNeighbours)
-    neighbourhood(
-      numberOfNeighbours,
-      getIndex(coordinate),
-      position._1,
-      position._2
-    )
+    neighbourhood(numberOfNeighbours, index, position._1, position._2)
   }
 
   def getIndex(coordinate: GeoCoordinate): (Int, Int, Int, Boolean) = {
@@ -118,30 +122,38 @@ class FlowGridWrapper(
       startIndexLat: Int,
       startIndexLon: Int
   ): Option[Array[Array[Velocity]]] = {
-    val neighbourhood = Array.ofDim[Velocity](number, number)
+    val neighbourhood = new Array[Array[Velocity]](number)
+    var row = 0
+    while (row < number) {
+      neighbourhood(row) = new Array[Velocity](number)
+      row += 1
+    }
     try {
-      for (j <- startIndexLat until (startIndexLat + number)) {
-        for (i <- startIndexLon until (startIndexLon + number)) {
-          neighbourhood(i - startIndexLon)(j - startIndexLat) = getVelocity(
-            (gridIndex._1 + i, gridIndex._2 + j, gridIndex._3, true)
-          ).getOrElse(new Velocity(Double.NaN, Double.NaN))
+      // One undefined (land) cell rules out the whole neighbourhood
+      var undefined = false
+      var j = startIndexLat
+      while (!undefined && j < startIndexLat + number) {
+        var i = startIndexLon
+        while (!undefined && i < startIndexLon + number) {
+          velocityAt(gridIndex._1 + i, gridIndex._2 + j, gridIndex._3, true) match {
+            case Some(velocity) =>
+              neighbourhood(i - startIndexLon)(j - startIndexLat) = velocity
+            case None => undefined = true
+          }
+          i += 1
         }
+        j += 1
       }
-      if (neighbourhood.flatten.exists(v => v.isUndefined)) {
-        None
-      } else {
-        Some(neighbourhood)
-      }
+      if (undefined) None else Some(neighbourhood)
     } catch {
       case ex: IndexOutOfBoundsException => None
     }
   }
 
   private def findQuadrantCoordinateIsIn(
-      coordinate: GeoCoordinate
+      coordinate: GeoCoordinate,
+      index: (Int, Int, Int, Boolean)
   ): QuadrantLocation = {
-    //this.synchronized {
-    val index = getIndex(coordinate)
     val centroid = data.head.head._2.getLatLon(index._1, index._2)
 
     if (coordinate.latitude > centroid.getLatitude) {

@@ -45,14 +45,18 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Loggin
     else None
   }
 
-  // Further than this from an approximate sunrise or sunset is certainly not near the
-  // real one: the dusk window or a whole time step, plus room for the approximation's
-  // error (at most 2 minutes over the supported latitudes and longitudes)
-  private val SkipBeyondSeconds =
-    math.max(Constants.DuskOrDawn, timeStep.totalSeconds) + 900
+  // The approximation is within 2 minutes of the exact calculator over the supported
+  // latitudes and longitudes, so a quarter of an hour either side of the cut-off leaves
+  // a wide safety factor. Only times inside that band need the exact calculator.
+  private val ApproximationMargin = 900
+  // A time is near an event when it is within this many seconds of it: the dusk
+  // window, or anything shorter than a whole time step
+  private val NearThreshold = math.max(Constants.DuskOrDawn, timeStep.totalSeconds - 1)
+  private val SkipBeyondSeconds = NearThreshold + 1 + ApproximationMargin
+  private val SecondsInDay = 86400
 
   // The exact calculator is expensive, so it is only built, and asked, when the
-  // time is close enough to an event for the answer to be in doubt
+  // approximation cannot settle the answer
   private class SunTimes(location : GeoCoordinate) {
     private val timezone = getTimeZone(location)
     private lazy val calculator = new SunriseSunsetCalculator(new Location(location.latitude, location.longitude), timezone.toTimeZone)
@@ -60,13 +64,22 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Loggin
     private lazy val approximateEvents = SolarEvents.approximate(
       location.latitude, location.longitude, now.getDayOfYear, timezone.getOffset(nowDateTime) / 3600000)
 
-    def isNear(sun : Sun) : Boolean = !isCertainlyFar(sun) && isNearExactly(sun)
+    def isNear(sun : Sun) : Boolean = approximatelyNear(sun) match {
+      case Some(answer) => answer
+      case None => isNearExactly(sun)
+    }
 
-    private def isCertainlyFar(sun : Sun) : Boolean = approximateEvents match {
+    // Some(answer) if the approximation is far enough from the cut-off to be certain
+    private def approximatelyNear(sun : Sun) : Option[Boolean] = approximateEvents match {
       case Some((sunrise, sunset)) =>
         val event = if (sun == Sun.Rising) sunrise else sunset
-        SolarEvents.distanceAroundTheClock(now.getMillisOfDay / 1000.0, event) > SkipBeyondSeconds
-      case None => false
+        val nowSeconds = now.getMillisOfDay / 1000.0
+        if (SolarEvents.distanceAroundTheClock(nowSeconds, event) > SkipBeyondSeconds) Some(false)
+        // an event too close to midnight might belong to the neighbouring day, so leave it
+        else if (event > ApproximationMargin && event < SecondsInDay - ApproximationMargin &&
+          math.abs(nowSeconds - event) < NearThreshold - ApproximationMargin) Some(true)
+        else None
+      case None => None
     }
 
     private def isNearExactly(sun : Sun) : Boolean = {
@@ -81,7 +94,7 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Loggin
       val timeToSunsetOrSunrise =
         math.abs((sunsetOrSunrise.getMillis - nowDateTime.getMillis) / 1000)
 
-      timeToSunsetOrSunrise <= Constants.DuskOrDawn || timeToSunsetOrSunrise < timeStep.totalSeconds
+      timeToSunsetOrSunrise <= NearThreshold
     }
   }
 

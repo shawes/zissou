@@ -27,7 +27,7 @@ class Interpolation extends Logging {
       "Latitude : " + latitudeDisplacement + ", long: " + longitudeDisplacement
     )
 
-    val neighbourhood = grid.getInterpolationValues(coordinate, Bicubic)
+    val neighbourhood = grid.getInterpolationValues(coordinate, Bicubic, index)
     if (neighbourhood.isDefined) {
       debug("Can bicubic interpolate")
       Some(
@@ -39,7 +39,7 @@ class Interpolation extends Logging {
         )
       )
     } else {
-      val neighbourhood = grid.getInterpolationValues(coordinate, Bilinear)
+      val neighbourhood = grid.getInterpolationValues(coordinate, Bilinear, index)
       if (neighbourhood.isDefined) {
         debug("Can only bilnear interpolate")
         Some(
