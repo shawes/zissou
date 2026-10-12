@@ -18,5 +18,5 @@ trait HabitatPolygon {
 }
 
 trait HabitatPolygonToJtsGeometryAdaptor {
-  self: HabitatPolygon with GeometryAdaptor =>
+  self: HabitatPolygon & GeometryAdaptor =>
 }

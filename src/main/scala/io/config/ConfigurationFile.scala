@@ -5,7 +5,6 @@ import java.io.InputStreamReader
 import io.circe.yaml.parser
 import cats.syntax.either._
 import io.circe._
-import io.circe.generic.auto._
 import grizzled.slf4j._
 import io.circe.yaml
 class ConfigurationFile extends Logging {

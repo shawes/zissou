@@ -14,9 +14,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
     extends Logging {
   setConfiguredLogLevel()
 
-  if (config.settings.randomSeed.isValidInt) {
-    RandomNumberGenerator.setSeed(config.settings.randomSeed)
-  }
+  RandomNumberGenerator.setSeed(config.settings.randomSeed)
 
   val flow: Flow = config.flow
   val clock = new SimulationClock(flow.period, flow.timeStep)

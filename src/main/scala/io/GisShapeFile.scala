@@ -17,7 +17,7 @@ import org.geotools.data.shapefile._
 import org.locationtech.jts.{geom => jts}
 import org.geotools.referencing.crs.DefaultGeographicCRS
 import org.geotools.geometry.jts.JTSFactoryFinder
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 

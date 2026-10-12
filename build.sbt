@@ -2,9 +2,10 @@ name := "zissou"
 
 version := "2.1"
 
-scalaVersion := "2.13.18"
+scalaVersion := "3.10.0"
 
-assembly / assemblyJarName := "zissou.jar"
+// a fixed location, so scripts do not depend on the Scala version
+assembly / assemblyOutputPath := baseDirectory.value / "target" / "zissou.jar"
 
 assembly / test := {}
 
@@ -41,7 +42,8 @@ libraryDependencies ++= Seq(
   "org.scalatestplus" %% "mockito-5-23" % "3.2.20.0" % Test,
   "com.github.nscala-time" %% "nscala-time" % "3.2.0",
   "org.apache.commons" % "commons-math3" % "3.6.1",
-  "org.clapper" %% "grizzled-slf4j" % "1.3.4",
+  // no Scala 3 build exists; it is a thin pure-Scala wrapper over slf4j, so the 2.13 one works
+  ("org.clapper" %% "grizzled-slf4j" % "1.3.4").cross(CrossVersion.for3Use2_13),
   "org.slf4j" % "slf4j-api" % "2.0.17",
   "org.slf4j" % "slf4j-simple" % "2.0.17",
   "org.scala-lang.modules" %% "scala-xml" % "2.5.0",
@@ -52,7 +54,6 @@ libraryDependencies ++= Seq(
   "org.geotools" % "gt-referencing" % geotoolsVersion,
   "com.luckycatlabs" % "SunriseSunsetCalculator" % "1.2",
   "io.circe" %% "circe-yaml" % "0.16.1",
-  "io.circe" %% "circe-generic" % "0.14.17",
   "io.circe" %% "circe-core" % "0.14.17"
 )
 

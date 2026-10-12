@@ -113,7 +113,6 @@ class FlowGridWrapper(
   private def timeIndex(day: InterpolationTime): Boolean = day match {
     case InterpolateToday    => true
     case InterpolateTomorrow => false
-    case _                   => throw new RuntimeException("Day not implemented")
   }
 
   private def neighbourhood(
@@ -182,7 +181,6 @@ class FlowGridWrapper(
       case BottomLeft => (-1 * size / 2, (-1 * size / 2) + 1)
       case BottomRight =>
         ((-1 * size / 2) + 1, (-1 * size / 2) + 1)
-      case _ => throw new RuntimeException("Wrong quadrant")
     }
 
   private def neighbourhoodSize(interpolation: InterpolationType): Int =

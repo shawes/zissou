@@ -26,7 +26,7 @@ class BiologicalModel(
     integrator: RungeKuttaIntegration
 ) extends Logging {
 
-  val factory = LarvaeFactory.apply(Fish, config.larva)
+  val factory = LarvaeFactory.apply(locals.Fish, config.larva)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(
     config.habitat
@@ -126,7 +126,7 @@ class BiologicalModel(
       clock.sunEvent(larva.position) match {
         case Some(Sun.Rising)  => larva.dielMigrate(Day)
         case Some(Sun.Setting) => larva.dielMigrate(Night)
-        case None              =>
+        case _                 =>
       }
     }
     larva.ovmMigrate(
@@ -148,7 +148,7 @@ class BiologicalModel(
   }
 
   private def ageLarvae(larva: Larva): Boolean = {
-    larva incrementAge clock.timeStep.totalSeconds
+    larva.incrementAge(clock.timeStep.totalSeconds)
   }
 
   private def mortality(larva: Larva): Unit = {
@@ -158,12 +158,12 @@ class BiologicalModel(
   }
 
   private def sense(larva: Larva): Unit = {
-    if (larva.isSettlementAge || larva.isSensingAge) {
+    if (larva.isSettlementAge() || larva.isSensingAge()) {
       val index = habitatManager.getClosestHabitat(larva.position)
-      if (index._1 != NoReefToSettleException && larva.isSettlementAge) {
+      if (index._1 != NoReefToSettleException && larva.isSettlementAge()) {
         larva.settle(index._1, clock.now)
       } else {
-        if (index._2 != NoReefSensedException && larva.isSensingAge) {
+        if (index._2 != NoReefSensedException && larva.isSensingAge()) {
           larva.direction = index._3
         } else {
           larva.direction = RandomNumberGenerator.getAngle

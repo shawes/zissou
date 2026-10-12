@@ -8,7 +8,7 @@ import physical.flow.{Flow, FlowGridWrapper}
 import ucar.ma2.Range
 import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.{GridDataset}
-import ucar.unidata.geoloc.{LatLonPointImpl, LatLonRect}
+import ucar.unidata.geoloc.{LatLonPoint, LatLonRect}
 
 class FlowFileIterator(val flow: Flow) extends Logging {
   val NetcdfExtension = ".nc"
@@ -23,8 +23,8 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   var currentFile: Int = getFileInformation._2
   val files = getFileInformation._1
   val latLonBounds = new LatLonRect(
-    new LatLonPointImpl(-50.0, 142.0),
-    new LatLonPointImpl(-10.0, 180.0)
+    LatLonPoint.create(-50.0, 142.0),
+    LatLonPoint.create(-10.0, 180.0)
   )
   val depthRange: Range = new Range(0, 14)
 
@@ -56,7 +56,7 @@ class FlowFileIterator(val flow: Flow) extends Logging {
 
   private def clearYesterday(): Unit = {
     if (grids.size == 2) {
-      grids.dequeue
+      grids.dequeue()
     }
   }
 

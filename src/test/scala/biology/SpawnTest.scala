@@ -9,7 +9,7 @@ import scala.collection.mutable._
 class SpawnTest extends AnyFlatSpec {
 
   val spawningLocations = new ListBuffer[SpawningLocation]
-  val date = DateTime.now.minusHours(DateTime.now.getHourOfDay)
+  val date = DateTime.now().minusHours(DateTime.now().getHourOfDay)
   val releasePeriod1 = date.minusDays(5) to date.plusDays(1)
   val releasePeriod2 = date.minusDays(2) to date.plusDays(5)
 

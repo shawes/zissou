@@ -26,7 +26,6 @@ class HorizontalSwimming(
       case StrategyOne   => getSpeed(typeOneSwimmingSpeed, variables)
       case StrategyTwo   => getSpeed(typeTwoSwimmingSpeed, variables)
       case StrategyThree => getSpeed(typeThreeSwimmingSpeed, variables)
-      case _             => 0
     }
     if (speed > 0) {
       if (isDirected && variables.angle != LightWeightException.NoSwimmingAngleException) {
