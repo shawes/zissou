@@ -2,6 +2,7 @@ package ui
 
 import java.nio.file.{Files, Path}
 import org.scalatest.flatspec.AnyFlatSpec
+import tools.ShapefileTestUtil
 
 class MapReaderTest extends AnyFlatSpec {
 

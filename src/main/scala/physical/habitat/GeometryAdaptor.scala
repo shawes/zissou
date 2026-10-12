@@ -11,7 +11,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS
 import org.geotools.geometry.jts._
 import org.locationtech.jts.operation.distance.DistanceOp
 
-class GeometryAdaptor(val g: Geometry, val id: Int, val habitat: HabitatType) extends HabitatPolygon with Ordered[GeometryAdaptor] with Logging {
+class GeometryAdaptor(val g: Geometry, val id: Int, val habitat: HabitatType) extends HabitatPolygon with Logging {
 
 
   def centroid: GeoCoordinate = GeometryToGeoCoordinateAdaptor.toGeoCoordinate(g.getCentroid)
@@ -30,16 +30,14 @@ class GeometryAdaptor(val g: Geometry, val id: Int, val habitat: HabitatType) ex
 
   def intersects(coordinate: GeoCoordinate): Boolean = g.intersects(GeometryToGeoCoordinateAdaptor.toPoint(coordinate))
 
+  // A point on the polygon is at distance 0, so a buffer of 0 still holds it: the test must
+  // be "at most", not "less than"
   def isWithinBuffer(coordinate: GeoCoordinate, buffer: Double): Boolean =
-     distance(coordinate) < buffer
+     distance(coordinate) <= buffer
 
   def direction(coordinate : GeoCoordinate) : Double = {
     Angle.toDegrees(Angle.angle(GeometryToGeoCoordinateAdaptor.toPoint(coordinate).getCoordinate,
     g.getCentroid.getCoordinate))
-  }
-
-  def compare(that: GeometryAdaptor): Int = {
-    this.centroid.compare(that.centroid)
   }
 
 }

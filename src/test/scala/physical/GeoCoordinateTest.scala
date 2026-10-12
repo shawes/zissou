@@ -61,23 +61,4 @@ class GeoCoordinateTest extends AnyFlatSpec with MockitoSugar with PrivateMethod
     assert(coordinate.toString == printText)
   }
 
-  it should "know they are equal" in {
-    val coordinate1 = new GeoCoordinate(1,2,3)
-    val coordinate2 = new GeoCoordinate(1,2,3)
-    assert(coordinate1.compare(coordinate2) == 0)
-  }
-
-  it should "know they are less than" in {
-    val coordinate1 = new GeoCoordinate(1,2,3)
-    val coordinate2 = new GeoCoordinate(3,2,1)
-    assert(coordinate1.compare(coordinate2) < 0)
-  }
-
-  it should "know they are greater than" in {
-    val coordinate1 = new GeoCoordinate(1,2,3)
-    val coordinate2 = new GeoCoordinate(-3,2,1)
-    assert(coordinate1.compare(coordinate2) > 0)
-  }
-
-
 }

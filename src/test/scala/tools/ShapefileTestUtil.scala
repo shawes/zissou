@@ -1,4 +1,4 @@
-package ui
+package tools
 
 import java.io.{File, Serializable}
 import java.util
@@ -31,8 +31,18 @@ object ShapefileTestUtil {
     write(file, featureType, features)
   }
 
+  /** The geometry of a patch made of one or more pieces, each given by its corners. */
+  def multiPolygon(pieces: Seq[Seq[(Double, Double)]]): MultiPolygon =
+    factory.createMultiPolygon(pieces.map { corners =>
+      factory.createPolygon(factory.createLinearRing((corners :+ corners.head).map { case (x, y) => new Coordinate(x, y) }.toArray))
+    }.toArray)
+
   /** A polygon shapefile with the PATCH_NUM and HABITAT attributes the model reads. */
-  def writeReefs(file: File, reefs: Seq[(Int, String, Seq[(Double, Double)])]): Unit = {
+  def writeReefs(file: File, reefs: Seq[(Int, String, Seq[(Double, Double)])]): Unit =
+    writeReefParts(file, reefs.map { case (patch, habitat, corners) => (patch, habitat, Seq(corners)) })
+
+  /** As writeReefs, with each patch made of one or more separate pieces. */
+  def writeReefParts(file: File, reefs: Seq[(Int, String, Seq[Seq[(Double, Double)]])]): Unit = {
     val builder = new SimpleFeatureTypeBuilder()
     builder.setName("reefs")
     builder.setCRS(DefaultGeographicCRS.WGS84)
@@ -41,10 +51,9 @@ object ShapefileTestUtil {
     builder.add("PATCH_NUM", classOf[java.lang.Integer])
     val featureType = builder.buildFeatureType()
     val features = new util.ArrayList[org.geotools.api.feature.simple.SimpleFeature]
-    reefs.foreach { case (patch, habitat, corners) =>
-      val ring = factory.createLinearRing((corners :+ corners.head).map { case (x, y) => new Coordinate(x, y) }.toArray)
+    reefs.foreach { case (patch, habitat, pieces) =>
       val feature = new SimpleFeatureBuilder(featureType)
-      feature.add(factory.createMultiPolygon(Array(factory.createPolygon(ring))))
+      feature.add(multiPolygon(pieces))
       feature.add(habitat)
       feature.add(Int.box(patch))
       features.add(feature.buildFeature(null))

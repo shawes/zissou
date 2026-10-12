@@ -1,6 +1,6 @@
 package physical
 
-class GeoCoordinate(val latitude: Double, val longitude: Double, val depth: Double) extends Ordered[GeoCoordinate] {
+class GeoCoordinate(val latitude: Double, val longitude: Double, val depth: Double) {
 
   def this(lat: Double, lon: Double) = this(lat, lon, 0)
   def this() = this(0, 0, 0)
@@ -10,11 +10,6 @@ class GeoCoordinate(val latitude: Double, val longitude: Double, val depth: Doub
   private def isUndefined: Boolean = latitude.isNaN || longitude.isNaN
 
   override def toString : String = "lat=" + f"$latitude%1.5f" + ", lon=" + f"$longitude%1.5f" + ", depth=" + depth
-
-  //TODO Need to code the epsilon for doubles
-  def compare(that: GeoCoordinate): Int = {
-    (this.latitude * this.longitude).toInt - (that.latitude * that.longitude).toInt
-  }
 
 
 }
