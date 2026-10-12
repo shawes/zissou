@@ -10,6 +10,7 @@ import com.luckycatlabs.sunrisesunset.dto.Location
 import java.util.Locale
 import locals.Sun
 import locals.Sun._
+import maths.SolarEvents
 
 
 class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Logging {
@@ -44,13 +45,31 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Loggin
     else None
   }
 
-  // Building the calculator is the expensive part, so it is made once per location
+  // Further than this from an approximate sunrise or sunset is certainly not near the
+  // real one: the dusk window or a whole time step, plus room for the approximation's
+  // error (at most 2 minutes over the supported latitudes and longitudes)
+  private val SkipBeyondSeconds =
+    math.max(Constants.DuskOrDawn, timeStep.totalSeconds) + 900
+
+  // The exact calculator is expensive, so it is only built, and asked, when the
+  // time is close enough to an event for the answer to be in doubt
   private class SunTimes(location : GeoCoordinate) {
     private val timezone = getTimeZone(location)
-    private val calculator = new SunriseSunsetCalculator(new Location(location.latitude, location.longitude), timezone.toTimeZone)
+    private lazy val calculator = new SunriseSunsetCalculator(new Location(location.latitude, location.longitude), timezone.toTimeZone)
     private val nowDateTime : DateTime = now.toDateTime(timezone)
+    private lazy val approximateEvents = SolarEvents.approximate(
+      location.latitude, location.longitude, now.getDayOfYear, timezone.getOffset(nowDateTime) / 3600000)
 
-    def isNear(sun : Sun) : Boolean = {
+    def isNear(sun : Sun) : Boolean = !isCertainlyFar(sun) && isNearExactly(sun)
+
+    private def isCertainlyFar(sun : Sun) : Boolean = approximateEvents match {
+      case Some((sunrise, sunset)) =>
+        val event = if (sun == Sun.Rising) sunrise else sunset
+        SolarEvents.distanceAroundTheClock(now.getMillisOfDay / 1000.0, event) > SkipBeyondSeconds
+      case None => false
+    }
+
+    private def isNearExactly(sun : Sun) : Boolean = {
       val sunsetOrSunrise = sun match {
         case Sun.Setting => new DateTime(calculator.getOfficialSunsetCalendarForDate(
         nowDateTime.toCalendar(Locale.getDefault())))
