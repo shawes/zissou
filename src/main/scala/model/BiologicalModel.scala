@@ -39,7 +39,14 @@ class BiologicalModel(
   def apply(): Unit = {
     spawnLarvae()
     debug("Spawned " + pelagicLarvae.size + " larvae")
-    pelagicLarvae.par.foreach(fish => biology(fish))
+    val step = clock.now.toDateTime(DateTimeZone.UTC).getMillis
+    pelagicLarvae.par.foreach(
+      fish =>
+        RandomNumberGenerator.withStream(
+          RandomNumberGenerator.keyFor(fish.id),
+          step
+        ) { biology(fish) }
+    )
     refresh()
   }
 

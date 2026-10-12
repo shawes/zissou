@@ -12,7 +12,7 @@ import biology._
 import biology.swimming._
 import utilities.Time
 import scala.collection.mutable.ArrayBuffer
-import java.util.UUID.randomUUID
+import java.util.UUID
 
 class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
 
@@ -56,24 +56,35 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
   }
 
   val hatchingDistribution = new NormalDistribution(
+    RandomNumberGenerator.generator,
     Time.convertDaysToSeconds(config.ontogeny.hatching),
     Constants.SecondsInDay * 0.5
   )
 
   val preflexionDistribution = new NormalDistribution(
+    RandomNumberGenerator.generator,
     Time.convertDaysToSeconds(config.ontogeny.preflexion),
     Constants.SecondsInDay * 0.5
   )
   val flexionDistribution = new NormalDistribution(
+    RandomNumberGenerator.generator,
     Time.convertDaysToSeconds(config.ontogeny.flexion),
     Constants.SecondsInDay * 0.5
   )
   val postflexionDistribution = new NormalDistribution(
+    RandomNumberGenerator.generator,
     Time.convertDaysToSeconds(config.ontogeny.postflexion),
     Constants.SecondsInDay * 0.5
   )
 
   var larvaeCount: Int = 0
+
+  // A UUID-shaped id that depends only on the seed and creation order, so
+  // repeated runs label their larvae identically
+  private def deterministicId(): String =
+    UUID
+      .nameUUIDFromBytes(s"${RandomNumberGenerator.seed}-$larvaeCount".getBytes)
+      .toString
 
   def create(site: SpawningLocation, time: LocalDateTime): Larva = {
 
@@ -104,8 +115,9 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
 
     val nonSettlementPeriod = getNonSettlementPeriod()
 
+    larvaeCount += 1
     val fish = new Fish(
-      randomUUID.toString(),
+      deterministicId(),
       pld,
       pld,
       new Birthplace(site.title, site.reefId, birthLocation),

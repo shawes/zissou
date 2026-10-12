@@ -6,10 +6,12 @@ import locals.PelagicLarvalDurationType
 import io.config._
 import utilities.Time
 import locals.Constants
+import maths.RandomNumberGenerator
 
 class PelagicLarvalDuration(val config: PelagicLarvalDurationConfig) {
   private val distribution: NormalDistribution =
     new NormalDistribution(
+      RandomNumberGenerator.generator,
       Time.convertDaysToSeconds(config.mean),
       Constants.SecondsInDay * config.stdev
     )
