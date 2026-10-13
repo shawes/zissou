@@ -72,6 +72,21 @@ Earlier versions sampled the flow a whole step too far along each leg (at 1, 1.5
 
 Earlier versions let a passive larva swim like an undirected one.
 
+### Days, depths and settling
+
+The simulation clock is UTC, as the flow files are. Larvae are released, and daily mortality and the daily ontogenetic migration (`ovmProbabilities.implementation: daily`) are applied, on the first time step of each day, whatever the length of the step.
+
+Diel migration follows the sun where the larva is. At dawn the larva goes to a depth drawn from the `day` probabilities, and at dusk to one drawn from the `night` probabilities. It migrates on the first step within 45 minutes of sunrise or sunset, or within a time step when the step is longer than that. A larva with ontogenetic migration as well takes its depth from that, and diel migration takes it to a day depth from dawn to dusk. A change of stage by day changes the depth it goes back to at dusk.
+
+A larva can settle once it is older than its competency period (`nonSettlementPeriod`, which is capped at its PLD), and dies of old age once it is older than its PLD, without settling on that step.
+
+Earlier versions:
+
+- read the clock as local time when finding sunrise and sunset, and used the `day` probabilities by night and the `night` ones by day. Off eastern Australia the two nearly cancelled, leaving larvae at their day depths from about 05:00 to 15:00 local; elsewhere they were further out;
+- did the daily things on every step that started between 00:00 and 01:00: twice a day with half hour steps, and only on some days with steps that do not divide a day;
+- left a larva with both migrations at its day depth for good once dawn lasted more than one step;
+- let a larva that died of old age settle on the step it died.
+
 ## Building and running
 
 Zissou needs a JDK (17 or later) and [sbt](https://www.scala-sbt.org/).
