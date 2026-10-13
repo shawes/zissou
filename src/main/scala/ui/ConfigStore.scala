@@ -134,13 +134,16 @@ class ConfigStore(val dir: Path, baseDir: Path) {
 
   // an address is a directory on an OPeNDAP server: the files are <address>/<prefix>_<variable>_<year>_<month>.nc
   private def invalidFlowAddress(config: Configuration): Option[String] = {
-    val path = config.flow.netcdfFilePath
-    if (!io.OpenDapFlowSource.isUrl(path)) None
-    else if (scala.util.Try(java.net.URI.create(path)).toOption.forall(uri => uri.getHost == null))
-      Some(s"flow.netcdfFilePath '$path' is not a valid address.")
-    else if (path.contains("?") || path.endsWith(".nc"))
-      Some(s"flow.netcdfFilePath must be the directory of the monthly files on the server, without a file name or query: '$path'.")
-    else None
+    val paths = ("flow.netcdfFilePath" -> config.flow.netcdfFilePath) +:
+      config.flow.nested.getOrElse(List.empty).zipWithIndex.map { case (n, i) => s"flow.nested[$i].netcdfFilePath" -> n.netcdfFilePath }
+    paths.flatMap { case (name, path) =>
+      if (!io.OpenDapFlowSource.isUrl(path)) None
+      else if (scala.util.Try(java.net.URI.create(path)).toOption.forall(uri => uri.getHost == null))
+        Some(s"$name '$path' is not a valid address.")
+      else if (path.contains("?") || path.endsWith(".nc"))
+        Some(s"$name must be the directory of the monthly files on the server, without a file name or query: '$path'.")
+      else None
+    }.headOption
   }
 
   // the part of the flow grid that is read, and how many depth levels of it
@@ -150,6 +153,13 @@ class ConfigStore(val dir: Path, baseDir: Path) {
       case b if !(b.south < b.north) => s"flow.bounds.south (${b.south}) must be less than flow.bounds.north (${b.north})."
       case b if !(b.west < b.east) => s"flow.bounds.west (${b.west}) must be less than flow.bounds.east (${b.east})."
     }.orElse(flow.depthLevels.collectFirst { case n if n < 1 => s"flow.depthLevels must be at least 1, not $n." })
+      .orElse(flow.nested.getOrElse(List.empty).zipWithIndex.collectFirst {
+        case (n, i) if !(n.bounds.south < n.bounds.north) =>
+          s"flow.nested[$i].bounds.south (${n.bounds.south}) must be less than its north (${n.bounds.north})."
+        case (n, i) if !(n.bounds.west < n.bounds.east) =>
+          s"flow.nested[$i].bounds.west (${n.bounds.west}) must be less than its east (${n.bounds.east})."
+        case (n, i) if n.depthLevels.exists(_ < 1) => s"flow.nested[$i].depthLevels must be at least 1."
+      })
   }
 
   private def summarise(config: Configuration): ConfigSummary =
@@ -177,6 +187,10 @@ class ConfigStore(val dir: Path, baseDir: Path) {
     else {
       val absent = Seq("u", "v", "w").filter(v => missing(s"$flow/$v"))
       if (absent.nonEmpty) warnings += s"The flow folder '$flow' has no ${absent.mkString(", ")} sub-folder."
+    }
+    config.flow.nested.getOrElse(List.empty).zipWithIndex.foreach { case (n, i) =>
+      if (!io.OpenDapFlowSource.isUrl(n.netcdfFilePath) && missing(n.netcdfFilePath))
+        warnings += s"The nested flow folder '${n.netcdfFilePath}' (flow.nested[$i]) does not exist."
     }
     if (missing(config.habitat.shapeFilePath)) {
       warnings += s"The habitat shapefile '${config.habitat.shapeFilePath}' does not exist."

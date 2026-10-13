@@ -27,7 +27,9 @@ class Flow(
     val includeVerticalVelocity: Boolean,
     val region: FlowRegion = FlowRegion.Default,
     val depthLevels: Int = FlowRegion.DefaultDepthLevels,
-    val filePrefix: String = "ocean"
+    val filePrefix: String = "ocean",
+    /** Finer models nested inside this one, tried in this order before it: list the finest first. */
+    val nests: List[Flow] = List.empty
 ) {
   var dimensions = new Dimensions(
     new ContinuousRange(),
