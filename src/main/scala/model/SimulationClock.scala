@@ -56,13 +56,19 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Loggin
   private val SecondsInDay = 86400
 
   // The exact calculator is expensive, so it is only built, and asked, when the
-  // approximation cannot settle the answer
+  // approximation cannot settle the answer.
+  //
+  // The clock is UTC, as the flow is, and the sun rises and sets by the local time at
+  // the larva, so the clock's time is moved into the larva's time zone: the same moment,
+  // read off a local clock. Taking the clock as local time instead put dawn and dusk
+  // out by the zone's offset, ten hours off Australia's east coast.
   private class SunTimes(location : GeoCoordinate) {
     private val timezone = getTimeZone(location)
     private lazy val calculator = new SunriseSunsetCalculator(new Location(location.latitude, location.longitude), timezone.toTimeZone)
-    private val nowDateTime : DateTime = now.toDateTime(timezone)
+    private val nowDateTime : DateTime = now.toDateTime(DateTimeZone.UTC).withZone(timezone)
+    private val localNow : LocalDateTime = nowDateTime.toLocalDateTime
     private lazy val approximateEvents = SolarEvents.approximate(
-      location.latitude, location.longitude, now.getDayOfYear, timezone.getOffset(nowDateTime) / 3600000)
+      location.latitude, location.longitude, localNow.getDayOfYear, timezone.getOffset(nowDateTime) / 3600000)
 
     def isNear(sun : Sun) : Boolean = approximatelyNear(sun) match {
       case Some(answer) => answer
@@ -73,7 +79,7 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Loggin
     private def approximatelyNear(sun : Sun) : Option[Boolean] = approximateEvents match {
       case Some((sunrise, sunset)) =>
         val event = if (sun == Sun.Rising) sunrise else sunset
-        val nowSeconds = now.getMillisOfDay / 1000.0
+        val nowSeconds = localNow.getMillisOfDay / 1000.0
         if (SolarEvents.distanceAroundTheClock(nowSeconds, event) > SkipBeyondSeconds) Some(false)
         // an event too close to midnight might belong to the neighbouring day, so leave it
         else if (event > ApproximationMargin && event < SecondsInDay - ApproximationMargin &&

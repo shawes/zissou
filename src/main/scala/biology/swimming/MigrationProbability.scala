@@ -14,6 +14,6 @@ class OntogeneticMigrationProbability(
 
 class DielMigrationProbability(
     depth: ContinuousRange,
-    val night: Double,
-    val day: Double
+    val day: Double,
+    val night: Double
 ) extends MigrationProbability(depth) {}

@@ -14,7 +14,8 @@ class SimulationClockPrefilterTest extends AnyFlatSpec {
   private val interval =
     new DateTime(2002, 1, 5, 0, 0, DateTimeZone.UTC) to new DateTime(2002, 12, 31, 0, 0, DateTimeZone.UTC)
 
-  // The sun event straight from the library, with none of the clock's shortcuts
+  // The sun event straight from the library, with none of the clock's shortcuts, for a
+  // time on the clock, which is UTC
   private def exactSunEvent(
       location: GeoCoordinate,
       now: LocalDateTime,
@@ -23,7 +24,7 @@ class SimulationClockPrefilterTest extends AnyFlatSpec {
     val zone = DateTimeZone.forOffsetHours((location.longitude * 24 / 360).toInt)
     val calculator = new SunriseSunsetCalculator(
       new Location(location.latitude, location.longitude), zone.toTimeZone)
-    val nowDateTime = now.toDateTime(zone)
+    val nowDateTime = now.toDateTime(DateTimeZone.UTC).withZone(zone)
     val calendar = nowDateTime.toCalendar(Locale.getDefault())
     def near(event: DateTime): Boolean = {
       val seconds = math.abs((event.getMillis - nowDateTime.getMillis) / 1000)
@@ -41,7 +42,7 @@ class SimulationClockPrefilterTest extends AnyFlatSpec {
       hours <- Seq(1, 2, 6)
       clock = new SimulationClock(interval, new TimeStep(hours, TimeStepType.Hour))
       lat <- -50 to -10 by 8
-      lon <- 142 to 180 by 9
+      lon <- Seq(-150, -75, 0, 142, 151, 160, 169, 178)
       day <- 1 to 365 by 23
       minute <- 0 until 1440 by 20
     } {
