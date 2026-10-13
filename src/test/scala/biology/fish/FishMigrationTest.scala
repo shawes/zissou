@@ -70,6 +70,31 @@ class FishMigrationTest extends AnyFlatSpec {
     assert(isOntogeneticDepth(depth(larva)))
   }
 
+  // no day depths: day probabilities of all 0, and shallow by night
+  private val stillByDay = new DielMigration(List(25, 50, 75, 100), List(0, 0, 0, 0), List(1, 0, 0, 0))
+
+  "A larva whose diel day probabilities are all 0" should "stay where it is at dawn, and still migrate at dusk" in {
+    val larva = fish(None, Some(stillByDay))
+    larva.dielMigrate(Night)
+    val night = depth(larva)
+    assert(night <= 25)
+    larva.dielMigrate(Day)
+    assert(depth(larva) == night)
+  }
+
+  it should "keep its ontogenetic depth by day when it has both migrations, and move with its stage by day" in {
+    val larva = fish(Some(ovm), Some(stillByDay))
+    larva.ovmMigrate(developed)
+    val before = depth(larva)
+    larva.dielMigrate(Day)
+    assert(depth(larva) == before)
+    larva.ovmMigrate(developed) // a new stage by day takes it to a new ontogenetic depth at once
+    val developedByDay = depth(larva)
+    assert(isOntogeneticDepth(developedByDay) && developedByDay != before)
+    larva.dielMigrate(Night) // and dusk leaves it there
+    assert(depth(larva) == developedByDay)
+  }
+
   it should "take its ontogenetic depth when it develops by night" in {
     val larva = fish(Some(ovm), Some(diel))
     larva.dielMigrate(Night)

@@ -30,8 +30,16 @@ class DielMigration(
 
   def enabled: Boolean = probabilities.nonEmpty
 
+  /** Whether the probabilities for dawn (Day) or dusk (Night) take a larva anywhere: all 0, they leave it where it is. */
+  def moves(time: DielVerticalMigrationType): Boolean =
+    probabilities.exists(p => (if (time == Day) p.day else p.night) != 0)
+
+  /** The depth a larva goes to at dawn (Day) or dusk (Night), from the depth it is at. */
+  def apply(dielMigration: DielVerticalMigrationType, currentDepth: Double): Double =
+    if (moves(dielMigration)) draw(dielMigration) else currentDepth
+
   //TODO: Reduce complexity of this method
-  def apply(dielMigration: DielVerticalMigrationType): Double = {
+  private def draw(dielMigration: DielVerticalMigrationType): Double = {
     var cumulativeProbability = 0.0
     val number = RandomNumberGenerator.get
     val iterator = probabilities.iterator

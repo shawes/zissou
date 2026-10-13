@@ -29,16 +29,18 @@ class LarvaChecksTest extends AnyFlatSpec {
       |    postflexion: [0.05, 0.85, 0.1]
       |""".stripMargin
 
-  "Migration probabilities" should "be accepted when each set adds up to 1, or a stage of ontogenetic migration is all 0" in {
+  "Migration probabilities" should "be accepted when each set adds up to 1, or is all 0" in {
     assert(problems().isEmpty)
     assert(problems(diel = "", ovm = "").isEmpty, "no migration at all")
+    assert(problems(diel = Diel.replace("night: [0.3, 0.3, 0.3, 0.1]", "night: [0, 0, 0, 0]")).isEmpty, "a diel night of all 0")
+    assert(problems(diel = Diel.replace("day: [0.1, 0.3, 0.4, 0.2]", "day: [0, 0, 0, 0]")).isEmpty, "a diel day of all 0")
   }
 
   it should "add up to 1 for diel migration, by day and by night" in {
     assert(problems(diel = Diel.replace("day: [0.1, 0.3, 0.4, 0.2]", "day: [0.1, 0.3, 0.4, 0.1]")) ==
-      Seq("larva.dielProbabilities.day must add up to 1, not 0.9."))
-    assert(problems(diel = Diel.replace("night: [0.3, 0.3, 0.3, 0.1]", "night: [0, 0, 0, 0]")) ==
-      Seq("larva.dielProbabilities.night must add up to 1, not 0."))
+      Seq("larva.dielProbabilities.day must add up to 1, or be all 0 to leave larvae where they are at dawn, not 0.9."))
+    assert(problems(diel = Diel.replace("night: [0.3, 0.3, 0.3, 0.1]", "night: [0.3, 0.3, 0.3, 0.2]")) ==
+      Seq("larva.dielProbabilities.night must add up to 1, or be all 0 to leave larvae where they are at dusk, not 1.1."))
   }
 
   it should "add up to 1, or be all 0, for each stage of ontogenetic migration" in {
@@ -48,7 +50,7 @@ class LarvaChecksTest extends AnyFlatSpec {
 
   it should "not be percentages" in {
     assert(problems(diel = Diel.replace("day: [0.1, 0.3, 0.4, 0.2]", "day: [10, 30, 40, 20]")) ==
-      Seq("larva.dielProbabilities.day must add up to 1, not 100."))
+      Seq("larva.dielProbabilities.day must add up to 1, or be all 0 to leave larvae where they are at dawn, not 100."))
   }
 
   it should "give one probability for each depth band" in {

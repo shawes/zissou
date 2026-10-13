@@ -164,6 +164,6 @@ class ConfigStoreTest extends AnyFlatSpec {
     )
     assert(configs.validate(withDiel("[0.3, 0.7]")).ok)
     val result = configs.validate(withDiel("[30, 70]"))
-    assert(!result.ok && result.error.contains("larva.dielProbabilities.day must add up to 1, not 100."))
+    assert(!result.ok && result.error.contains("larva.dielProbabilities.day must add up to 1, or be all 0 to leave larvae where they are at dawn, not 100."))
   }
 }

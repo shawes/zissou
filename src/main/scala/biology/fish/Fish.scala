@@ -131,8 +131,9 @@ class Fish(
 
   // A larva with both migrations takes its depth from the ontogenetic one, except from dawn
   // to dusk, when the diel one takes it to a day depth. By day the ontogenetic depth is
-  // kept as nightDepth, the depth it goes back to at dusk.
-  private def isAtDayDepth: Boolean = diel.isDefined && lastDielMigration.contains(Day)
+  // kept as nightDepth, the depth it goes back to at dusk. Day probabilities of all 0 take
+  // it nowhere, so it keeps its ontogenetic depth all day.
+  private def isAtDayDepth: Boolean = diel.exists(_.moves(Day)) && lastDielMigration.contains(Day)
 
   override def ovmMigrate(variables: OntogeneticMigrationVariables): Unit = {
     ovm match {
@@ -160,15 +161,15 @@ class Fish(
           time match {
             case Day => {
               nightDepth = position.depth
-              depthMigration(diel(Day))
+              depthMigration(diel(Day, position.depth))
             }
             case Night =>
-              if (nightDepth >= 0) {
+              if (isAtDayDepth) {
                 depthMigration(nightDepth)
               }
           }
         } else {
-          depthMigration(diel(time))
+          depthMigration(diel(time, position.depth))
         }
         lastDielMigration = Some(time)
       }

@@ -26,34 +26,31 @@ object LarvaChecks {
         case _ => None
       }
 
-  // Diel migration always takes a larva somewhere, so its day and its night each add up to 1
+  // A set of probabilities that are all 0 leaves a larva where it is: at dawn (day), at dusk
+  // (night), or in a stage of ontogenetic migration
   private def diel(larva: LarvaConfig): Seq[String] =
     larva.dielProbabilities.toSeq.flatMap { diel =>
-      Seq("day" -> diel.day, "night" -> diel.night).flatMap { case (name, values) =>
-        probabilities(s"larva.dielProbabilities.$name", values, diel.depths.size, mayAllBeZero = false)
+      Seq("day" -> (diel.day, "at dawn"), "night" -> (diel.night, "at dusk")).flatMap { case (name, (values, when)) =>
+        probabilities(s"larva.dielProbabilities.$name", values, diel.depths.size, when)
       }
     }
 
-  // A stage of ontogenetic migration whose probabilities are all 0 leaves a larva where it is
   private def ontogenetic(larva: LarvaConfig): Seq[String] =
     larva.ovmProbabilities.toSeq.flatMap { ovm =>
       Seq("hatching" -> ovm.hatching, "preflexion" -> ovm.preflexion, "flexion" -> ovm.flexion, "postflexion" -> ovm.postflexion)
         .flatMap { case (name, values) =>
-          probabilities(s"larva.ovmProbabilities.$name", values, ovm.depths.size, mayAllBeZero = true)
+          probabilities(s"larva.ovmProbabilities.$name", values, ovm.depths.size, "in that stage")
         }
     }
 
-  private def probabilities(field: String, values: List[Double], bands: Int, mayAllBeZero: Boolean): Option[String] = {
+  private def probabilities(field: String, values: List[Double], bands: Int, whenAllZero: String): Option[String] = {
     val total = values.sum
     if (values.size != bands)
       Some(s"$field has ${values.size} probabilities for $bands depth bands: give one for each band.")
     else if (values.exists(value => !(value >= 0)))
       Some(s"$field has a probability below 0.")
-    else if (math.abs(total - 1) <= Tolerance || (mayAllBeZero && total == 0)) None
-    else {
-      val orZero = if (mayAllBeZero) ", or be all 0 to leave larvae where they are in that stage" else ""
-      Some(s"$field must add up to 1$orZero, not ${shown(total)}.")
-    }
+    else if (math.abs(total - 1) <= Tolerance || total == 0) None
+    else Some(s"$field must add up to 1, or be all 0 to leave larvae where they are $whenAllZero, not ${shown(total)}.")
   }
 
   private def shown(value: Double): String =
