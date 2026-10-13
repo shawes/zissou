@@ -72,17 +72,17 @@ class Fish(
   }
 
   /*
-   * Develops the larvae by ageing it the specified number of seconds
+   * Develops the larva by ageing it the specified number of seconds. True when it has just
+   * taken on a stage: a new one, or, on its first step, the one it was born in, so that a
+   * migration by stage takes it to that stage's depths too.
    */
   override def incrementAge(seconds: Int): Boolean = {
+    val isFirstStep = age == 0
     age += seconds
     val newOntogeny = getOntogeneticStateForAge(age)
-    if (newOntogeny == ontogeny) {
-      false
-    } else {
-      ontogeny = newOntogeny
-      true
-    }
+    val developed = newOntogeny != ontogeny
+    ontogeny = newOntogeny
+    isFirstStep || developed
   }
 
   def swim(): Option[Velocity] = {

@@ -27,6 +27,13 @@ class FishMigrationTest extends AnyFlatSpec {
   private def isDayDepth(d: Double) = d >= 76 && d <= 100
   private def isOntogeneticDepth(d: Double) = d >= 31 && d <= 60
 
+  "A larva" should "take on a stage on its first step, the one it is born in, and then on each change of stage" in {
+    val larva = fish(Some(ovm), None) // preflexion at 1 day, flexion at 2, postflexion at 3
+    val steps = (1 to 48).map(_ => larva.incrementAge(7200)) // four days of 2 hour steps
+    // the first step, then the steps on which it turns 1, 2 and 3 days old
+    assert(steps.zipWithIndex.collect { case (true, i) => i + 1 } == Seq(1, 12, 24, 36))
+  }
+
   "A larva that migrates daily" should "migrate once at dawn and once at dusk, however many steps they last" in {
     val larva = fish(None, Some(diel))
     larva.dielMigrate(Day)

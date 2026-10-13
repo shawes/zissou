@@ -80,6 +80,8 @@ The simulation clock is UTC, as the flow files are. Larvae are released, and dai
 
 Diel migration follows the sun where the larva is. At dawn the larva goes to a depth drawn from the `day` probabilities, and at dusk to one drawn from the `night` probabilities. It migrates on the first step within 45 minutes of sunrise or sunset, or within a time step when the step is longer than that. A larva with ontogenetic migration as well takes its depth from that, and diel migration takes it to a day depth from dawn to dusk. A change of stage by day changes the depth it goes back to at dusk.
 
+With ontogenetic migration by stage (`implementation: stage`), a larva goes to a depth drawn from its stage's probabilities on its first step, for the stage it is born in, and on each change of stage after that. A stage whose probabilities are all 0 leaves the larva at the depth it has. Earlier versions migrated only on a change of stage, so the `hatching` probabilities were never used, and a larva born in preflexion stayed at its spawning depth until flexion.
+
 A larva is in its first stage (the one the `hatching` migration probabilities are for) from birth until preflexion. `ontogeny.hatching` can be left out: it is read but not used. Earlier versions drew a hatching age for each larva and did nothing with it.
 
 A larva can settle once it is older than its competency period (`nonSettlementPeriod`, which is capped at its PLD), and dies of old age once it is older than its PLD, without settling on that step.
