@@ -145,4 +145,14 @@ class ConfigStoreTest extends AnyFlatSpec {
     }
     assert(configs.validate(SampleConfig.yaml().replaceAll("horizontalDiffusionCoefficient: [0-9.]+", "horizontalDiffusionCoefficient: 0")).ok, "zero is allowed")
   }
+
+  it should "reject a mortality rate that is a percentage, or missing, for mortal larvae" in {
+    val (configs, _) = store()
+    val percentage = configs.validate(SampleConfig.yaml().replace("mortalityRate: 0.26", "mortalityRate: 26"))
+    assert(!percentage.ok && percentage.error.exists(_.contains("from 0 to 1")))
+    val missing = configs.validate(SampleConfig.yaml().replace("  mortalityRate: 0.26\n", ""))
+    assert(!missing.ok && missing.error.exists(_.contains("larva.mortalityRate is missing")))
+    assert(configs.validate(SampleConfig.yaml().replace("isMortal: true", "isMortal: false").replace("  mortalityRate: 0.26\n", "")).ok,
+      "an immortal larva needs no rate")
+  }
 }

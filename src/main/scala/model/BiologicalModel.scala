@@ -38,8 +38,19 @@ class BiologicalModel(
   /** The number of larvae that drifted off the edge of the flow grid and were killed. */
   def larvaeLostFromDomain: Int = lostFromDomain.get
   val geometry = new Geometry
+
+  // The share of the larvae that die each day, from 0 to 1. Without one, a mortal larva
+  // used to be given 1, and every larva died on its first day.
+  if (config.larva.isMortal.getOrElse(false)) {
+    val rate = config.larva.mortalityRate
+    require(
+      rate.exists(r => r >= 0 && r <= 1),
+      "larva.mortalityRate must be the share of larvae that die each day, from 0 to 1 (0.26 for 26%), not " +
+        rate.map(_.toString).getOrElse("missing")
+    )
+  }
   val mortality: Mortality = new MortalityConstant(
-    config.larva.mortalityRate.getOrElse(1)
+    config.larva.mortalityRate.getOrElse(0)
   )
 
   def apply(): Unit = {

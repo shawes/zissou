@@ -55,4 +55,13 @@ class DailyEventsTest extends AnyFlatSpec {
       assert(oldAge > 190 && oldAge < 310, s"$oldAge of 2000 lived out their PLD with steps of $name")
     }
   }
+
+  it should "be a share of the larvae, from 0 to 1, given for mortal larvae" in {
+    val percentage = ModelFixture.yaml(inputs, ModelFixture.driftingLarva(mortalityRate = Some(26)))
+    val message = intercept[IllegalArgumentException](ModelFixture.run(percentage)).getMessage
+    assert(message.contains("from 0 to 1") && message.contains("not 26.0"))
+    val missing = ModelFixture.yaml(inputs, ModelFixture.driftingLarva(mortalityRate = Some(0.5)))
+      .replace("  mortalityRate: 0.5\n", "")
+    assert(intercept[IllegalArgumentException](ModelFixture.run(missing)).getMessage.contains("not missing"))
+  }
 }

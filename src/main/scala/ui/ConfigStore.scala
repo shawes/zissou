@@ -82,7 +82,7 @@ class ConfigStore(val dir: Path, baseDir: Path) {
     new ConfigurationFile().parse(text) match {
       case Left(failure) => Validation(false, Some(describe(failure)), None, Seq.empty)
       case Right(config) =>
-        invalidDate(config).orElse(invalidInterval(config)).orElse(invalidDiffusion(config)) match {
+        invalidDate(config).orElse(invalidInterval(config)).orElse(invalidDiffusion(config)).orElse(invalidMortality(config)) match {
           case Some(problem) => Validation(false, Some(problem), None, Seq.empty)
           case None => Validation(true, None, Some(summarise(config)), warningsFor(config))
         }
@@ -135,6 +135,16 @@ class ConfigStore(val dir: Path, baseDir: Path) {
     Seq("horizontalDiffusionCoefficient" -> t.horizontalDiffusionCoefficient, "verticalDiffusionCoefficient" -> t.verticalDiffusionCoefficient)
       .collectFirst { case (name, value) if value < 0 || value.isNaN => s"turbulence.$name must be zero or more." }
   }
+
+  // a share of the larvae, not a percentage
+  private def invalidMortality(config: Configuration): Option[String] =
+    if (!config.larva.isMortal.getOrElse(false)) None
+    else config.larva.mortalityRate match {
+      case None => Some("larva.mortalityRate is missing: give the share of larvae that die each day, from 0 to 1.")
+      case Some(rate) if !(rate >= 0 && rate <= 1) =>
+        Some(s"larva.mortalityRate must be the share of larvae that die each day, from 0 to 1 (0.26 for 26%), not $rate.")
+      case _ => None
+    }
 
   private def summarise(config: Configuration): ConfigSummary =
     ConfigSummary(
