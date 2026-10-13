@@ -63,8 +63,51 @@ class ResultsReaderTest extends AnyFlatSpec {
     assert(kernel.count == 3)
     assert(kernel.meanCrowFliesKm == 30.0 && kernel.medianCrowFliesKm == 30.0 && kernel.maxCrowFliesKm == 50.0)
     assert(kernel.meanDispersalKm == 40.0 && kernel.meanAgeDays == 5.0)
-    assert(kernel.histogram.size == 10 && kernel.histogram.map(_.count).sum == 3)
-    assert(kernel.histogram.last.count == 1, "the furthest larva belongs in the last bin")
+    assert(kernel.bands.map(_.count).sum == 3, "every larva is in a band")
+    // 10, 30 and 50 km: the last band is 20 to 50 km, which holds the 30 and the furthest, 50
+    assert(kernel.bands.last.count == 2 && kernel.bands.last.toKm.contains(50.0), "the furthest larva belongs in the last band")
+  }
+
+  it should "group distances into bands that grow, so that larvae settling close to home are still told apart" in {
+    // (path, straight line) of each larva, in km
+    val bands = ResultsReader.bands(Seq((0.0, 0.0), (0.0, 0.0), (1.0, 0.5), (2.0, 1.5), (4.0, 3.0), (20.0, 12.0), (300.0, 205.0)))
+    assert(bands.map(b => (b.fromKm, b.toKm, b.count)) == Seq(
+      (0.0, Some(0.0), 2), (0.0, Some(1.0), 1), (1.0, Some(2.0), 1), (2.0, Some(5.0), 1), (5.0, Some(10.0), 0),
+      (10.0, Some(20.0), 1), (20.0, Some(50.0), 0), (50.0, Some(100.0), 0), (100.0, Some(200.0), 0), (200.0, Some(500.0), 1)))
+    assert(bands.map(_.count).sum == 7)
+    // a larva that goes further than any edge opens the last band
+    val far = ResultsReader.bands(Seq((1.0, 1.0), (9000.0, 9000.0)))
+    assert(far.last.toKm.isEmpty && far.last.fromKm == 5000.0 && far.last.count == 1)
+    assert(ResultsReader.bands(Seq.empty).map(_.count).sum == 0)
+  }
+
+  it should "count a larva that never moved as staying even if its depth changed, and one that came back as moving" in {
+    // never moved but its depth changed: a path of nothing and a straight line of 30 m; moved and ended where it began
+    val bands = ResultsReader.bands(Seq((0.0, 0.03), (0.0, 0.0), (6.0, 0.0), (6.0, 2.0)))
+    assert(bands.head.count == 2, "the two that never moved")
+    assert(bands(1).count == 1 && bands(1).toKm.contains(1.0), "the one that came back, in the first band of those that moved")
+    assert(bands.size == 3 && bands(2).count == 1 && bands(2).toKm.contains(2.0), "and the one at 2 km in the next")
+  }
+
+  it should "say within what distance a share of the larvae settled" in {
+    val km = (1 to 100).map(_.toDouble)
+    assert(Seq(50, 90, 99, 100).map(ResultsReader.percentile(km, _)) == Seq(50.0, 90.0, 99.0, 100.0))
+    assert(ResultsReader.percentile(Seq.empty, 50) == 0.0 && ResultsReader.percentile(Seq(7.0), 99) == 7.0)
+  }
+
+  it should "count larvae that never moved, and give the distances of each release reef" in {
+    val run = runWith(Seq("a,d,patch 101,101,5.0,d,101", "b,d,patch 101,101,5.0,d,101", "c,d,patch 102,102,5.0,d,102", "e,d,patch 102,102,5.0,d,101"), Seq(
+      "a,d,patch 101,101,5.0,101,0.0,0.0",
+      "b,d,patch 101,101,5.0,101,8000.0,4000.0",
+      "c,d,patch 102,102,5.0,102,0.0,0.0",
+      "e,d,patch 102,102,5.0,101,60000.0,30000.0"))
+    val kernel = ResultsReader.read(run).get.kernel.get
+    assert(kernel.stayed == 2)
+    assert(kernel.bySite == Seq(
+      // of two larvae, the median is the nearer
+      SiteDistance(101, "patch 101", 2, 1, 0.0, 4.0, 4.0), SiteDistance(102, "patch 102", 2, 1, 0.0, 30.0, 30.0)))
+    assert(kernel.percentiles.map(_.percent) == Seq(50, 75, 90, 95, 99))
+    assert(kernel.percentiles.last.km == 30.0)
   }
 
   it should "give no kernel when no larva settled" in {

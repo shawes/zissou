@@ -146,6 +146,14 @@ td.num, th.num { text-align: right; }
 .chart .area { fill: color-mix(in srgb, var(--accent) 14%, transparent); }
 .chart text { fill: var(--muted); font-size: 11px; }
 
+.distance-chart { max-width: 860px; margin: 6px 0 14px; }
+.distance { width: 100%; height: auto; display: block; }
+.distance .axis { stroke: var(--line); stroke-width: 1; }
+.distance .dbar { fill: var(--accent); }
+.distance .dbar.stayed { fill: var(--c1); }
+.distance .cumulative { fill: none; stroke: var(--c2); stroke-width: 2; stroke-linejoin: round; }
+.distance .cumulative-dot { fill: var(--c2); }
+.distance text { fill: var(--muted); font-size: 11px; }
 .hist { display: flex; align-items: flex-end; gap: 4px; height: 120px; margin-top: 8px; }
 .hist .bar { flex: 1; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 1px; }
 .hist-axis { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-top: 4px; }

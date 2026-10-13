@@ -14,7 +14,11 @@ case class MatrixPatch(patch: Int, name: String, latitude: Option[Double], longi
   * columns settled on, so the diagonal is larvae that settled where they were released.
   */
 case class Matrix(patches: Seq[MatrixPatch], cells: Seq[Seq[Int]], peak: Int) derives Encoder.AsObject
-case class HistogramBin(fromKm: Double, toKm: Double, count: Int) derives Encoder.AsObject
+/** Larvae that settled between `fromKm` (not included) and `toKm` (included) from where they were released; the first band, from nothing to nothing, is those that settled where they began. */
+case class DistanceBand(fromKm: Double, toKm: Option[Double], count: Int) derives Encoder.AsObject
+/** The distance within which `percent` of the larvae settled. */
+case class Percentile(percent: Int, km: Double) derives Encoder.AsObject
+case class SiteDistance(patch: Int, name: String, count: Int, stayed: Int, medianKm: Double, p90Km: Double, maxKm: Double) derives Encoder.AsObject
 case class Kernel(
     count: Int,
     meanDispersalKm: Double,
@@ -22,7 +26,10 @@ case class Kernel(
     medianCrowFliesKm: Double,
     maxCrowFliesKm: Double,
     meanAgeDays: Double,
-    histogram: Seq[HistogramBin]
+    stayed: Int, // larvae whose path was nothing: they settled where they were released without ever moving
+    bands: Seq[DistanceBand],
+    percentiles: Seq[Percentile],
+    bySite: Seq[SiteDistance]
 ) derives Encoder.AsObject
 case class SiteTotal(patch: Int, name: String, settled: Int, returnedHome: Int) derives Encoder.AsObject
 case class OutputFile(name: String, bytes: Long) derives Encoder.AsObject
@@ -110,6 +117,34 @@ object ResultsReader {
       )
     }
 
+  // the edges of the bands of distance, in km: they grow, so that a run where most larvae settle close to home
+  // still shows how the rest are spread, which equal bands up to the furthest larva would not
+  private val BandEdges = Seq(1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 2000.0, 5000.0)
+
+  /**
+    * The bands that reach the furthest larva: those that never moved (their path was nothing, whatever the
+    * straight line to where they ended, which a change of depth alone makes more than nothing), then up to
+    * 1 km, up to 2 ... and the last open-ended if need be. A larva that moved and ended where it began is in the first.
+    * Each larva is its path and its straight-line distance, in km.
+    */
+  def bands(larvae: Seq[(Double, Double)]): Seq[DistanceBand] = {
+    val stayed = larvae.count(_._1 <= 0.0)
+    val moved = larvae.filter(_._1 > 0.0).map(_._2)
+    val furthest = moved.maxOption.getOrElse(0.0)
+    val edges = BandEdges.takeWhile(_ < furthest) ++ BandEdges.find(_ >= furthest)
+    val lowers = 0.0 +: edges
+    // the last band includes the furthest larva, and is open-ended if that is beyond the last edge
+    val upper = edges.map(Option(_)) ++ (if (BandEdges.forall(_ < furthest)) Seq(None) else Seq.empty)
+    DistanceBand(0.0, Some(0.0), stayed) +: lowers.zip(upper).zipWithIndex.map { case ((from, to), i) =>
+      // the first band takes a larva that moved and ended where it began
+      DistanceBand(from, to, moved.count(d => (d > from || (i == 0 && d >= from)) && to.forall(d <= _)))
+    }
+  }
+
+  /** The distance within which a share of the larvae settled, by nearest rank. */
+  def percentile(sortedKm: Seq[Double], percent: Int): Double =
+    if (sortedKm.isEmpty) 0.0 else sortedKm(math.max(0, math.min(sortedKm.size - 1, math.ceil(percent / 100.0 * sortedKm.size).toInt - 1)))
+
   // columns: id, born, birthplace, birth-reef, age, settle-reef, dispersal-distance, crow-flies-distance (metres)
   private def kernel(rows: Seq[Array[String]]): Option[Kernel] = {
     val parsed = rows.flatMap { c =>
@@ -117,28 +152,28 @@ object ResultsReader {
         age <- Try(c(4).toDouble).toOption
         path <- Try(c(6).toDouble / 1000).toOption
         straight <- Try(c(7).toDouble / 1000).toOption
-      } yield (age, path, straight)
+        reef <- Try(c(3).toInt).toOption
+      } yield (age, path, straight, reef, c(2))
     }
     if (parsed.isEmpty) None
     else {
       val straight = parsed.map(_._3).sorted
-      val max = straight.last
-      val bins = 10
-      val width = if (max <= 0) 1.0 else max / bins
-      val histogram = (0 until bins).map { i =>
-        val from = i * width
-        val to = (i + 1) * width
-        HistogramBin(from, to, straight.count(d => d >= from && (d < to || (i == bins - 1 && d <= to))))
+      val bySite = parsed.groupBy(_._4).toSeq.sortBy(_._1).map { case (reef, larvae) =>
+        val distances = larvae.map(_._3).sorted
+        SiteDistance(reef, larvae.head._5, larvae.size, larvae.count(_._2 <= 0.0), percentile(distances, 50), percentile(distances, 90), distances.last)
       }
       Some(
         Kernel(
           parsed.size,
           parsed.map(_._2).sum / parsed.size,
           straight.sum / straight.size,
-          straight(straight.size / 2),
-          max,
+          percentile(straight, 50),
+          straight.last,
           parsed.map(_._1).sum / parsed.size,
-          histogram
+          parsed.count(_._2 <= 0.0),
+          bands(parsed.map(p => (p._2, p._3))),
+          Seq(50, 75, 90, 95, 99).map(p => Percentile(p, percentile(straight, p))),
+          bySite
         )
       )
     }

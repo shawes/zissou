@@ -531,19 +531,64 @@ function resultsView(results) {
         h('a', { href: `/api/runs/${state.run.id}/files/${encodeURIComponent(f.name)}`, download: f.name }, `${f.name} (${formatBytes(f.bytes)})`)))));
 }
 
+const kmText = (km) => km >= 100 ? formatNumber(Math.round(km)) : km >= 10 ? km.toFixed(1) : km.toFixed(2).replace(/\.?0+$/, '') || '0';
+const bandLabel = (b) => b.toKm === 0 ? 'stayed' : b.toKm == null ? `>${kmText(b.fromKm)}` : `${kmText(b.fromKm)}–${kmText(b.toKm)}`;
+
+// How many larvae settled within each band of straight-line distance from where they were released (the bars, labelled
+// with their share of all that settled), and what share had settled within that distance (the line, on the right). The
+// first bar, larvae that never moved, is its own colour: a run where many do is telling you something.
+function distanceChart(kernel) {
+  const bands = kernel.bands;
+  const width = 760, height = 300, left = 56, right = 52, top = 28, bottom = 52;
+  const plotW = width - left - right, plotH = height - top - bottom;
+  const peak = Math.max(1, ...bands.map((b) => b.count));
+  const slot = plotW / bands.length;
+  const barX = (i) => left + i * slot + slot * 0.15;
+  const y = (count) => top + plotH - (count / peak) * plotH;
+  let running = 0;
+  const cumulative = bands.map((b) => (running += b.count) / kernel.count);
+  const line = cumulative.map((c, i) => `${i ? 'L' : 'M'}${(left + (i + 0.5) * slot).toFixed(1)},${(top + plotH - c * plotH).toFixed(1)}`).join('');
+
+  const bars = bands.flatMap((b, i) => [
+    svg('rect', { class: `dbar${b.toKm === 0 ? ' stayed' : ''}`, x: barX(i).toFixed(1), y: y(b.count).toFixed(1), width: (slot * 0.7).toFixed(1), height: Math.max(0, top + plotH - y(b.count)).toFixed(1) },
+      svg('title', {}, document.createTextNode(`${b.toKm === 0 ? 'Settled where released, without moving' : `${bandLabel(b)} km`}: ${formatNumber(b.count)} larvae (${((b.count / kernel.count) * 100).toFixed(1)}%), ${(cumulative[i] * 100).toFixed(1)}% by this distance`))),
+    b.count > 0 ? textNode(left + (i + 0.5) * slot, y(b.count) - 5, `${((b.count / kernel.count) * 100).toFixed(b.count / kernel.count < 0.1 ? 1 : 0)}%`, 'middle') : null,
+    textNode(left + (i + 0.5) * slot, top + plotH + 16, bandLabel(b), 'middle'),
+  ]).filter(Boolean);
+
+  const leftTicks = [0, 0.5, 1].map((f) => textNode(left - 6, top + plotH - f * plotH + 4, formatNumber(Math.round(peak * f)), 'end'));
+  const rightTicks = [0, 0.5, 1].map((f) => textNode(width - right + 6, top + plotH - f * plotH + 4, `${f * 100}%`, 'start'));
+  return svg('svg', { class: 'distance', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': 'Larvae by distance from release to settlement, and the share settled within each distance' },
+    svg('line', { class: 'axis', x1: left, y1: top + plotH, x2: width - right, y2: top + plotH }),
+    ...bars, svg('path', { class: 'cumulative', d: line }),
+    ...cumulative.map((c, i) => svg('circle', { class: 'cumulative-dot', cx: (left + (i + 0.5) * slot).toFixed(1), cy: (top + plotH - c * plotH).toFixed(1), r: 3 })),
+    ...leftTicks, ...rightTicks,
+    textNode(left, 12, 'larvae', 'start'), textNode(width - right, 12, 'settled within', 'end'),
+    textNode(left + plotW / 2, height - 6, 'straight-line distance from release to settlement (km)', 'middle'));
+}
+
 function kernelView(kernel) {
-  const peak = Math.max(1, ...kernel.histogram.map((b) => b.count));
+  const share = (n) => `${((n / kernel.count) * 100).toFixed(n / kernel.count < 0.1 ? 1 : 0)}%`;
+  const within = (p) => kernel.percentiles.find((x) => x.percent === p);
+  const siteTable = kernel.bySite.length < 2 ? null : h('div', { class: 'scroll' }, h('table', {},
+    h('thead', {}, h('tr', {}, ['Released from', 'Settled', 'Never moved', 'Median km', '90% within km', 'Furthest km'].map((t, i) => h('th', { class: i ? 'num' : '' }, t)))),
+    h('tbody', {}, kernel.bySite.map((s) => h('tr', {},
+      h('td', {}, s.name || `patch ${s.patch}`), h('td', { class: 'num' }, formatNumber(s.count)),
+      h('td', { class: 'num' }, `${formatNumber(s.stayed)} (${Math.round((s.stayed / s.count) * 100)}%)`),
+      h('td', { class: 'num' }, kmText(s.medianKm)), h('td', { class: 'num' }, kmText(s.p90Km)), h('td', { class: 'num' }, kmText(s.maxKm)))))));
   return h('div', { class: 'card' },
     h('h3', {}, 'How far larvae travelled'),
+    h('div', { class: 'metrics' },
+      metric(`${kmText(kernel.medianCrowFliesKm)} km`, 'median distance, release to settlement'),
+      metric(`${kmText(within(90).km)} km`, '90% settled within'),
+      metric(`${kmText(within(99).km)} km`, '99% settled within'),
+      metric(`${kmText(kernel.maxCrowFliesKm)} km`, 'furthest'),
+      metric(share(kernel.stayed), `never moved (${formatNumber(kernel.stayed)} of ${formatNumber(kernel.count)})`)),
     h('p', { class: 'hint' },
-      `Straight-line distance from release to settlement: average ${kernel.meanCrowFliesKm.toFixed(1)} km, median ${kernel.medianCrowFliesKm.toFixed(1)} km, furthest ${kernel.maxCrowFliesKm.toFixed(1)} km. ` +
-      `Distance along the path averaged ${kernel.meanDispersalKm.toFixed(1)} km, over ${kernel.meanAgeDays.toFixed(1)} days.`),
-    h('div', { class: 'hist', role: 'img', 'aria-label': 'Histogram of dispersal distance' },
-      kernel.histogram.map((b) => h('div', {
-        class: 'bar', style: `height:${(b.count / peak) * 100}%`,
-        title: `${b.fromKm.toFixed(0)} to ${b.toKm.toFixed(0)} km: ${b.count} larvae`,
-      }))),
-    h('div', { class: 'hist-axis' }, h('span', {}, '0 km'), h('span', {}, `${kernel.maxCrowFliesKm.toFixed(0)} km`)));
+      `Straight-line distance from release to settlement, in bands that grow. Bars are the larvae in each band; the line is the share that had settled within that distance. ` +
+      `Along the path they averaged ${kmText(kernel.meanDispersalKm)} km over ${kernel.meanAgeDays.toFixed(1)} days, against ${kmText(kernel.meanCrowFliesKm)} km in a straight line.`),
+    h('div', { class: 'distance-chart' }, distanceChart(kernel)),
+    siteTable);
 }
 
 const formatBytes = (n) => (n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(1)} MB`);
