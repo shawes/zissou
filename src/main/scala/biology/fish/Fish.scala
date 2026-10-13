@@ -128,46 +128,50 @@ class Fish(
       position
     )
 
+  // A larva with both migrations takes its depth from the ontogenetic one, except from dawn
+  // to dusk, when the diel one takes it to a day depth. By day the ontogenetic depth is
+  // kept as nightDepth, the depth it goes back to at dusk.
+  private def isAtDayDepth: Boolean = diel.isDefined && lastDielMigration.contains(Day)
+
   override def ovmMigrate(variables: OntogeneticMigrationVariables): Unit = {
     ovm match {
       case Some(ovm) => {
-        ovm.implementation match {
-          case TimeStepMigration =>
-            depthMigration(ovm(ontogeny, position.depth))
-          case OntogeneticStageMigration =>
-            if (variables.recentlyDeveloped)
-              depthMigration(ovm(ontogeny, position.depth))
-          case DailyMigration =>
-            if (variables.isMidnight)
-              depthMigration(ovm(ontogeny, position.depth))
+        val migrates = ovm.implementation match {
+          case TimeStepMigration         => true
+          case OntogeneticStageMigration => variables.recentlyDeveloped
+          case DailyMigration            => variables.isMidnight
+        }
+        if (migrates) {
+          if (isAtDayDepth) nightDepth = ovm(ontogeny, nightDepth)
+          else depthMigration(ovm(ontogeny, position.depth))
         }
       }
       case None => ()
     }
   }
 
+  // Dawn and dusk can each last more than one time step, so a larva migrates on the first
+  // step of each and is left alone for the rest
   override def dielMigrate(time: DielVerticalMigrationType): Unit = {
     diel match {
-      case Some(diel) => {
-        if (!lastDielMigration.isDefined || lastDielMigration.get != time) {
-          if (ovm.isDefined) {
-            time match {
-              case Day => {
-                nightDepth = position.depth
-                depthMigration(diel(Day))
-              }
-              case Night =>
-                if (nightDepth >= 0) {
-                  depthMigration(nightDepth)
-                }
+      case Some(diel) if !lastDielMigration.contains(time) => {
+        if (ovm.isDefined) {
+          time match {
+            case Day => {
+              nightDepth = position.depth
+              depthMigration(diel(Day))
             }
-          } else {
-            depthMigration(diel(time))
-            lastDielMigration = Some(time)
+            case Night =>
+              if (nightDepth >= 0) {
+                depthMigration(nightDepth)
+              }
           }
+        } else {
+          depthMigration(diel(time))
         }
+        lastDielMigration = Some(time)
       }
-      case None =>
+      case _ =>
     }
   }
 
