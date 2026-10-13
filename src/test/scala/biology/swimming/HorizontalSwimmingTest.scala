@@ -88,4 +88,11 @@ class HorizontalSwimmingTest
     val tooYoung = new HorizontalSwimmingVariables(90.0, 1, 1, 1, 1, 1)
     assert(new HorizontalSwimming(Directed, StrategyOne, 1, 1, 1, true, 1)(tooYoung).isEmpty)
   }
+
+  "A passive larva" should "not swim, whatever its swimming speed, age or heading" in {
+    for (strategy <- Seq(StrategyOne, StrategyTwo, StrategyThree); age <- Seq(1, 10, 19); angle <- Seq(0.0, 90.0, -6.0)) {
+      val passive = new HorizontalSwimming(Passive, strategy, criticalSpeed, 1, 1, true, 0.01)
+      assert(passive(new HorizontalSwimmingVariables(angle, age, 2, 5, 8, 20)).isEmpty, s"$strategy at age $age")
+    }
+  }
 }

@@ -19,7 +19,13 @@ class HorizontalSwimming(
     val hatchSwimmingSpeed: Double
 ) extends Logging {
 
+  // A passive larva does not swim, whatever its swimming speed
   def apply(
+      variables: HorizontalSwimmingVariables
+  ): Option[Velocity] =
+    if (ability == Passive) None else swim(variables)
+
+  private def swim(
       variables: HorizontalSwimmingVariables
   ): Option[Velocity] = {
     val speed = strategy match {

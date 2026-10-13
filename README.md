@@ -60,6 +60,16 @@ Each time step a larva is moved by the classical fourth order Runge-Kutta method
 
 Earlier versions sampled the flow a whole step too far along each leg (at 1, 1.5, 1.5 and 2 steps' worth of travel from the start, where the method has 0, 0.5, 0.5 and 1), took the starting flow from the nearest cell and left it out of the mean. That made a larva carried round an eddy spiral in towards its centre: one that the exact flow takes round a circle of radius 50 km was 36 km from the centre after five days of 2-hour steps, and where it ended depended on the length of the step. Results that depended on larvae dispersing through eddies will move.
 
+### Swimming
+
+`larva.swimming.ability` says how a larva that can swim chooses where to go:
+
+- `directed`: towards the nearest reef it can sense (within the olfactory distance) once it is postflexion, and in a random direction otherwise;
+- `undirected`: in a random direction, a new one each step;
+- `passive` (or left out): it does not swim at all, whatever its swimming speed.
+
+Earlier versions let a passive larva swim like an undirected one.
+
 ## Building and running
 
 Zissou needs a JDK (17 or later) and [sbt](https://www.scala-sbt.org/).
