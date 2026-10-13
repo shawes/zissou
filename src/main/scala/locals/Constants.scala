@@ -36,12 +36,6 @@ object Constants {
     val NoSwimmingAngleException = -6
   }
 
-  object Interpolation {
-    val CubicPoints = 4
-    val BicubicPoints = 16
-    val TricubicPoints = 64
-  }
-
   object NetcdfIndex {
     val X = 0
     val Y = 1

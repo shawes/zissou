@@ -43,12 +43,6 @@ sealed trait InterpolationTime
 case object InterpolateToday extends InterpolationTime
 case object InterpolateTomorrow extends InterpolationTime
 
-sealed trait InterpolationType
-case object Bilinear extends InterpolationType
-case object Bicubic extends InterpolationType
-case object Trilinear extends InterpolationType
-case object Tricubic extends InterpolationType
-
 sealed trait HorizontalSwimmingStrategy
 case object StrategyOne extends HorizontalSwimmingStrategy
 case object StrategyTwo extends HorizontalSwimmingStrategy

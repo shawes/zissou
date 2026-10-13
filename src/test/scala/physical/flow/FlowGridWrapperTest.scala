@@ -23,32 +23,6 @@ class FlowGridWrapperTest
     assert(flowGridWrapper != null)
   }
 
-  it should "get the correct neighbourhood size for tricubic integration" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
-    val neighbourhoodSize = PrivateMethod[Int](Symbol("neighbourhoodSize"))
-    val result = flowGridWrapper invokePrivate neighbourhoodSize(
-      Tricubic
-    )
-    assert(result == 8)
-  }
-  it should "get the correct neighbourhood size for bicubic integration" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
-    val neighbourhoodSize = PrivateMethod[Int](Symbol("neighbourhoodSize"))
-    val result = flowGridWrapper invokePrivate neighbourhoodSize(
-      Bicubic
-    )
-    assert(result == 4)
-  }
-
-  it should "get the correct neighbourhood size for bilinear integration" in {
-    val flowGridWrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
-    val neighbourhoodSize = PrivateMethod[Int](Symbol("neighbourhoodSize"))
-    val result = flowGridWrapper invokePrivate neighbourhoodSize(
-      Bilinear
-    )
-    assert(result == 2)
-  }
-
   "The weight of the later field" should "be 0 at the time of the earlier field, and before it" in {
     val wrapper = new FlowGridWrapper(depths, mockDatasets, earlier, later)
     assert(wrapper.weightOfLater(earlier) == 0.0)

@@ -4,7 +4,6 @@ import com.github.nscala_time.time.Imports._
 import exceptions.FlowDataExhaustedException
 import grizzled.slf4j.Logging
 import io.FlowFileIterator
-import maths.interpolation.Interpolation
 import physical.{GeoCoordinate, Velocity}
 
 /**
@@ -19,7 +18,6 @@ import physical.{GeoCoordinate, Velocity}
 class FlowController(val reader: FlowFileIterator, var flow: Flow)
     extends Logging {
 
-  private val interpolation = new Interpolation()
   // The pair the clock lies in first, then each one after it, a day on, that the step needs.
   // They are only changed in advanceTo, before the larvae are moved, never while they are.
   private var pairs: Vector[FlowGridWrapper] = Vector(reader.current)
@@ -59,8 +57,8 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow)
   /** The flow at the nearest grid cell at a time, blended between the two fields. */
   def getVelocity(coordinate: GeoCoordinate, time: LocalDateTime): Option[Velocity] = {
     val pair = pairAt(time)
-    val index = pair.getIndex(coordinate)
-    blend(pair, time)(isEarlier => pair.nearestVelocity(coordinate, index, isEarlier))
+    pair.getIndex(coordinate) // fails if the position is off the grid
+    blend(pair, time)(isEarlier => pair.nearestVelocity(coordinate, isEarlier))
   }
 
   /** The flow at a position and time: interpolated across the grid, and blended between the two fields. */
@@ -69,12 +67,8 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow)
       time: LocalDateTime
   ): Option[Velocity] = {
     val pair = pairAt(time)
-    val index = pair.getIndex(coordinate)
-    // on grids of their own, a position is located once for both fields and blended in one go
-    if (!pair.colocated) pair.interpolatedVelocity(coordinate, pair.weightOfLater(time))
-    else blend(pair, time)(isEarlier =>
-      interpolation(coordinate, pair, (index._1, index._2, index._3, isEarlier))
-    )
+    pair.getIndex(coordinate) // fails if the position is off the grid
+    pair.interpolatedVelocity(coordinate, pair.weightOfLater(time))
   }
 
   // Only the field(s) the time needs are read; where either one is missing (land) so is the flow

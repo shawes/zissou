@@ -112,17 +112,4 @@ class StaggeredGridTest extends AnyFlatSpec {
     for (lon <- Seq(153.25, 153.5, 153.75); lat <- Seq(-28.25, -28.0, -27.75)) assert(error(lon, lat) < 1e-6, s"inside at ($lat, $lon)")
     assert(error(153.1, -28.0) > 5e-3 && error(153.99, -28.0) > 5e-3, "in w's outermost gaps")
   }
-
-  "Flow on one grid" should "not be taken for flow on grids of their own" in {
-    val uniform = controller(UniformFlowDataset.write(_, Seq((2002, 1))))
-    val iterator = new FlowFileIterator(new Flow(
-      { val dir = Files.createTempDirectory("zissou-colocated"); UniformFlowDataset.write(dir.toFile, Seq((2002, 1))); dir.toString },
-      start to start.plusDays(10), new TimeStep(2, TimeStepType.Hour), true))
-    try assert(iterator.current.colocated) finally iterator.shutdown()
-    assert(uniform.getVelocityOfCoordinate(at(-28.0, 153.5, 5.0), time).isDefined)
-    val dir = Files.createTempDirectory("zissou-staggered-flag")
-    StaggeredFlowDataset.write(dir.toFile, Seq((2002, 1)))
-    val other = new FlowFileIterator(new Flow(dir.toString, start to start.plusDays(10), new TimeStep(2, TimeStepType.Hour), true))
-    try assert(!other.current.colocated) finally other.shutdown()
-  }
 }

@@ -1,7 +1,7 @@
 package physical.flow
 
 import com.github.nscala_time.time.Imports.{DateTimeZone, LocalDateTime}
-import exceptions.{CoordinateOutOfBoundsException, InterpolationNotImplementedException}
+import exceptions.CoordinateOutOfBoundsException
 import grizzled.slf4j.Logging
 import locals.Constants.NetcdfIndex
 import locals._
@@ -47,21 +47,21 @@ class FlowGridWrapper(
   }
 
   /** The flow at the nearest node of the earlier field, enough to tell land from sea. */
-  def getVelocity(coordinate: GeoCoordinate): Option[Velocity] =
-    nearestVelocity(coordinate, getIndex(coordinate), true)
+  def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
+    getIndex(coordinate) // fails if the position is off the grid
+    nearestVelocity(coordinate, true)
+  }
 
   /**
     * The flow at the nearest node, of the earlier or the later field. Where u, v and w are on one
     * grid that is the node of `index`; where they are not, each is read from the nearest node of its
     * own grid and the nearest level of its own depths.
     */
-  def nearestVelocity(coordinate: GeoCoordinate, index: (Int, Int, Int, Boolean), isEarlier: Boolean): Option[Velocity] =
-    if (colocated) getVelocity((index._1, index._2, index._3, isEarlier))
-    else {
-      val where = locate(coordinate, withGeometry = false)
-      val velocity = new Velocity(nearestValue(0, where, isEarlier), nearestValue(1, where, isEarlier), nearestValue(2, where, isEarlier))
-      if (velocity.isDefined) Some(velocity) else None
-    }
+  def nearestVelocity(coordinate: GeoCoordinate, isEarlier: Boolean): Option[Velocity] = {
+    val where = locate(coordinate, withGeometry = false)
+    val velocity = new Velocity(nearestValue(0, where, isEarlier), nearestValue(1, where, isEarlier), nearestValue(2, where, isEarlier))
+    if (velocity.isDefined) Some(velocity) else None
+  }
 
   // ---- u, v and w on grids of their own ---------------------------------------------------
 
@@ -82,10 +82,6 @@ class FlowGridWrapper(
 
   private def same(a: Array[Double], b: Array[Double]): Boolean =
     a.length == b.length && a.indices.forall(i => math.abs(a(i) - b(i)) < 1e-6)
-
-  /** Whether u, v and w are all on the one grid, with the same levels, as in most ocean models' output. */
-  lazy val colocated: Boolean =
-    axes.tail.forall(a => same(a.longitudes, axes.head.longitudes) && same(a.latitudes, axes.head.latitudes) && same(a.depths, axes.head.depths))
 
   // the node of an axis, running either way, nearest a value; the end node for a value beyond it
   private def nearestIndex(nodes: Array[Double], value: Double): Int = {
@@ -263,50 +259,6 @@ class FlowGridWrapper(
     closest
   }
 
-  // The longitude of each column of nodes and the latitude of each row, read from the
-  // data's own coordinate axes, in whichever direction they run
-  private lazy val longitudes: Array[Double] =
-    Array.tabulate(data.head.head._1(0)(0).length)(x => data.head.head._2.getLatLon(x, 0).getLongitude)
-  private lazy val latitudes: Array[Double] =
-    Array.tabulate(data.head.head._1(0).length)(y => data.head.head._2.getLatLon(0, y).getLatitude)
-
-  /** The flow at the grid nodes round a position, and where the position is in the gap between the middle ones. */
-  final class Stencil(
-      val nodes: Array[Array[Velocity]], // indexed [longitude][latitude]
-      val longitudeFraction: Double, // 0 to 1, from the first middle node to the second
-      val latitudeFraction: Double
-  )
-
-  /**
-    * The flow at the `size` by `size` block of grid nodes with the position inside its middle
-    * gap, for interpolating it. That is not always the block centred on the nearest node: the
-    * position lies between that node and the next one, on whichever side it is. Nothing is
-    * returned where the block runs off the grid or takes in a node with no flow (land).
-    */
-  def stencil(
-      coordinate: GeoCoordinate,
-      interpolation: InterpolationType,
-      index: (Int, Int, Int, Boolean)
-  ): Option[Stencil] = {
-    val size = neighbourhoodSize(interpolation)
-    val before = size / 2 - 1 // nodes before the gap
-    val lonNode = gapStart(longitudes, index._1, coordinate.longitude)
-    val latNode = gapStart(latitudes, index._2, coordinate.latitude)
-    if (lonNode < 0 || latNode < 0) None
-    else {
-      val nodes = nodesFrom(lonNode - before, latNode - before, size, index._3, index._4)
-      if (nodes == null) None
-      else
-        Some(
-          new Stencil(
-            nodes,
-            fractionAcross(longitudes, lonNode, coordinate.longitude),
-            fractionAcross(latitudes, latNode, coordinate.latitude)
-          )
-        )
-    }
-  }
-
   // The node k with the value between nodes k and k+1, or -1 if there is none, given the nearest
   // node `cell`: the value is on one side of it, so in the gap above or the gap below. Signed
   // differences make it the same for axes that run either way.
@@ -323,35 +275,6 @@ class FlowGridWrapper(
 
   private def fractionAcross(nodes: Array[Double], k: Int, value: Double): Double =
     (value - nodes(k)) / (nodes(k + 1) - nodes(k))
-
-  // The flow at a block of nodes, indexed by [longitude][latitude]; null if any is off the grid or land
-  private def nodesFrom(
-      firstX: Int,
-      firstY: Int,
-      size: Int,
-      z: Int,
-      isEarlier: Boolean
-  ): Array[Array[Velocity]] = {
-    if (firstX < 0 || firstY < 0 || firstX + size > longitudes.length || firstY + size > latitudes.length) null
-    else {
-      // allocated directly: Array.ofDim looks up a class tag every time, which was a sixth of the run
-      val nodes = new Array[Array[Velocity]](size)
-      var i = 0
-      while (i < size) {
-        nodes(i) = new Array[Velocity](size)
-        var j = 0
-        while (j < size) {
-          velocityAt(firstX + i, firstY + j, z, isEarlier) match {
-            case Some(velocity) => nodes(i)(j) = velocity
-            case None           => return null
-          }
-          j += 1
-        }
-        i += 1
-      }
-      nodes
-    }
-  }
 
   def getIndex(coordinate: GeoCoordinate): (Int, Int, Int, Boolean) = {
     getIndex(coordinate, InterpolateToday)
@@ -384,15 +307,4 @@ class FlowGridWrapper(
     case InterpolateToday    => true
     case InterpolateTomorrow => false
   }
-
-  private def neighbourhoodSize(interpolation: InterpolationType): Int =
-    interpolation match {
-      case Bilinear =>
-        math.sqrt(Constants.Interpolation.CubicPoints).toInt
-      case Bicubic =>
-        math.sqrt(Constants.Interpolation.BicubicPoints).toInt
-      case Tricubic =>
-        math.sqrt(Constants.Interpolation.TricubicPoints).toInt
-      case _ => throw new InterpolationNotImplementedException()
-    }
 }

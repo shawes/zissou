@@ -29,7 +29,6 @@ class Bran2020LiveTest extends AnyFlatSpec {
     try {
       assert(iterator.depths.size == 5 && iterator.depths.head == 2.5)
       // u and v on the corners of cells and the centres of layers, w on the centres of cells and the bottoms of layers
-      assert(!iterator.current.colocated)
       assert(iterator.current.componentDepths.map(_.head) == List(2.5, 2.5, 5.0))
       val controller = new FlowController(iterator, config)
       val stamps = scala.collection.mutable.ArrayBuffer(iterator.current.laterStamp)
