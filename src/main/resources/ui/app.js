@@ -313,14 +313,27 @@ function renderRun() {
       : h('button', { class: 'btn danger', type: 'button', onclick: deleteRun }, 'Delete run')));
 
   const percent = run.status === 'succeeded' ? 100 : Math.round((detail.fraction || 0) * 100);
-  redraw(refs.progress, [run.status, run.message, percent, last && last.date, detail.log.warnings], () => clear(refs.progress,
+  const waiting = run.status === 'running' ? detail.log.waiting : null;
+  redraw(refs.progress, [run.status, run.message, percent, last && last.date, detail.log.warnings, waiting && waiting.seconds, last && last.flowSeconds], () => clear(refs.progress,
     run.status === 'running' || run.status === 'succeeded'
       ? [h('div', { class: 'progress-label' },
           h('span', {}, last ? `Simulated to ${last.date}` : 'Starting…'),
           h('span', {}, run.status === 'running' ? `${percent}% of the flow period` : 'Complete')),
          h('div', { class: 'progress', role: 'progressbar', 'aria-valuenow': percent, 'aria-valuemin': 0, 'aria-valuemax': 100 },
            h('div', { style: `width:${percent}%` })),
+         // what the last day took, and how much of that was the run waiting for its data rather than working
+         run.status === 'running' && last
+           ? h('p', { class: 'hint' }, last.flowSeconds > 0
+               ? `Last day: ${last.seconds} s, of which ${last.flowSeconds} s waiting for flow data.`
+               : `Last day: ${last.seconds} s, none of it waiting for flow data.`)
+           : null,
          run.status === 'running' ? h('p', { class: 'hint' }, 'A run can finish before the end of the flow period, once every larva has settled or died.') : null]
+      : null,
+    // the run is stuck on the network, not slow: it is waiting for a day of the ocean model's flow from the server
+    waiting
+      ? h('div', { class: 'notice wait' },
+          h('strong', {}, `Waiting for flow data for ${waiting.date}: ${waiting.seconds} s so far.`),
+          h('div', {}, `The simulation is not slow: it is waiting for ${waiting.source} to send the data. A request that fails is tried again by itself.`))
       : null,
     run.message ? h('div', { class: 'notice error' }, run.message) : null,
     detail.log.warnings.length ? h('div', { class: 'notice warn' }, h('ul', {}, detail.log.warnings.map((w) => h('li', {}, w)))) : null,
@@ -329,11 +342,15 @@ function renderRun() {
   refs.progress.hidden = !refs.progress.childNodes.length;
 
   const peak = detail.log.days.reduce((m, d) => Math.max(m, d.larvae), 0);
-  redraw(refs.metrics, [results && results.settled, last, peak, detail.log.days.length], () => clear(refs.metrics,
+  const total = detail.log.days.reduce((m, d) => m + d.seconds, 0);
+  const waited = detail.log.days.reduce((m, d) => m + d.flowSeconds, 0);
+  redraw(refs.metrics, [results && results.settled, last, peak, detail.log.days.length, waited, total], () => clear(refs.metrics,
     metric(results ? formatNumber(results.settled) : '–', 'larvae settled'),
     metric(last ? formatNumber(last.larvae) : '–', 'larvae in the water'),
     metric(peak ? formatNumber(peak) : '–', 'peak in the water'),
-    metric(formatNumber(detail.log.days.length), 'days simulated')));
+    metric(formatNumber(detail.log.days.length), 'days simulated'),
+    // how much of the time in the days was spent waiting for the ocean model's data, which is the network or the disk, not the simulation
+    detail.log.days.length ? metric(`${formatNumber(waited)} s`, total > 0 ? `waiting for flow data (${Math.round(100 * waited / total)}% of ${formatNumber(total)} s)` : 'waiting for flow data') : null));
 
   redraw(refs.chart, detail.log.days.length, () => clear(refs.chart, h('h3', {}, 'Larvae in the water'),
     detail.log.days.length > 1 ? lineChart(detail.log.days) : h('p', { class: 'hint' }, 'Waiting for the first days to complete…')));

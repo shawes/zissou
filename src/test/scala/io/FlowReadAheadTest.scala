@@ -146,6 +146,39 @@ class FlowReadAheadTest extends AnyFlatSpec {
     waitFor("the reader thread to stop")(readerThreads == before)
   }
 
+  "The time spent waiting for the flow" should "be counted when a day is not ready, and not when it is" in {
+    val source = new SlowSource(local, delayMillis = 600)
+    val iterator = new FlowFileIterator(flow(utc(2002, 1, 5)), source)
+    try {
+      iterator.takeWaitSeconds() // what making it took
+      waitFor("the day ahead to be read")(source.readsBy.asScala.exists(_.startsWith("zissou-flow-reader")))
+      Thread.sleep(300) // so the day ahead is finished
+      iterator.next()
+      assert(iterator.takeWaitSeconds() < 0.3, "the day was ready")
+      iterator.next() // asked for at once: the one being read ahead is not done
+      val waited = iterator.takeWaitSeconds()
+      assert(waited > 0.3 && waited < 2.0, s"waited $waited secs for a day that takes 0.6 secs")
+      assert(iterator.takeWaitSeconds() == 0.0, "asking starts the count again")
+    } finally iterator.shutdown()
+  }
+
+  it should "be reported again and again for as long as a day is being waited for" in {
+    val reports = new ConcurrentLinkedQueue[(String, Long)]()
+    val source = new SlowSource(local, delayMillis = 2500)
+    val iterator = new FlowFileIterator(flow(utc(2002, 1, 5)), source, reportAfterSeconds = 1) {
+      override protected def reportWaiting(wanted: org.joda.time.LocalDate, seconds: Long): Unit = reports.add((wanted.toString, seconds))
+    }
+    try {
+      iterator.next() // the day after the next was begun when this one was made, and is being read for 2.5 secs
+      iterator.next()
+      val seen = reports.asScala.toSeq
+      // each of the two days waited for is reported at 1 and 2 seconds, and by the date it is for
+      val byDay = seen.groupBy(_._1).view.mapValues(_.map(_._2)).toMap
+      assert(byDay.keySet == Set("2002-01-07", "2002-01-08"), s"reported $seen")
+      assert(byDay.values.forall(_ == Seq(1L, 2L)), s"reported $seen")
+    } finally iterator.shutdown()
+  }
+
   "A source that is not slow" should "be read where and when it is wanted, with no thread of its own" in {
     val before = readerThreads
     val iterator = new FlowFileIterator(flow(utc(2002, 1, 5)), local)

@@ -17,6 +17,9 @@ class PhysicalModel(val config: Configuration) extends Logging {
     flowController.advanceTo(time)
   }
 
+  /** The seconds spent waiting for flow data since last asked. */
+  def takeWaitSeconds(): Double = flowFile.takeWaitSeconds()
+
   def shutdown(): Unit = {
     flowFile.shutdown()
   }

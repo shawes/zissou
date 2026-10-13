@@ -55,9 +55,12 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
           if (config.larva.isMortal.getOrElse(false)) {
             biology.applyMortality()
           }
+          val waited = math.round(ocean.takeWaitSeconds())
+          // what the run waited for the flow, apart from its own work, so that a slow day can be told from a slow network
+          val waiting = if (waited > 0) s" (waited $waited secs for flow data)" else ""
           info(
             "Day " + clock.now.toLocalDate + " has been completed in " + stepTimer
-              .stop() + " secs with " + biology.pelagicLarvae.size + " larvae."
+              .stop() + " secs with " + biology.pelagicLarvae.size + " larvae" + waiting + "."
           )
           stepTimer.start()
         }

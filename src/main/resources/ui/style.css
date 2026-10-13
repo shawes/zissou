@@ -113,6 +113,8 @@ textarea.editor {
 .notice.error { background: var(--bad-bg); color: var(--bad); }
 .notice.warn { background: var(--warn-bg); color: var(--warn); }
 .notice.ok { color: var(--ok); padding-left: 0; }
+.notice.wait { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--accent); }
+.notice.wait div { color: var(--muted); font-size: 13px; margin-top: 2px; }
 .notice ul { margin: 4px 0 0; padding-left: 18px; }
 
 table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }

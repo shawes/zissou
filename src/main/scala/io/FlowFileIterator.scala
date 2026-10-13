@@ -1,7 +1,8 @@
 package io
 
 import java.time.YearMonth
-import java.util.concurrent.{ExecutionException, Executors, Future, ThreadFactory, TimeUnit}
+import java.util.concurrent.{ExecutionException, Executors, Future, ThreadFactory, TimeUnit, TimeoutException}
+import java.util.concurrent.atomic.AtomicLong
 import scala.collection.mutable.{ListBuffer, Queue}
 import com.github.nscala_time.time.Imports._
 import exceptions.FlowDataExhaustedException
@@ -12,7 +13,7 @@ import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.{GridDataset}
 import ucar.unidata.geoloc.{LatLonPoint, LatLonRect}
 
-class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
+class FlowFileIterator(val flow: Flow, source: FlowSource, reportAfterSeconds: Int = FlowFileIterator.WaitReportSeconds) extends Logging {
 
   /** Reads the flow from the folder, or the OPeNDAP server, the flow is configured with. */
   def this(flow: Flow) = this(flow, FlowFileIterator.sourceFor(flow))
@@ -49,6 +50,14 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
     }))
     else None
   private var ahead: Option[Future[Day]] = None
+
+  // The time the run has spent waiting for the flow, getting a day that was not ready: from a folder that is the
+  // time to read it, from a server what is left of the time to read it after the larvae had moved. A run that is slow
+  // for its own work and one waiting on the network are told apart by this.
+  private val waitedNanos = new AtomicLong(0)
+
+  /** The seconds spent waiting for flow data since this was last asked, which starts the count again. */
+  def takeWaitSeconds(): Double = waitedNanos.getAndSet(0) / 1e9
 
   initialFlowData()
 
@@ -195,16 +204,35 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
   }
 
   private def loadFollowingDay(): Unit = {
+    val began = System.nanoTime
+    val wanted = stampOf(grids.last).toLocalDate.plusDays(1)
     val day = ahead match {
       case Some(future) =>
         ahead = None
-        try future.get()
-        catch { case e: ExecutionException => throw e.getCause }
+        waitFor(future, wanted)
       case None => fetchFollowingDay(grids.last)
     }
+    waitedNanos.addAndGet(System.nanoTime - began)
     grids.enqueue(day)
     readAhead()
   }
+
+  // Waits for a day that is being read, saying every so often that it is still being waited for
+  private def waitFor(future: Future[Day], wanted: org.joda.time.LocalDate): Day = {
+    val began = System.nanoTime
+    while (true) {
+      try return future.get(reportAfterSeconds, TimeUnit.SECONDS)
+      catch {
+        case _: TimeoutException => reportWaiting(wanted, (System.nanoTime - began) / 1000000000L)
+        case e: ExecutionException => throw e.getCause
+      }
+    }
+    throw new IllegalStateException("unreachable")
+  }
+
+  /** Says that the flow data for a day is still being waited for, in the log, where the web interface reads it. */
+  protected def reportWaiting(wanted: org.joda.time.LocalDate, seconds: Long): Unit =
+    info(s"Waiting for the flow data for $wanted from ${source.description}: $seconds secs so far")
 
   // The day after one: read from its month's file, or from the next month's if it is the last
   private def fetchFollowingDay(newest: Day): Day = {
@@ -231,6 +259,9 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
 }
 
 object FlowFileIterator {
+  /** How long a wait for flow data goes on before the log says it is still waiting, and then again. */
+  val WaitReportSeconds = 10
+
   val Variables = List("u", "v", "w") //TODO: Put this into the config file
 
   /** The folder, or the OPeNDAP server, that a flow is configured to read. */
