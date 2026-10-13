@@ -41,6 +41,16 @@ class FishFactoryTest extends AnyFlatSpec {
     assert(fish.map(_.postflexion).distinct.size > 1000)
   }
 
+  it should "not need a hatching age, which is not used, but accept one" in {
+    val withHatching = ModelFixture.driftingLarva(pld = 15)
+    val withoutHatching = withHatching.replace("    hatching: 0\n", "")
+    assert(withoutHatching != withHatching)
+    for (larva <- Seq(withHatching, withoutHatching)) {
+      val fish = new FishFactory(larvaConfig(larva)).create(site, new LocalDateTime(2002, 1, 5, 0, 0))
+      assert(fish.pelagicLarvalDuration == 15 * 86400)
+    }
+  }
+
   it should "begin at preflexion when there is no egg stage" in {
     val factory = new FishFactory(larvaConfig(ModelFixture.driftingLarva(pld = 15, ontogeny = (0, 1, 2))))
     assert((1 to 100).forall(_ => factory.create(site, new LocalDateTime(2002, 1, 5, 0, 0)).asInstanceOf[Fish].preflexion == 0))

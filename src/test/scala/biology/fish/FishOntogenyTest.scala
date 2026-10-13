@@ -5,19 +5,17 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
 class FishOntogenyTest extends AnyFlatSpec {
-  val hatching = 0
   val preflexion = 1000
   val flexion = 2000
   val postflexion = 3000
 
   class OntogenyTest(
-      override val hatching: Int,
       override val preflexion: Int,
       override val flexion: Int,
       override val postflexion: Int
   ) extends OntogenyFish {}
 
-  val ontogeny = new OntogenyTest(hatching, preflexion, flexion, postflexion)
+  val ontogeny = new OntogenyTest(preflexion, flexion, postflexion)
 
   "An ontogeny object" should "not be null upon construction" in {
     assert(ontogeny != null)

@@ -9,7 +9,6 @@ trait Ontogeny {
 }
 
 trait OntogenyFish extends Ontogeny {
-  val hatching: Int
   val preflexion: Int
   val flexion: Int
   val postflexion: Int

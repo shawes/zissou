@@ -17,7 +17,6 @@ class Fish(
     val maximumLifeSpan: Int,
     override val birthplace: Birthplace,
     val spawned: LocalDateTime,
-    override val hatching: Int,
     override val preflexion: Int,
     override val flexion: Int,
     override val postflexion: Int,

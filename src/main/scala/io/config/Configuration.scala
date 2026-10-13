@@ -82,7 +82,9 @@ case class LarvaConfig(
 ) derives Decoder
 
 case class OntogenyConfig(
-    hatching: Int,
+    // read, so that configurations that give it still load, but not used: a larva is in
+    // its first stage from birth until preflexion
+    hatching: Option[Int],
     preflexion: Int,
     flexion: Int,
     postflexion: Int

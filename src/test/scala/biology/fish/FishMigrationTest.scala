@@ -19,7 +19,7 @@ class FishMigrationTest extends AnyFlatSpec {
 
   private def fish(ovm: Option[OntogeneticMigration], diel: Option[DielMigration]): Fish =
     new Fish("a", 86400 * 10, 86400 * 10, new Birthplace("reef", 101, new GeoCoordinate(-28.0, 153.5, 5.0)),
-      new LocalDateTime(2002, 1, 5, 0, 0), 0, 86400, 86400 * 2, 86400 * 3, ovm, diel, None, 86400)
+      new LocalDateTime(2002, 1, 5, 0, 0), 86400, 86400 * 2, 86400 * 3, ovm, diel, None, 86400)
 
   private val developed = new OntogeneticMigrationVariables(true, false)
 

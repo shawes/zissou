@@ -55,12 +55,6 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
     case None => None
   }
 
-  val hatchingDistribution = new NormalDistribution(
-    RandomNumberGenerator.generator,
-    Time.convertDaysToSeconds(config.ontogeny.hatching),
-    Constants.SecondsInDay * 0.5
-  )
-
   val preflexionDistribution = new NormalDistribution(
     RandomNumberGenerator.generator,
     Time.convertDaysToSeconds(config.ontogeny.preflexion),
@@ -90,8 +84,6 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
 
     val pld = pldDistribution.getPld()
 
-    // Handles case of demersal eggs
-    val hatching = hatchingDistribution.sample().toInt
     // The ages of the stages are drawn independently, so on their own they can come out of
     // order, or before the larva is born. Each stage begins no earlier than the one before it.
     val preflexion = config.ontogeny.preflexion match {
@@ -119,7 +111,6 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
       pld,
       new Birthplace(site.title, site.reefId, birthLocation),
       time,
-      hatching,
       preflexion,
       flexion,
       postflexion,

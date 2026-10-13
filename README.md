@@ -80,6 +80,8 @@ The simulation clock is UTC, as the flow files are. Larvae are released, and dai
 
 Diel migration follows the sun where the larva is. At dawn the larva goes to a depth drawn from the `day` probabilities, and at dusk to one drawn from the `night` probabilities. It migrates on the first step within 45 minutes of sunrise or sunset, or within a time step when the step is longer than that. A larva with ontogenetic migration as well takes its depth from that, and diel migration takes it to a day depth from dawn to dusk. A change of stage by day changes the depth it goes back to at dusk.
 
+A larva is in its first stage (the one the `hatching` migration probabilities are for) from birth until preflexion. `ontogeny.hatching` can be left out: it is read but not used. Earlier versions drew a hatching age for each larva and did nothing with it.
+
 A larva can settle once it is older than its competency period (`nonSettlementPeriod`, which is capped at its PLD), and dies of old age once it is older than its PLD, without settling on that step.
 
 A run can end with larvae still drifting, when its period, or the flow files, end before their PLDs do. They are written with the rest: their paths, up to where they are at the end, are in the dispersal shapefile and the larvae history (with the state `pelagic`), and the log says how many there were. They are in neither the connectivity matrix nor the dispersal kernel, which are for larvae that settled. Earlier versions left them out of the results altogether.

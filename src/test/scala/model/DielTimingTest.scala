@@ -66,8 +66,10 @@ class DielTimingTest extends AnyFlatSpec {
     for {
       larva <- larvae
       fish = larva.asInstanceOf[biology.fish.Fish]
-      // from the step after its first ontogenetic migration, which is at preflexion
-      capsule <- larva.history if capsule.age > fish.preflexion + 7200 && capsule.age > 86400
+      // from the step after its first ontogenetic migration, at its first change of stage: a
+      // larva born in preflexion (when the age drawn for it is 0) does not migrate until flexion
+      firstChange = Seq(fish.preflexion, fish.flexion, fish.postflexion).find(_ > 0).get
+      capsule <- larva.history if capsule.age > firstChange + 7200 && capsule.age > 86400
     } {
       val localHour = larva.birthday.plusSeconds(capsule.age - 7200).plusHours(10).getHourOfDay
       val depth = capsule.position.depth
