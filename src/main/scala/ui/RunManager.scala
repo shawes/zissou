@@ -119,7 +119,7 @@ class RunManager(val runsDir: Path, val workDir: Path, command: Path => Seq[Stri
       RunDetail(info, summary, RunProgress.fraction(summary, info.periodStart, info.periodEnd))
     }
 
-  def results(id: String): Option[Results] = dirOf(id).flatMap(ResultsReader.read)
+  def results(id: String): Option[Results] = dirOf(id).flatMap(ResultsReader.read(_, Some(workDir)))
 
   def map(id: String, trackLimit: Int): Option[RunMap] = dirOf(id).flatMap(MapReader.read(_, workDir, trackLimit, landFile))
 

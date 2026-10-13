@@ -29,9 +29,29 @@ class ResultsReaderTest extends AnyFlatSpec {
         "c,2002-01-05,patch 101,101,5.0,2002-01-10,102", "d,2002-01-05,patch 104,104,5.0,2002-01-10,104"), Seq.empty)
     val results = ResultsReader.read(run).get
     assert(results.settled == 4)
-    assert(results.matrix.sources == Seq(101, 104) && results.matrix.sinks == Seq(101, 102, 104))
-    assert(results.matrix.counts == Seq(Seq(1, 2, 0), Seq(0, 0, 1)))
+    // every reef that was a source or a sink, once, in the one order, and [row, column, larvae] where there were any
+    assert(results.matrix.patches.map(p => (p.patch, p.name)) == Seq((101, "patch 101"), (102, ""), (104, "patch 104")))
+    assert(results.matrix.cells == Seq(Seq(0, 0, 1), Seq(0, 1, 2), Seq(2, 2, 1)))
+    assert(results.matrix.peak == 2)
     assert(results.sites == Seq(SiteTotal(101, "patch 101", 3, 1), SiteTotal(104, "patch 104", 1, 1)))
+  }
+
+  it should "put the reefs in order from north to south, the same on both axes, when it knows where they are" in {
+    val run = runWith(
+      Seq("a,d,patch 101,101,5.0,d,104", "b,d,patch 104,104,5.0,d,102", "c,d,patch 104,104,5.0,d,104"), Seq.empty)
+    // 102 is the most northerly, then 101, then 104
+    val base = Files.createTempDirectory("zissou-results-habitat")
+    tools.ShapefileTestUtil.writeReefs(base.resolve("reefs.shp").toFile, Seq(
+      (101, "Reef", Seq((153.65, -28.85), (153.65, -28.75), (153.75, -28.75), (153.75, -28.85))),
+      (102, "Reef", Seq((153.85, -28.55), (153.85, -28.45), (153.95, -28.45), (153.95, -28.55))),
+      (104, "Reef", Seq((154.0, -29.05), (154.0, -28.95), (154.1, -28.95), (154.1, -29.05)))))
+    Files.writeString(run.resolve("config.yaml"), SampleConfig.yaml(habitat = base.resolve("reefs.shp").toString))
+    val matrix = ResultsReader.read(run, Some(base)).get.matrix
+    assert(matrix.patches.map(_.patch) == Seq(102, 101, 104))
+    assert(matrix.patches.forall(p => p.latitude.isDefined && p.longitude.isDefined))
+    assert(math.abs(matrix.patches.head.latitude.get - -28.5) < 1e-6)
+    // 101 -> 104 is row 1, column 2; 104 -> 102 is row 2, column 0; 104 -> 104 is the diagonal
+    assert(matrix.cells == Seq(Seq(1, 2, 1), Seq(2, 0, 1), Seq(2, 2, 1)))
   }
 
   it should "describe how far larvae travelled, in kilometres" in {

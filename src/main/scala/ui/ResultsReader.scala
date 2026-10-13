@@ -5,7 +5,15 @@ import io.circe.Encoder
 import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
-case class Matrix(sources: Seq[Int], sinks: Seq[Int], counts: Seq[Seq[Int]]) derives Encoder.AsObject
+/** A reef that larvae were released from or settled on; `name` is the release site's, or empty. */
+case class MatrixPatch(patch: Int, name: String, latitude: Option[Double], longitude: Option[Double]) derives Encoder.AsObject
+
+/**
+  * Source to sink: every reef involved, in the one order on both axes (north to south), and the larvae
+  * that went between them as [row, column, count], for the pairs that had any. Rows are released from and
+  * columns settled on, so the diagonal is larvae that settled where they were released.
+  */
+case class Matrix(patches: Seq[MatrixPatch], cells: Seq[Seq[Int]], peak: Int) derives Encoder.AsObject
 case class HistogramBin(fromKm: Double, toKm: Double, count: Int) derives Encoder.AsObject
 case class Kernel(
     count: Int,
@@ -41,7 +49,25 @@ object ResultsReader {
     }
   }
 
-  def read(runDir: Path): Option[Results] =
+  // where each reef is, from the habitat layer a run used, read once: a layer can hold tens of thousands of reefs
+  private val positions = new java.util.concurrent.ConcurrentHashMap[Path, Map[Int, (Double, Double)]]()
+
+  private def positionsOf(runDir: Path, workDir: Path): Map[Int, (Double, Double)] =
+    Try {
+      val config = new io.config.ConfigurationFile().parse(Files.readString(runDir.resolve("config.yaml"))).toOption.get
+      val file = workDir.resolve(config.habitat.shapeFilePath).toAbsolutePath
+      positions.computeIfAbsent(file, f =>
+        new io.GisShapeFile().read(f.toString).flatMap { feature =>
+          for {
+            geometry <- Option(feature.getDefaultGeometry).collect { case g: org.locationtech.jts.geom.Geometry => g }.filterNot(_.isEmpty)
+            patch <- Option(feature.getAttribute("PATCH_NUM")).flatMap(a => Try(a.toString.toInt).toOption)
+            centre = geometry.getCentroid
+          } yield patch -> (centre.getY, centre.getX)
+        }.toMap)
+    }.getOrElse(Map.empty)
+
+  /** `workDir` is where the run's habitat file is looked for, to put the reefs in order from north to south. */
+  def read(runDir: Path, workDir: Option[Path] = None): Option[Results] =
     outputDir(runDir).map { dir =>
       val children = {
         val s = Files.list(dir)
@@ -60,8 +86,16 @@ object ResultsReader {
         } yield (source, c(2), sink)
       }
       val sources = settledRows.map(_._1).distinct.sorted
-      val sinks = settledRows.map(_._3).distinct.sorted
-      val counts = sources.map(from => sinks.map(to => settledRows.count(r => r._1 == from && r._3 == to)))
+      val names = settledRows.map(r => r._1 -> r._2).toMap
+      val where = workDir.map(positionsOf(runDir, _)).getOrElse(Map.empty)
+      // north to south where the reefs' positions are known, then by number
+      val patches = (sources ++ settledRows.map(_._3)).distinct
+        .sortBy(p => (where.get(p).map(-_._1).getOrElse(Double.PositiveInfinity), p))
+        .map(p => MatrixPatch(p, names.getOrElse(p, ""), where.get(p).map(_._1), where.get(p).map(_._2)))
+      val index = patches.map(_.patch).zipWithIndex.toMap
+      val cells = settledRows.groupBy(r => (index(r._1), index(r._3))).toSeq
+        .map { case ((row, column), larvae) => Seq(row, column, larvae.size) }
+        .sortBy(c => (c(0), c(1)))
       val sites = sources.map { from =>
         val mine = settledRows.filter(_._1 == from)
         SiteTotal(from, mine.head._2, mine.size, mine.count(_._3 == from))
@@ -69,7 +103,7 @@ object ResultsReader {
 
       Results(
         settledRows.size,
-        Matrix(sources, sinks, counts),
+        Matrix(patches, cells, cells.map(_(2)).maxOption.getOrElse(0)),
         sites,
         kernel(csv("-dispersal-kernel.csv")),
         children.map(p => OutputFile(p.getFileName.toString, Files.size(p)))

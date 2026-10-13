@@ -464,22 +464,55 @@ function textNode(x, y, text, anchor) {
   return node;
 }
 
+// Source to sink as a heatmap: every reef that larvae were released from or settled on, in the same order down
+// the side and along the top (north to south), a cell for each pair that had larvae, coloured by how many (on a
+// log scale, so that a few big flows do not hide the many small ones). The diagonal is larvae that settled where
+// they were released.
+function matrixHeatmap(matrix) {
+  const n = matrix.patches.length;
+  const left = 150, top = 120, size = 640;
+  const cell = size / n;
+  const x = (column) => left + column * cell;
+  const y = (row) => top + row * cell;
+  const shade = (count) => (0.2 + 0.8 * Math.log(1 + count) / Math.log(1 + Math.max(matrix.peak, 1))).toFixed(3);
+  const named = matrix.patches.map((p, i) => ({ p, i })).filter(({ p }) => p.name);
+
+  const cells = matrix.cells.map(([row, column, count]) => svg('rect', {
+    class: 'cell', x: x(column).toFixed(2), y: y(row).toFixed(2),
+    // a pair of reefs among thousands is less than a pixel: drawn no smaller than can be seen
+    width: Math.max(cell, 1.8).toFixed(2), height: Math.max(cell, 1.8).toFixed(2), style: `opacity: ${shade(count)}`,
+  }, svg('title', {}, document.createTextNode(
+    `${count} larva${count === 1 ? '' : 'e'} from ${matrix.patches[row].name || `patch ${matrix.patches[row].patch}`} (patch ${matrix.patches[row].patch}) settled on patch ${matrix.patches[column].patch}${row === column ? ', where they were released' : ''}`))));
+
+  const rowLabels = named.map(({ p, i }) => textNode(left - 8, y(i + 0.5) + 4, p.name, 'end'));
+  const columnLabels = named.map(({ p, i }) => {
+    const label = textNode(x(i + 0.5), top - 8, p.name, 'start');
+    label.setAttribute('transform', `rotate(-50 ${x(i + 0.5).toFixed(1)} ${top - 8})`);
+    return label;
+  });
+  const marks = named.flatMap(({ i }) => [
+    svg('line', { class: 'mark', x1: left - 4, y1: y(i + 0.5), x2: left, y2: y(i + 0.5) }),
+    svg('line', { class: 'mark', x1: x(i + 0.5), y1: top - 4, x2: x(i + 0.5), y2: top }),
+  ]);
+
+  return svg('svg', { class: 'matrix', viewBox: `0 0 ${left + size + 20} ${top + size + 20}`, role: 'img',
+      'aria-label': 'Heatmap of larvae from each reef released from (down) to each reef settled on (across)' },
+    svg('rect', { class: 'frame', x: left, y: top, width: size, height: size }),
+    svg('line', { class: 'diagonal', x1: left, y1: top, x2: left + size, y2: top + size }),
+    ...cells, ...marks, ...rowLabels, ...columnLabels);
+}
+
+function matrixView(matrix) {
+  if (matrix.patches.length === 0) return h('p', { class: 'hint' }, 'No larvae settled in this run.');
+  return h('div', {},
+    h('p', { class: 'hint' }, `${matrix.patches.length} reefs, in the same order, north to south, down the side (released from) and along the top (settled on). The dashed diagonal is larvae that settled where they were released; point at a cell for its count.`),
+    h('div', { class: 'legend heat-legend' },
+      h('span', {}, '1 larva'), h('span', { class: 'ramp' }), h('span', {}, `${formatNumber(matrix.peak)} (log scale)`)),
+    matrixHeatmap(matrix));
+}
+
 function resultsView(results) {
   const { matrix } = results;
-  const peak = Math.max(1, ...matrix.counts.flat());
-  const matrixTable = matrix.sources.length === 0
-    ? h('p', { class: 'hint' }, 'No larvae settled in this run.')
-    : h('div', { class: 'scroll' }, h('table', {},
-        h('thead', {}, h('tr', {}, h('th', {}, 'From \\ to'), matrix.sinks.map((s) => h('th', { class: 'num' }, s)), h('th', { class: 'num' }, 'Total'))),
-        h('tbody', {}, matrix.sources.map((from, i) => h('tr', {},
-          h('th', {}, from),
-          matrix.counts[i].map((count, j) => h('td', {
-            class: 'num',
-            style: count ? `background: color-mix(in srgb, var(--accent) ${Math.round((count / peak) * 70) + 8}%, transparent)` : null,
-            title: `${count} larvae from ${from} settled on ${matrix.sinks[j]}`,
-          }, count || '')),
-          h('td', { class: 'num' }, matrix.counts[i].reduce((a, b) => a + b, 0)))))));
-
   const sites = results.sites.length === 0 ? null : h('div', { class: 'card' },
     h('h3', {}, 'Settlement by release site'),
     h('div', { class: 'scroll' }, h('table', {},
@@ -491,7 +524,7 @@ function resultsView(results) {
   return h('div', {},
     sites,
     h('div', { class: 'card' }, h('h3', {}, 'Connectivity matrix'),
-      h('p', { class: 'hint' }, 'Rows are the patch larvae were released from, columns the patch they settled on.'), matrixTable),
+      matrixView(matrix)),
     results.kernel ? kernelView(results.kernel) : null,
     h('div', { class: 'card' }, h('h3', {}, 'Files'),
       h('div', { class: 'files' }, results.files.map((f) =>

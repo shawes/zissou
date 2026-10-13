@@ -121,6 +121,14 @@ table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nu
 th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--line); }
 th { font-size: 12px; color: var(--muted); font-weight: 600; }
 td.num, th.num { text-align: right; }
+.matrix { width: 100%; max-width: 860px; height: auto; display: block; margin-top: 8px; }
+.matrix .frame { fill: var(--code-bg); stroke: var(--line); stroke-width: 1; }
+.matrix .cell { fill: var(--accent); }
+.matrix .diagonal { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 5 5; opacity: .6; }
+.matrix .mark { stroke: var(--muted); stroke-width: 1; }
+.matrix text { fill: var(--ink); font-size: 12px; font-weight: 600; }
+.heat-legend { align-items: center; gap: 10px; }
+.heat-legend .ramp { width: 160px; height: 10px; border-radius: 5px; background: linear-gradient(to right, color-mix(in srgb, var(--accent) 20%, transparent), var(--accent)); border: 1px solid var(--line); }
 .scroll { overflow-x: auto; }
 
 .progress { height: 8px; background: var(--code-bg); border-radius: 999px; overflow: hidden; margin: 8px 0 4px; }
