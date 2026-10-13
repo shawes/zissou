@@ -1,6 +1,6 @@
 package io
 
-import java.io.File
+import java.time.YearMonth
 import scala.collection.mutable.{ListBuffer, Queue}
 import com.github.nscala_time.time.Imports._
 import exceptions.FlowDataExhaustedException
@@ -11,9 +11,12 @@ import ucar.nc2.dt.GridCoordSystem
 import ucar.nc2.dt.grid.{GridDataset}
 import ucar.unidata.geoloc.{LatLonPoint, LatLonRect}
 
-class FlowFileIterator(val flow: Flow) extends Logging {
-  val NetcdfExtension = ".nc"
-  val variables = List("u", "v", "w") //TODO: Put this into the config file
+class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
+
+  /** Reads the flow from the folder the flow is configured with. */
+  def this(flow: Flow) = this(flow, new LocalFlowSource(flow.netcdfFilePath, FlowFileIterator.Variables))
+
+  val variables = FlowFileIterator.Variables
   var dataset: List[(GridDataset, String)] = List.empty
   val grids =
     new Queue[(List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)]
@@ -21,11 +24,8 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   // set once the first file is open
   var depths: List[Double] = List.empty
   // the month of the file read last; declared before initialFlowData runs, which reads a file
-  private var loadedMonth: Option[java.time.YearMonth] = None
+  private var loadedMonth: Option[YearMonth] = None
   val netcdfHandler = new NetcdfFileHandler()
-  val getFileInformation = initialiseFiles()
-  var currentFile: Int = getFileInformation._2
-  val files = getFileInformation._1
   val latLonBounds = new LatLonRect(
     LatLonPoint.create(flow.region.south, flow.region.west),
     LatLonPoint.create(flow.region.north, flow.region.east)
@@ -35,7 +35,12 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   initialFlowData()
 
   private def initialFlowData(): Unit = {
-    readMonth()
+    val start = flow.period.getStart.toLocalDate
+    val startMonth = YearMonth.of(start.getYear, start.getMonthOfYear)
+    if (!source.has(startMonth)) {
+      throw new IllegalArgumentException(s"There is no flow file for $startMonth in ${source.description}")
+    }
+    readMonth(startMonth)
     depths = readDepths()
     val startDay: Int = flow.period.getStart.toLocalDate.dayOfMonth.get
     grids.enqueue((readDay(startDay, latLonBounds, depthRange), startDay, getDaysInMonth))
@@ -88,8 +93,8 @@ class FlowFileIterator(val flow: Flow) extends Logging {
     new LocalDateTime(axis.getCalendarDate(0).getMillis, DateTimeZone.UTC)
   }
 
-  /** Whether there is a file that has not been read yet: currentFile is the one after the last read. */
-  def hasNext: Boolean = currentFile < files.size
+  /** Whether there is a file that has not been read yet, for a month after the one read last. */
+  def hasNext: Boolean = loadedMonth.exists(month => source.firstAfter(month).isDefined)
 
   def closeAllOpenDatasets(): Unit = {
     if (dataset.nonEmpty) {
@@ -143,28 +148,23 @@ class FlowFileIterator(val flow: Flow) extends Logging {
 
   }
 
-  private def readMonth(): Unit = {
-    val month = monthOf(files(currentFile))
+  // Reads the files of a month: the one the run starts in, or the one after the month read last
+  private def readMonth(month: YearMonth): Unit = {
     loadedMonth.foreach { previous =>
-      if (month != previous.plusMonths(1)) {
+      if (month != previous.plusMonths(1) || !source.has(month)) {
+        val later = source.firstAfter(previous).map(_.toString).getOrElse("nothing")
         throw new IllegalStateException(
-          s"The flow files go from $previous to $month: there is no file for ${previous.plusMonths(1)}."
+          s"The flow files go from $previous to $later: there is no file for ${previous.plusMonths(1)}."
         )
       }
     }
     val nextDayData = ListBuffer.empty[(GridDataset, String)]
     variables.foreach(
-      variable => nextDayData += ((loadNextFlowFile(variable), variable))
+      variable => nextDayData += ((source.open(variable, month), variable))
     )
     closeAllOpenDatasets()
     dataset = nextDayData.toList
     loadedMonth = Some(month)
-    currentFile += 1
-  }
-
-  private def monthOf(filename: String): java.time.YearMonth = {
-    val date = getDateFromFileName(filename)
-    java.time.YearMonth.of(date.getYear, date.getMonthOfYear)
   }
 
   // the day after the newest one held is in this month's file, or in the next month's
@@ -179,7 +179,7 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   private def loadFollowingDay(): Unit = {
     val newest = grids.last
     val startsNextMonth = isLastDayOfMonth(newest)
-    if (startsNextMonth) readMonth()
+    if (startsNextMonth) readMonth(loadedMonth.get.plusMonths(1))
     val day = if (startsNextMonth) 1 else newest._2 + 1
     grids.enqueue((readDay(day, latLonBounds, depthRange), day, getDaysInMonth))
   }
@@ -188,50 +188,11 @@ class FlowFileIterator(val flow: Flow) extends Logging {
       day: (List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)
   ): Boolean = day._2 == day._3
 
-  private def loadNextFlowFile(prefix: String): GridDataset = {
-    val path = flow.netcdfFilePath + "/" + prefix
-    val files =
-      new File(path).list().filter(p => p.endsWith(NetcdfExtension)).sorted
-    val filename = path + "/" + files(currentFile)
-    netcdfHandler.openLocalFile(filename)
-  }
-
-  private def initialiseFiles(): (Array[String], Int) = {
-    val path = flow.netcdfFilePath + "/" + "u"
-    val files =
-      new File(path).list().filter(p => p.endsWith(NetcdfExtension)).sorted
-    files.foreach(f => info(s"$f"))
-    val startMonth = files.indexWhere(
-      file =>
-        isFileForDate(
-          flow.period.getStart.toLocalDate,
-          getDateFromFileName(file)
-        )
-    )
-    if (startMonth < 0) {
-      val start = flow.period.getStart.toLocalDate
-      throw new IllegalArgumentException(
-        f"There is no flow file for ${start.getYear}%d-${start.getMonthOfYear}%02d in $path"
-      )
-    }
-    (files, startMonth)
-  }
-
-  private def getDateFromFileName(filename: String): LocalDate = {
-    debug(s"Getting date from file name $filename")
-    val prefix = filename.split('.')
-    val sections = prefix(0).split('_')
-    new LocalDateTime(sections(2).toInt, sections(3).toInt, 1, 1, 1).toLocalDate
-  }
-
-  private def isFileForDate(
-      startDate: LocalDate,
-      fileDate: LocalDate
-  ): Boolean = {
-    startDate.year == fileDate.year && startDate.monthOfYear.get == fileDate.monthOfYear.get
-  }
-
   private def getDaysInMonth: Int =
     dataset.head._1.getCalendarDateEnd.getDayOfMonth()
 
+}
+
+object FlowFileIterator {
+  val Variables = List("u", "v", "w") //TODO: Put this into the config file
 }

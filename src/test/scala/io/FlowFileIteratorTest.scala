@@ -95,6 +95,21 @@ class FlowFileIteratorTest extends AnyFlatSpec {
     assert(problem.getMessage.contains("2002-02"), problem.getMessage)
   }
 
+  it should "ignore files in the folders that are not named like a month's flow" in {
+    val root = Files.createTempDirectory("zissou-iterator-test")
+    UniformFlowDataset.write(root.toFile, Seq((2002, 1), (2002, 2)))
+    for (variable <- Seq("u", "v", "w"); stray <- Seq("notes.nc", "ocean_u_readme.nc", "ocean_u_2002_13.nc")) {
+      Files.write(root.resolve(variable).resolve(stray), Array[Byte](1, 2, 3))
+    }
+    val source = new LocalFlowSource(root.toString, List("u", "v", "w"))
+    assert(source.has(java.time.YearMonth.of(2002, 1)) && source.has(java.time.YearMonth.of(2002, 2)))
+    assert(source.firstAfter(java.time.YearMonth.of(2002, 1)).contains(java.time.YearMonth.of(2002, 2)))
+    assert(source.firstAfter(java.time.YearMonth.of(2002, 2)).isEmpty)
+    val start = utc(2002, 1, 5)
+    val flow = new FlowFileIterator(new Flow(root.toString, start to start.plusDays(20), new TimeStep(2, TimeStepType.Hour), true), source)
+    assert(days(flow.current) == (UniformFlowDataset.dayNumber(2002, 1, 5), UniformFlowDataset.dayNumber(2002, 1, 6)))
+  }
+
   it should "say which month has no file when the run starts in one" in {
     val problem = intercept[IllegalArgumentException](iterator(utc(2002, 5, 1), Seq((2002, 1), (2002, 2), (2002, 3))))
     assert(problem.getMessage.contains("2002-05"), problem.getMessage)
