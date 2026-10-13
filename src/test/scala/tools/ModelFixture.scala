@@ -24,6 +24,7 @@ object ModelFixture {
       pld: Double = 3,
       nonSettlementPeriod: Double = 1,
       mortalityRate: Option[Double] = None,
+      ontogeny: (Int, Int, Int) = (1, 2, 3),
       extra: String = ""
   ): String =
     s"""larva:
@@ -32,12 +33,12 @@ object ModelFixture {
        |  mortalityRate: ${mortalityRate.getOrElse(0.0)}
        |  ontogeny:
        |    hatching: 0
-       |    preflexion: 1
-       |    flexion: 2
-       |    postflexion: 3
+       |    preflexion: ${ontogeny._1}
+       |    flexion: ${ontogeny._2}
+       |    postflexion: ${ontogeny._3}
        |  pelagicLarvalDuration:
        |    mean: $pld
-       |    stdev: 1
+       |    stdev: 0
        |    pldType: fixed
        |    nonSettlementPeriod: $nonSettlementPeriod
        |$extra""".stripMargin

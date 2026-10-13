@@ -30,4 +30,19 @@ class FishFactoryTest extends AnyFlatSpec {
     val larva = larvaWith(pld = 15, competency = 20)
     assert(larva.nonSettlementPeriod == larva.pelagicLarvalDuration)
   }
+
+  "A larva's stages of development" should "begin in order, and not before it is born, when their ages are close" in {
+    maths.RandomNumberGenerator.setSeed(5)
+    // each age is drawn with a standard deviation of half a day
+    val factory = new FishFactory(larvaConfig(ModelFixture.driftingLarva(pld = 15, ontogeny = (1, 1, 1))))
+    val fish = (1 to 2000).map(_ => factory.create(site, new LocalDateTime(2002, 1, 5, 0, 0)).asInstanceOf[Fish])
+    assert(fish.forall(f => 0 <= f.preflexion && f.preflexion <= f.flexion && f.flexion <= f.postflexion))
+    // still drawn, not all the same
+    assert(fish.map(_.postflexion).distinct.size > 1000)
+  }
+
+  it should "begin at preflexion when there is no egg stage" in {
+    val factory = new FishFactory(larvaConfig(ModelFixture.driftingLarva(pld = 15, ontogeny = (0, 1, 2))))
+    assert((1 to 100).forall(_ => factory.create(site, new LocalDateTime(2002, 1, 5, 0, 0)).asInstanceOf[Fish].preflexion == 0))
+  }
 }

@@ -92,12 +92,14 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
 
     // Handles case of demersal eggs
     val hatching = hatchingDistribution.sample().toInt
+    // The ages of the stages are drawn independently, so on their own they can come out of
+    // order, or before the larva is born. Each stage begins no earlier than the one before it.
     val preflexion = config.ontogeny.preflexion match {
       case 0 => 0
-      case _ => preflexionDistribution.sample().toInt
+      case _ => math.max(0, preflexionDistribution.sample().toInt)
     }
-    val flexion = flexionDistribution.sample().toInt
-    val postflexion = postflexionDistribution.sample().toInt
+    val flexion = math.max(preflexion, flexionDistribution.sample().toInt)
+    val postflexion = math.max(flexion, postflexionDistribution.sample().toInt)
     val birthLocation = new GeoCoordinate(
       site.location.latitude,
       site.location.longitude,
