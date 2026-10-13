@@ -70,7 +70,9 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow)
   ): Option[Velocity] = {
     val pair = pairAt(time)
     val index = pair.getIndex(coordinate)
-    blend(pair, time)(isEarlier =>
+    // on grids of their own, a position is located once for both fields and blended in one go
+    if (!pair.colocated) pair.interpolatedVelocity(coordinate, pair.weightOfLater(time))
+    else blend(pair, time)(isEarlier =>
       interpolation(coordinate, pair, (index._1, index._2, index._3, isEarlier))
     )
   }

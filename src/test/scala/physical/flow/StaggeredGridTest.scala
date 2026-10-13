@@ -79,6 +79,40 @@ class StaggeredGridTest extends AnyFlatSpec {
     assert(math.abs(flow.u - u(153.01, -28.0, 2.5)) < 1e-5 || math.abs(flow.u - u(153.01, -28.0, 7.5)) < 1e-5)
   }
 
+  // fields that curve: bicubic interpolation reproduces them among the 4 by 4 nodes round a position,
+  // and bilinear does not, so which one is used shows
+  private val Curvature = 5.0
+  private lazy val curved = controller(StaggeredFlowDataset.write(_, Seq((2002, 1)), Curvature))
+
+  it should "interpolate bicubically where the 4 by 4 nodes are there, and bilinearly in the outermost gaps" in {
+    def error(lon: Double, lat: Double) = {
+      val flow = curved.getVelocityOfCoordinate(at(lat, lon, 2.5), time).get
+      (math.abs(flow.u - (u(lon, lat, 2.5) + curve(lon, lat, Curvature))), math.abs(flow.v - (v(lon, lat, 2.5) + curve(lon, lat, Curvature))))
+    }
+    // u and v's nodes are 153.0, 153.1 ... 154.0 east and 28.5, 28.4 ... 27.5 south: gaps from the first to the last
+    for (lon <- Seq(153.15, 153.35, 153.5, 153.75, 153.85); lat <- Seq(-28.15, -28.0, -27.85)) {
+      val (eu, ev) = error(lon, lat)
+      assert(eu < 1e-5 && ev < 1e-5, s"inside the 4 by 4 nodes at ($lat, $lon): u off by $eu, v by $ev")
+    }
+    // the gaps at the edges have no node beyond them on one side: bilinear, which is off by curvature * h^2 * x(1 - x)
+    for (lon <- Seq(153.05, 153.95)) {
+      val (eu, _) = error(lon, -28.0)
+      assert(eu > 5e-3, s"in the outermost gap at $lon: u off by only $eu")
+    }
+    for (lat <- Seq(-28.45, -27.55)) {
+      val (eu, _) = error(153.5, lat)
+      assert(eu > 5e-3, s"in the outermost gap at $lat: u off by only $eu")
+    }
+  }
+
+  it should "do the same for w, whose nodes are half a cell inside" in {
+    def error(lon: Double, lat: Double) =
+      math.abs(curved.getVelocityOfCoordinate(at(lat, lon, 5.0), time).get.w - (w(lon, lat, 5.0) + curve(lon, lat, Curvature)))
+    // w's nodes are 153.05, 153.15 ... 154.05 east and 28.45 ... 27.45 south: 11 of each, half a cell from u's
+    for (lon <- Seq(153.25, 153.5, 153.75); lat <- Seq(-28.25, -28.0, -27.75)) assert(error(lon, lat) < 1e-6, s"inside at ($lat, $lon)")
+    assert(error(153.1, -28.0) > 5e-3 && error(153.99, -28.0) > 5e-3, "in w's outermost gaps")
+  }
+
   "Flow on one grid" should "not be taken for flow on grids of their own" in {
     val uniform = controller(UniformFlowDataset.write(_, Seq((2002, 1))))
     val iterator = new FlowFileIterator(new Flow(

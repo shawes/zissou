@@ -32,14 +32,18 @@ object StaggeredFlowDataset {
   def v(lon: Double, lat: Double, depth: Double): Double = -0.10 + 0.04 * (lon - 153) - 0.15 * (lat + 28.5) + 2e-4 * depth
   def w(lon: Double, lat: Double, depth: Double): Double = 1e-3 + 4e-4 * (lon - 153) + 7e-4 * (lat + 28.5) + 1e-5 * depth
 
-  def write(root: File, months: Seq[(Int, Int)]): Unit =
+  /** What a curvature adds to every field: a quadratic in longitude and latitude, which bicubic interpolation reproduces and bilinear does not. */
+  def curve(lon: Double, lat: Double, curvature: Double): Double = curvature * (math.pow(lon - 153, 2) + math.pow(lat + 28.5, 2))
+
+  def write(root: File, months: Seq[(Int, Int)], curvature: Double = 0.0): Unit =
     for (variable <- Seq("u", "v", "w"); (year, month) <- months) {
       val directory = new File(root, variable)
       directory.mkdirs()
       val (x, y, z, lons, lats, levels) =
         if (variable == "w") ("xt_ocean", "yt_ocean", "sw_ocean", WLons, WLats, Interfaces)
         else ("xu_ocean", "yu_ocean", "st_ocean", Lons, Lats, Levels)
-      val field: (Double, Double, Double) => Double = variable match { case "u" => u; case "v" => v; case _ => w }
+      val plane: (Double, Double, Double) => Double = variable match { case "u" => u; case "v" => v; case _ => w }
+      val field: (Double, Double, Double) => Double = (lon, lat, depth) => plane(lon, lat, depth) + curve(lon, lat, curvature)
       writeMonth(new File(directory, f"ocean_${variable}_$year%d_$month%02d.nc"), variable, year, month, (x, y, z), lons, lats, levels, field)
     }
 

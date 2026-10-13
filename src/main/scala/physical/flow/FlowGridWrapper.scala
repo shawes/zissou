@@ -58,11 +58,8 @@ class FlowGridWrapper(
   def nearestVelocity(coordinate: GeoCoordinate, index: (Int, Int, Int, Boolean), isEarlier: Boolean): Option[Velocity] =
     if (colocated) getVelocity((index._1, index._2, index._3, isEarlier))
     else {
-      val velocity = new Velocity(
-        componentValue(0, coordinate, isEarlier),
-        componentValue(1, coordinate, isEarlier),
-        componentValue(2, coordinate, isEarlier)
-      )
+      val where = locate(coordinate, withGeometry = false)
+      val velocity = new Velocity(nearestValue(0, where, isEarlier), nearestValue(1, where, isEarlier), nearestValue(2, where, isEarlier))
       if (velocity.isDefined) Some(velocity) else None
     }
 
@@ -102,61 +99,128 @@ class FlowGridWrapper(
     if (math.abs(nodes(low) - value) <= math.abs(nodes(high) - value)) low else high
   }
 
-  /** The flow of one variable (0 for u, 1 for v, 2 for w) at the nearest node of its own grid; NaN on land. */
-  private def componentValue(c: Int, coordinate: GeoCoordinate, isEarlier: Boolean): Double = {
-    val a = axes(c)
-    val x = nearestIndex(a.longitudes, coordinate.longitude)
-    val y = nearestIndex(a.latitudes, coordinate.latitude)
-    val z = closestIndex(a.depths, coordinate.depth)
-    (if (isEarlier) today else tomorrow)(c)(z)(y)(x).toDouble
+  // Which earlier variable has the same nodes and levels, so that a position is only worked out once for both:
+  // u and v share theirs in BRAN2020, and w has its own
+  private lazy val sharesWith: Array[Int] = Array.tabulate(axes.length) { c =>
+    (0 to c).find(earlier =>
+      same(axes(earlier).longitudes, axes(c).longitudes) && same(axes(earlier).latitudes, axes(c).latitudes) &&
+        same(axes(earlier).depths, axes(c).depths)
+    ).get
   }
 
-  /** As componentValue, with no value for land. */
-  def componentNearest(c: Int, coordinate: GeoCoordinate, isEarlier: Boolean): Option[Double] = {
-    val value = componentValue(c, coordinate, isEarlier)
-    if (value.isNaN) None else Some(value)
+  /**
+    * Where a position is among the nodes of each variable's grid, worked out once and used for the
+    * earlier field and the later one: the nearest node and level, and, if asked for, the gap between
+    * nodes it lies in with how far across it, for interpolating.
+    */
+  final class Location(count: Int) {
+    val x = new Array[Int](count) // the nearest node's longitude and latitude index, and level
+    val y = new Array[Int](count)
+    val z = new Array[Int](count)
+    val lonNode = new Array[Int](count) // the node before the position, or -1 if it is not between two
+    val latNode = new Array[Int](count)
+    val lonFraction = new Array[Double](count)
+    val latFraction = new Array[Double](count)
   }
 
-  /** As `stencil`, for one variable on its own grid: its nodes hold its flow in `u`. */
-  def componentStencil(c: Int, coordinate: GeoCoordinate, interpolation: InterpolationType, isEarlier: Boolean): Option[Stencil] = {
-    val a = axes(c)
-    val size = neighbourhoodSize(interpolation)
-    val before = size / 2 - 1
-    val lonNode = gapStart(a.longitudes, nearestIndex(a.longitudes, coordinate.longitude), coordinate.longitude)
-    val latNode = gapStart(a.latitudes, nearestIndex(a.latitudes, coordinate.latitude), coordinate.latitude)
-    if (lonNode < 0 || latNode < 0) None
-    else {
-      val nodes = componentNodes(c, lonNode - before, latNode - before, size, closestIndex(a.depths, coordinate.depth), isEarlier)
-      if (nodes == null) None
-      else Some(new Stencil(
-        nodes,
-        fractionAcross(a.longitudes, lonNode, coordinate.longitude),
-        fractionAcross(a.latitudes, latNode, coordinate.latitude)
-      ))
-    }
-  }
-
-  private def componentNodes(c: Int, firstX: Int, firstY: Int, size: Int, z: Int, isEarlier: Boolean): Array[Array[Velocity]] = {
-    val a = axes(c)
-    if (firstX < 0 || firstY < 0 || firstX + size > a.longitudes.length || firstY + size > a.latitudes.length) null
-    else {
-      val field = (if (isEarlier) today else tomorrow)(c)(z)
-      val nodes = new Array[Array[Velocity]](size)
-      var i = 0
-      while (i < size) {
-        nodes(i) = new Array[Velocity](size)
-        var j = 0
-        while (j < size) {
-          val value = field(firstY + j)(firstX + i).toDouble
-          if (value.isNaN) return null
-          nodes(i)(j) = new Velocity(value, 0, 0)
-          j += 1
+  def locate(coordinate: GeoCoordinate, withGeometry: Boolean): Location = {
+    val where = new Location(axes.length)
+    var c = 0
+    while (c < axes.length) {
+      val shared = sharesWith(c)
+      if (shared < c) {
+        where.x(c) = where.x(shared); where.y(c) = where.y(shared); where.z(c) = where.z(shared)
+        where.lonNode(c) = where.lonNode(shared); where.latNode(c) = where.latNode(shared)
+        where.lonFraction(c) = where.lonFraction(shared); where.latFraction(c) = where.latFraction(shared)
+      } else {
+        val a = axes(c)
+        where.x(c) = nearestIndex(a.longitudes, coordinate.longitude)
+        where.y(c) = nearestIndex(a.latitudes, coordinate.latitude)
+        where.z(c) = closestIndex(a.depths, coordinate.depth)
+        if (withGeometry) {
+          where.lonNode(c) = gapStart(a.longitudes, where.x(c), coordinate.longitude)
+          where.latNode(c) = gapStart(a.latitudes, where.y(c), coordinate.latitude)
+          if (where.lonNode(c) >= 0 && where.latNode(c) >= 0) {
+            where.lonFraction(c) = fractionAcross(a.longitudes, where.lonNode(c), coordinate.longitude)
+            where.latFraction(c) = fractionAcross(a.latitudes, where.latNode(c), coordinate.latitude)
+          }
         }
-        i += 1
       }
-      nodes
+      c += 1
     }
+    where
   }
+
+  private def field(c: Int, where: Location, isEarlier: Boolean): Array[Array[Float]] =
+    (if (isEarlier) today else tomorrow)(c)(where.z(c))
+
+  // the flow of one variable at the nearest node of its own grid; NaN on land
+  private def nearestValue(c: Int, where: Location, isEarlier: Boolean): Double =
+    field(c, where, isEarlier)(where.y(c))(where.x(c)).toDouble
+
+  /**
+    * The flow at a position from the nodes of each variable's own grid, blended in time as
+    * `laterWeight` of the later field and the rest of the earlier (only the field that is needed
+    * is read when that is 0 or 1). Each is interpolated bicubically where its 4 by 4 nodes all
+    * have flow, else bilinearly among its 2 by 2, else from the nearest node; there is flow only
+    * where all three have it.
+    */
+  def interpolatedVelocity(coordinate: GeoCoordinate, laterWeight: Double): Option[Velocity] = {
+    val where = locate(coordinate, withGeometry = true)
+    val components = new Array[Double](axes.length)
+    var c = 0
+    while (c < axes.length) {
+      components(c) =
+        if (laterWeight <= 0.0) interpolatedValue(c, where, true)
+        else if (laterWeight >= 1.0) interpolatedValue(c, where, false)
+        else {
+          val earlier = interpolatedValue(c, where, true)
+          val later = interpolatedValue(c, where, false)
+          // as Velocity does it: earlier * (1 - weight) + later * weight
+          if (earlier.isNaN || later.isNaN) Double.NaN else earlier * (1.0 - laterWeight) + later * laterWeight
+        }
+      if (components(c).isNaN) return None
+      c += 1
+    }
+    Some(new Velocity(components(0), components(1), components(2)))
+  }
+
+  // One variable at a position, in one field: NaN where it has no flow
+  private def interpolatedValue(c: Int, where: Location, isEarlier: Boolean): Double = {
+    val lonNode = where.lonNode(c)
+    val latNode = where.latNode(c)
+    if (lonNode >= 0 && latNode >= 0) {
+      val a = axes(c)
+      val values = field(c, where, isEarlier)
+      val x = where.lonFraction(c)
+      val y = where.latFraction(c)
+      // bicubic, among the 4 by 4 nodes with the position in the gap between the middle ones
+      if (lonNode >= 1 && latNode >= 1 && lonNode + 2 < a.longitudes.length && latNode + 2 < a.latitudes.length) {
+        val x0 = lonNode - 1
+        val y0 = latNode - 1
+        val result = cubic(
+          cubicRow(values, x0, y0, y), cubicRow(values, x0 + 1, y0, y), cubicRow(values, x0 + 2, y0, y), cubicRow(values, x0 + 3, y0, y), x)
+        if (!result.isNaN) return result
+      }
+      // bilinear, among the 2 by 2 nodes
+      val result = linear(linearRow(values, lonNode, latNode, y), linearRow(values, lonNode + 1, latNode, y), x)
+      if (!result.isNaN) return result
+    }
+    nearestValue(c, where, isEarlier)
+  }
+
+  // the values of 4 nodes down a column of the grid, interpolated to a fraction of the way across the middle gap
+  private def cubicRow(values: Array[Array[Float]], x: Int, y0: Int, fraction: Double): Double =
+    cubic(values(y0)(x).toDouble, values(y0 + 1)(x).toDouble, values(y0 + 2)(x).toDouble, values(y0 + 3)(x).toDouble, fraction)
+
+  private def linearRow(values: Array[Array[Float]], x: Int, y0: Int, fraction: Double): Double =
+    linear(values(y0)(x).toDouble, values(y0 + 1)(x).toDouble, fraction)
+
+  // the same arithmetic, in the same order, as CubicInterpolation and LinearInterpolation do on velocities
+  private def cubic(v0: Double, v1: Double, v2: Double, v3: Double, x: Double): Double =
+    v1 + (v2 - v0 + (v0 * 2.0 - v1 * 5.0 + v2 * 4.0 - v3 + ((v1 - v2) * 3.0 + v3 - v0) * x) * x) * x * 0.5
+
+  private def linear(v0: Double, v1: Double, x: Double): Double = v0 + (v1 - v0) * x
 
   // The u, v and w grids for today and tomorrow, read straight from the arrays
   private lazy val today = data.head.map(_._1).toArray
