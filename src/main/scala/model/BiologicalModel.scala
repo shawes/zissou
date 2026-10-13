@@ -11,7 +11,7 @@ import biology.swimming._
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
 import io.config.ConfigMappings._
-import io.config.Configuration
+import io.config.{Configuration, LarvaChecks}
 import locals._
 import locals.Constants.LightWeightException._
 import maths.{Geometry, RandomNumberGenerator}
@@ -26,6 +26,10 @@ class BiologicalModel(
     integrator: RungeKuttaIntegration
 ) extends Logging {
 
+  // Before the larvae's traits are built from it: a mortality rate that is a percentage, or
+  // migration probabilities that do not add up, stop the run here with what to change
+  LarvaChecks.problems(config.larva).headOption.foreach(problem => throw new IllegalArgumentException(problem))
+
   val factory = LarvaeFactory.apply(locals.Fish, config.larva)
   val spawn = new Spawn(config.spawn)
   var habitatManager: HabitatManager = new HabitatManager(
@@ -39,16 +43,8 @@ class BiologicalModel(
   def larvaeLostFromDomain: Int = lostFromDomain.get
   val geometry = new Geometry
 
-  // The share of the larvae that die each day, from 0 to 1. Without one, a mortal larva
-  // used to be given 1, and every larva died on its first day.
-  if (config.larva.isMortal.getOrElse(false)) {
-    val rate = config.larva.mortalityRate
-    require(
-      rate.exists(r => r >= 0 && r <= 1),
-      "larva.mortalityRate must be the share of larvae that die each day, from 0 to 1 (0.26 for 26%), not " +
-        rate.map(_.toString).getOrElse("missing")
-    )
-  }
+  // The share of the larvae that die each day, from 0 to 1, which LarvaChecks makes sure
+  // a mortal larva has
   val mortality: Mortality = new MortalityConstant(
     config.larva.mortalityRate.getOrElse(0)
   )

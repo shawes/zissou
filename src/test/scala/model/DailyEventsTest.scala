@@ -84,6 +84,6 @@ class DailyEventsTest extends AnyFlatSpec {
     assert(message.contains("from 0 to 1") && message.contains("not 26.0"))
     val missing = ModelFixture.yaml(inputs, ModelFixture.driftingLarva(mortalityRate = Some(0.5)))
       .replace("  mortalityRate: 0.5\n", "")
-    assert(intercept[IllegalArgumentException](ModelFixture.run(missing)).getMessage.contains("not missing"))
+    assert(intercept[IllegalArgumentException](ModelFixture.run(missing)).getMessage.contains("larva.mortalityRate is missing"))
   }
 }

@@ -155,4 +155,15 @@ class ConfigStoreTest extends AnyFlatSpec {
     assert(configs.validate(SampleConfig.yaml().replace("isMortal: true", "isMortal: false").replace("  mortalityRate: 0.26\n", "")).ok,
       "an immortal larva needs no rate")
   }
+
+  it should "reject migration probabilities that do not add up to 1" in {
+    val (configs, _) = store()
+    def withDiel(day: String) = SampleConfig.yaml().replace(
+      "  pelagicLarvalDuration:\n",
+      s"  dielProbabilities:\n    depths: [25, 50]\n    day: $day\n    night: [0.5, 0.5]\n  pelagicLarvalDuration:\n"
+    )
+    assert(configs.validate(withDiel("[0.3, 0.7]")).ok)
+    val result = configs.validate(withDiel("[30, 70]"))
+    assert(!result.ok && result.error.contains("larva.dielProbabilities.day must add up to 1, not 100."))
+  }
 }
