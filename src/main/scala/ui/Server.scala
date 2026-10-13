@@ -6,7 +6,7 @@ import java.nio.file.{Files, Path}
 object Server {
 
   private val Usage =
-    """Usage: zissou ui [--port 8787] [--host 127.0.0.1] [--configs DIR] [--runs DIR] [--land FILE]
+    """Usage: zissou ui [--port 8787] [--host 127.0.0.1] [--configs DIR] [--runs DIR] [--land FILE] [--parallel N]
       |
       |  --port     the port to listen on (default 8787)
       |  --host     the address to listen on (default 127.0.0.1, this machine only).
@@ -16,6 +16,8 @@ object Server {
       |  --runs     where each run's log and results are kept (default: runs)
       |  --land     a shapefile of the land, drawn on maps so the water shows
       |             (default: data/land/ne_10m_land.shp, if it is there)
+      |  --parallel how many runs may go at once, each in a process of its own with a
+      |             share of the cores (default 1)
       |
       |Run it from the folder the configurations' relative paths refer to.
       |""".stripMargin
@@ -25,7 +27,7 @@ object Server {
       print(Usage)
     } else {
       val options = args.toSeq.grouped(2).collect { case Seq(k, v) if k.startsWith("--") => k.drop(2) -> v }.toMap
-      val unknown = options.keySet -- Set("port", "host", "configs", "runs", "land")
+      val unknown = options.keySet -- Set("port", "host", "configs", "runs", "land", "parallel")
       if (unknown.nonEmpty || args.length % 2 != 0) {
         Console.err.print(Usage)
         sys.exit(2)
@@ -41,7 +43,8 @@ object Server {
       Files.createDirectories(runsDir)
       // the coastline the map shows the land from, if there is one: Natural Earth's land, see the README
       val land = Some(Path.of(options.getOrElse("land", "data/land/ne_10m_land.shp"))).filter(Files.isRegularFile(_))
-      val runs = new RunManager(runsDir, workDir, RunManager.jvmCommand, land)
+      val parallel = options.get("parallel").flatMap(_.toIntOption).filter(_ >= 1).getOrElse(1)
+      val runs = new RunManager(runsDir, workDir, RunManager.jvmCommand(parallel), land, parallel)
       val server = new WebServer(host, port, new ConfigStore(configDir, workDir), runs)
       server.start()
       Runtime.getRuntime.addShutdownHook(new Thread(() => {

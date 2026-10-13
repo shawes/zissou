@@ -67,10 +67,10 @@ class BiologicalModel(
   // the time, as its movement is (from a different stream, so the two are independent). Drawn
   // in turn from one sequence shared by every larva, a larva's fate depended on how many
   // larvae came before it in the list, so changing what one larva did changed the fate of
-  // every larva after it.
+  // every larva after it. With a stream each, the larvae can be taken in parallel.
   def applyMortality(): Unit = {
     val step = clock.now.toDateTime(DateTimeZone.UTC).getMillis
-    pelagicLarvae.foreach(larva =>
+    pelagicLarvae.par.foreach(larva =>
       RandomNumberGenerator.withStream(
         RandomNumberGenerator.keyFor("mortality " + larva.id),
         step

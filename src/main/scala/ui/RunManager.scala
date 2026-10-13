@@ -31,9 +31,21 @@ case class RunDetail(run: RunInfo, log: LogSummary, fraction: Option[Double]) de
   * or an out-of-memory error in a run cannot take the interface down, and a
   * cancel is just killing the process.
   *
+  * Up to `maxConcurrent` runs go at once; each gets its own process, so they share
+  * no state (the random number generator is a singleton, which rules out running
+  * two in one JVM).
+  *
   * @param command the command line that runs the simulator on a configuration file
+  * @param maxConcurrent how many runs may be going at the same time
   */
-class RunManager(val runsDir: Path, val workDir: Path, command: Path => Seq[String], landFile: Option[Path] = None) {
+class RunManager(
+    val runsDir: Path,
+    val workDir: Path,
+    command: Path => Seq[String],
+    landFile: Option[Path] = None,
+    val maxConcurrent: Int = 1
+) {
+  require(maxConcurrent >= 1, "maxConcurrent must be at least 1")
 
   private val IdPattern = "^[0-9]{8}-[0-9]{6}-[A-Za-z0-9._-]+$".r
   private val Stamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
@@ -53,11 +65,14 @@ class RunManager(val runsDir: Path, val workDir: Path, command: Path => Seq[Stri
 
   def get(id: String): Option[RunInfo] = Option(entries.get(id)).map(_.info)
 
-  def isRunning: Boolean = entries.values().asScala.exists(_.info.status == "running")
+  def runningCount: Int = entries.values().asScala.count(_.info.status == "running")
 
-  /** Starts a run of the given configuration text, unless one is already going. */
+  def isRunning: Boolean = runningCount > 0
+
+  /** Starts a run of the given configuration text, unless `maxConcurrent` are already going. */
   def start(configName: String, text: String): Either[String, RunInfo] = synchronized {
-    if (isRunning) Left("A run is already in progress.")
+    if (runningCount >= maxConcurrent)
+      Left(if (maxConcurrent == 1) "A run is already in progress." else s"$maxConcurrent runs are already in progress.")
     else
       new ConfigurationFile().parse(text) match {
         case Left(failure) => Left(s"The configuration is not valid: ${failure.getMessage}")
@@ -210,10 +225,11 @@ class RunManager(val runsDir: Path, val workDir: Path, command: Path => Seq[Stri
 
 object RunManager {
 
-  /** Runs the simulator in a new JVM of the same kind, with the same classpath. */
-  def jvmCommand(configFile: Path): Seq[String] = {
-    val java = Path.of(System.getProperty("java.home"), "bin", "java").toString
-    val extra = Option(System.getenv("ZISSOU_JAVA_OPTS")).map(_.trim.split("\\s+").toSeq.filter(_.nonEmpty)).getOrElse(Seq.empty)
-    Seq(java, "-XX:+UseParallelGC") ++ extra ++ Seq("-cp", System.getProperty("java.class.path"), "model.Simulator", configFile.toString)
-  }
+  /**
+    * Runs the simulator in a new JVM of the same kind, with the same classpath. With
+    * several runs at once each is told it has its share of the cores, so they do not
+    * all size their thread pools to the whole machine.
+    */
+  def jvmCommand(concurrent: Int)(configFile: Path): Seq[String] =
+    model.Batch.jvmCommand(configFile, model.Batch.coresPerRun(concurrent))
 }

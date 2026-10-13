@@ -72,6 +72,20 @@ class RunManagerTest extends AnyFlatSpec {
     runs.shutdown()
   }
 
+  it should "run several at once when allowed, up to the limit" in {
+    val base = Files.createTempDirectory("zissou-runs-test")
+    val runs = new RunManager(base.resolve("runs"), base, config => Seq("sh", "-c", runsForAWhile, config.toString), None, 2)
+    val first = runs.start("x.yaml", SampleConfig.yaml()).toOption.get
+    val second = runs.start("y.yaml", SampleConfig.yaml()).toOption.get
+    assert(runs.runningCount == 2)
+    assert(runs.start("z.yaml", SampleConfig.yaml()) == Left("2 runs are already in progress."))
+    runs.cancel(first.id)
+    finished(runs, first.id)
+    assert(runs.get(second.id).get.status == "running")
+    assert(runs.start("z.yaml", SampleConfig.yaml()).isRight)
+    runs.shutdown()
+  }
+
   it should "not start from a configuration that does not parse" in {
     val (runs, _) = manager(succeeds)
     val result = runs.start("x.yaml", "settings: nonsense")

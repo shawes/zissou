@@ -163,6 +163,7 @@ Zissou needs a JDK (17 or later) and [sbt](https://www.scala-sbt.org/).
 ```
 sbt stage                          # lays the program out in target/universal/stage
 scripts/zissou.sh my-config.yaml   # runs one simulation from the command line
+scripts/zissou.sh --parallel 2 a.yaml b.yaml c.yaml   # several, two at a time
 scripts/zissou.sh ui               # starts the web interface
 ```
 
@@ -180,7 +181,7 @@ The launcher uses the throughput (Parallel) garbage collector, which suits a bat
 - look at what a finished run produced (settlement by release site, the connectivity matrix, how far larvae travelled) and download its files
 - see a map of it: the land, the reefs larvae were released from (not the thousands of others in a habitat layer), the release sites, and the paths of the larvae that settled (and, optionally, a sample of all larvae), each coloured by the site it came from. To keep the page quick, a few hundred paths are drawn, thinned and simplified; the heading says how many there really were
 
-Each run is a separate process, so a failure or running out of memory in a simulation cannot take the page down. One run goes at a time.
+Each run is a separate process, so a failure or running out of memory in a simulation cannot take the page down. One run goes at a time unless you start it with `ui --parallel N`, which allows N at once; each then gets its share of the cores. The same goes for the command line: with several configurations, `--parallel N` (default: all of them) runs that many at once, each in its own process, printing its lines prefixed with the configuration's name. Give runs that go together their own `saveOutputFilePath`. Mortality and movement already use every core within a run, so extra runs help most when a run is small or spends time reading flow files.
 
 ```
 scripts/zissou.sh ui --port 8787 --configs data/synthetic --runs runs --land data/land/ne_10m_land.shp

@@ -11,7 +11,7 @@ class EndToEndTest extends AnyFlatSpec {
     val base = Files.createTempDirectory("zissou-e2e-test")
     tools.SyntheticDataset.main(Array(base.toString))
     val configs = new ConfigStore(base, base)
-    val runs = new RunManager(base.resolve("runs"), base, RunManager.jvmCommand)
+    val runs = new RunManager(base.resolve("runs"), base, RunManager.jvmCommand(1))
 
     val check = configs.validate(configs.read("smoke.yaml").get)
     assert(check.ok, check.error.toString)
@@ -62,7 +62,7 @@ class EndToEndTest extends AnyFlatSpec {
       .replace("end: 2002-02-20", "end: 2002-03-10")
     assert(configs.validate(text).ok)
 
-    val runs = new RunManager(base.resolve("runs"), base, RunManager.jvmCommand)
+    val runs = new RunManager(base.resolve("runs"), base, RunManager.jvmCommand(1))
     val started = runs.start("smoke.yaml", text).toOption.get
     val deadline = System.currentTimeMillis() + 120000
     while (System.currentTimeMillis() < deadline && runs.get(started.id).exists(_.status == "running")) Thread.sleep(100)

@@ -27,6 +27,8 @@ class WebServer(host: String, port: Int, configs: ConfigStore, runs: RunManager)
   private val assets = Map(
     "/" -> ("index.html", "text/html; charset=utf-8"),
     "/app.js" -> ("app.js", "text/javascript; charset=utf-8"),
+    "/form.js" -> ("form.js", "text/javascript; charset=utf-8"),
+    "/vendor/editor.js" -> ("vendor/editor.js", "text/javascript; charset=utf-8"),
     "/style.css" -> ("style.css", "text/css; charset=utf-8")
   )
 
@@ -102,7 +104,9 @@ class WebServer(host: String, port: Int, configs: ConfigStore, runs: RunManager)
         json(200, Json.obj(
           "configDir" -> configs.dir.toString.asJson,
           "runsDir" -> runs.runsDir.toString.asJson,
-          "running" -> runs.isRunning.asJson
+          "running" -> runs.isRunning.asJson,
+          "runningCount" -> runs.runningCount.asJson,
+          "maxConcurrent" -> runs.maxConcurrent.asJson
         ))
       case ("GET", List("api", "configs")) => json(200, configs.list().asJson)
       case ("GET", List("api", "configs", name)) =>

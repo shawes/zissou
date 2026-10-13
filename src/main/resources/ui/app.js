@@ -73,6 +73,8 @@ const state = {
   configs: [],
   runs: [],
   running: false,
+  maxConcurrent: 1,
+  runningCount: 0,
   selected: null, // { type: 'config', name } or { type: 'run', id }
   editor: { name: null, text: '', saved: '', validation: null, message: null, timer: null, refs: {} },
   run: { id: null, detail: null, results: null, map: undefined, mapOptions: { settled: true, sampled: false }, logOffset: 0, refs: {} },
@@ -170,8 +172,11 @@ function refreshEditorControls() {
   const valid = validation ? validation.ok : false;
   refs.dirty.textContent = isDirty() ? 'Unsaved changes' : '';
   refs.save.disabled = !isDirty() || !valid;
-  refs.run.disabled = state.running || !valid;
-  refs.run.title = state.running ? 'A run is already in progress' : valid ? '' : 'Fix the configuration first';
+  const full = state.runningCount >= state.maxConcurrent;
+  refs.run.disabled = full || !valid;
+  refs.run.title = full
+    ? (state.maxConcurrent === 1 ? 'A run is already in progress' : `${state.maxConcurrent} runs are already in progress`)
+    : valid ? '' : 'Fix the configuration first';
 }
 
 function scheduleValidate() {
@@ -231,7 +236,6 @@ async function runConfig() {
   const { name, text } = state.editor;
   try {
     const run = await api('POST', '/api/runs', { config: name, text });
-    state.running = true;
     await refreshRuns();
     selectRun(run.id, true);
   } catch (e) {
@@ -619,7 +623,8 @@ function showWelcome() {
 
 async function refreshRuns() {
   state.runs = await api('GET', '/api/runs');
-  state.running = state.runs.some((r) => r.status === 'running');
+  state.runningCount = state.runs.filter((r) => r.status === 'running').length;
+  state.running = state.runningCount > 0;
   renderSidebar();
   renderStatus();
   refreshEditorControls();
@@ -656,3 +661,4 @@ document.addEventListener('keydown', (event) => {
   }
   tick();
 })();
+    state.maxConcurrent = (await api('GET', '/api/info')).maxConcurrent || 1;
