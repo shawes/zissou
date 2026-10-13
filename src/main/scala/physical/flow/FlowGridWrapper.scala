@@ -14,7 +14,10 @@ import scala.collection.parallel.mutable._
 /**
   * Two daily flow fields, the earlier first, and the times they are for.
   *
-  * @param data the u, v and w grids of the earlier field, then those of the later
+  * @param depths the depth of each level of the u grid, from the surface
+ * @param componentDepths the depths of the levels of u, v and w each, when they differ (BRAN2020 has
+ *                        w at the interfaces between the levels of u and v); `depths` for all if empty
+ * @param data the u, v and w grids of the earlier field, then those of the later
   * @param earlierStamp the time the earlier field is for, from the time axis of the data
   * @param laterStamp the time the later field is for
   */
@@ -22,7 +25,8 @@ class FlowGridWrapper(
     val depths: List[Double],
     val data: List[List[(Array[Array[Array[Float]]], GridCoordSystem)]],
     val earlierStamp: LocalDateTime,
-    val laterStamp: LocalDateTime
+    val laterStamp: LocalDateTime,
+    val componentDepths: List[List[Double]] = List.empty
 ) extends Logging {
 
   private lazy val earlierMillis = earlierStamp.toDateTime(DateTimeZone.UTC).getMillis
@@ -42,9 +46,116 @@ class FlowGridWrapper(
     }
   }
 
-  def getVelocity(coordinate: GeoCoordinate): Option[Velocity] = {
-    val gridIndex = getIndex(coordinate)
-    getVelocity(gridIndex)
+  /** The flow at the nearest node of the earlier field, enough to tell land from sea. */
+  def getVelocity(coordinate: GeoCoordinate): Option[Velocity] =
+    nearestVelocity(coordinate, getIndex(coordinate), true)
+
+  /**
+    * The flow at the nearest node, of the earlier or the later field. Where u, v and w are on one
+    * grid that is the node of `index`; where they are not, each is read from the nearest node of its
+    * own grid and the nearest level of its own depths.
+    */
+  def nearestVelocity(coordinate: GeoCoordinate, index: (Int, Int, Int, Boolean), isEarlier: Boolean): Option[Velocity] =
+    if (colocated) getVelocity((index._1, index._2, index._3, isEarlier))
+    else {
+      val velocity = new Velocity(
+        componentValue(0, coordinate, isEarlier),
+        componentValue(1, coordinate, isEarlier),
+        componentValue(2, coordinate, isEarlier)
+      )
+      if (velocity.isDefined) Some(velocity) else None
+    }
+
+  // ---- u, v and w on grids of their own ---------------------------------------------------
+
+  // The nodes and levels of one variable's grid. In BRAN2020, u and v are at the corners of the
+  // cells (xu_ocean, yu_ocean) and the centres of the layers (st_ocean), and w is at the centres
+  // of the cells (xt_ocean, yt_ocean) and the bottoms of the layers (sw_ocean): half a cell, about
+  // 5 km, and half a level from the others.
+  private final class Axes(val longitudes: Array[Double], val latitudes: Array[Double], val depths: Array[Double])
+
+  private lazy val axes: Array[Axes] = Array.tabulate(data.head.size) { c =>
+    val (arrays, system) = data.head(c)
+    new Axes(
+      Array.tabulate(arrays(0)(0).length)(x => system.getLatLon(x, 0).getLongitude),
+      Array.tabulate(arrays(0).length)(y => system.getLatLon(0, y).getLatitude),
+      (if (componentDepths.size > c) componentDepths(c) else depths).toArray
+    )
+  }
+
+  private def same(a: Array[Double], b: Array[Double]): Boolean =
+    a.length == b.length && a.indices.forall(i => math.abs(a(i) - b(i)) < 1e-6)
+
+  /** Whether u, v and w are all on the one grid, with the same levels, as in most ocean models' output. */
+  lazy val colocated: Boolean =
+    axes.tail.forall(a => same(a.longitudes, axes.head.longitudes) && same(a.latitudes, axes.head.latitudes) && same(a.depths, axes.head.depths))
+
+  // the node of an axis, running either way, nearest a value; the end node for a value beyond it
+  private def nearestIndex(nodes: Array[Double], value: Double): Int = {
+    val ascending = nodes.last >= nodes.head
+    var low = 0
+    var high = nodes.length - 1
+    while (high - low > 1) {
+      val middle = (low + high) / 2
+      if (if (ascending) nodes(middle) <= value else nodes(middle) >= value) low = middle else high = middle
+    }
+    if (math.abs(nodes(low) - value) <= math.abs(nodes(high) - value)) low else high
+  }
+
+  /** The flow of one variable (0 for u, 1 for v, 2 for w) at the nearest node of its own grid; NaN on land. */
+  private def componentValue(c: Int, coordinate: GeoCoordinate, isEarlier: Boolean): Double = {
+    val a = axes(c)
+    val x = nearestIndex(a.longitudes, coordinate.longitude)
+    val y = nearestIndex(a.latitudes, coordinate.latitude)
+    val z = closestIndex(a.depths, coordinate.depth)
+    (if (isEarlier) today else tomorrow)(c)(z)(y)(x).toDouble
+  }
+
+  /** As componentValue, with no value for land. */
+  def componentNearest(c: Int, coordinate: GeoCoordinate, isEarlier: Boolean): Option[Double] = {
+    val value = componentValue(c, coordinate, isEarlier)
+    if (value.isNaN) None else Some(value)
+  }
+
+  /** As `stencil`, for one variable on its own grid: its nodes hold its flow in `u`. */
+  def componentStencil(c: Int, coordinate: GeoCoordinate, interpolation: InterpolationType, isEarlier: Boolean): Option[Stencil] = {
+    val a = axes(c)
+    val size = neighbourhoodSize(interpolation)
+    val before = size / 2 - 1
+    val lonNode = gapStart(a.longitudes, nearestIndex(a.longitudes, coordinate.longitude), coordinate.longitude)
+    val latNode = gapStart(a.latitudes, nearestIndex(a.latitudes, coordinate.latitude), coordinate.latitude)
+    if (lonNode < 0 || latNode < 0) None
+    else {
+      val nodes = componentNodes(c, lonNode - before, latNode - before, size, closestIndex(a.depths, coordinate.depth), isEarlier)
+      if (nodes == null) None
+      else Some(new Stencil(
+        nodes,
+        fractionAcross(a.longitudes, lonNode, coordinate.longitude),
+        fractionAcross(a.latitudes, latNode, coordinate.latitude)
+      ))
+    }
+  }
+
+  private def componentNodes(c: Int, firstX: Int, firstY: Int, size: Int, z: Int, isEarlier: Boolean): Array[Array[Velocity]] = {
+    val a = axes(c)
+    if (firstX < 0 || firstY < 0 || firstX + size > a.longitudes.length || firstY + size > a.latitudes.length) null
+    else {
+      val field = (if (isEarlier) today else tomorrow)(c)(z)
+      val nodes = new Array[Array[Velocity]](size)
+      var i = 0
+      while (i < size) {
+        nodes(i) = new Array[Velocity](size)
+        var j = 0
+        while (j < size) {
+          val value = field(firstY + j)(firstX + i).toDouble
+          if (value.isNaN) return null
+          nodes(i)(j) = new Velocity(value, 0, 0)
+          j += 1
+        }
+        i += 1
+      }
+      nodes
+    }
   }
 
   // The u, v and w grids for today and tomorrow, read straight from the arrays
@@ -71,12 +182,14 @@ class FlowGridWrapper(
   }
 
   // The nearest depth level; a tie goes to the shallower level
-  private def closestDepthIndex(depth: Double): Int = {
+  private def closestDepthIndex(depth: Double): Int = closestIndex(depthArray, depth)
+
+  private def closestIndex(levels: Array[Double], depth: Double): Int = {
     var closest = 0
-    var closestDistance = math.abs(depthArray(0) - depth)
+    var closestDistance = math.abs(levels(0) - depth)
     var i = 1
-    while (i < depthArray.length) {
-      val distance = math.abs(depthArray(i) - depth)
+    while (i < levels.length) {
+      val distance = math.abs(levels(i) - depth)
       if (distance < closestDistance) {
         closest = i
         closestDistance = distance

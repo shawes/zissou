@@ -25,6 +25,8 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
   // the depth of each level read, from the surface, as the data's own depth axis gives them;
   // set once the first file is open
   var depths: List[Double] = List.empty
+  // and the same for each of u, v and w, which BRAN2020 puts on different levels
+  private var variableDepths: List[List[Double]] = List.empty
   // the month of the file read last; declared before initialFlowData runs, which reads a file
   @volatile private var loadedMonth: Option[YearMonth] = None
   val netcdfHandler = new NetcdfFileHandler()
@@ -57,7 +59,8 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
       throw new IllegalArgumentException(s"There is no flow file for $startMonth in ${source.description}")
     }
     readMonth(startMonth)
-    depths = readDepths()
+    variableDepths = dataset.map(variable => readDepths(variable))
+    depths = variableDepths.head
     val startDay: Int = flow.period.getStart.toLocalDate.dayOfMonth.get
     grids.enqueue((readDay(startDay, latLonBounds, depthRange), startDay, getDaysInMonth))
     ensureFollowingDayExists()
@@ -66,8 +69,8 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
 
   // The depths of the levels read: the first of the depth axis, which fails with a message
   // if the data has fewer levels than are asked for, or none
-  private def readDepths(): List[Double] = {
-    val (grids, name) = dataset.head
+  private def readDepths(variable: (GridDataset, String)): List[Double] = {
+    val (grids, name) = variable
     val axis = grids.findGridByName(name).getCoordinateSystem.getVerticalAxis
     if (axis == null) {
       throw new IllegalStateException(s"The flow data has no depth axis, so the depth of its levels is not known")
@@ -86,7 +89,8 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
       depths,
       grids.map(grid => grid._1.toList).toList,
       stampOf(grids.front),
-      stampOf(grids.last)
+      stampOf(grids.last),
+      variableDepths
     )
 
   /** Moves on a day: the later field becomes the earlier, and the day after it is read. */

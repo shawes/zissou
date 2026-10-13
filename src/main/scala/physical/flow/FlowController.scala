@@ -60,9 +60,7 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow)
   def getVelocity(coordinate: GeoCoordinate, time: LocalDateTime): Option[Velocity] = {
     val pair = pairAt(time)
     val index = pair.getIndex(coordinate)
-    blend(pair, time)(isEarlier =>
-      pair.getVelocity((index._1, index._2, index._3, isEarlier))
-    )
+    blend(pair, time)(isEarlier => pair.nearestVelocity(coordinate, index, isEarlier))
   }
 
   /** The flow at a position and time: interpolated across the grid, and blended between the two fields. */
