@@ -101,6 +101,18 @@ flow:
 
 Each nested model is laid out like the main one (monthly `u`, `v` and `w` files, in a folder or on an OPeNDAP server) and is read for the same period and time step; it has its own grid, depth levels and file names, and only the part inside its `bounds` is read. Any position on a nested model's grid takes its flow, interpolated on that grid; the nested models are tried in the order listed, so list the finest first, and a position on none of them takes the main model's. Inside a nested model the coast is the nested model's: where it has no flow (land), a larva is on land, even where the main model has sea. The flow is not blended across the edge of a nested model, so a larva crossing it meets a change in flow there.
 
+##### Using ROMS output as a nested model
+
+`scripts/roms_to_zissou.py` converts ROMS history or average files (such as the UNSW EAC model) to the monthly daily-mean files a nested model needs. It needs `pip install numpy netCDF4 scipy`.
+
+```
+scripts/roms_to_zissou.py --out /data/roms-eac --resolution 0.02 --prefix roms roms_his_*.nc
+```
+
+For each record it moves `u` and `v` from the staggered C-grid to the cell centres, rotates them to east and north with the grid's `angle`, interpolates `u`, `v` and `w` from the terrain-following levels to fixed depths (BRAN2020's top 15 unless `--depths` says otherwise; `Vtransform` 1 and 2), and interpolates to a regular longitude/latitude grid of `--resolution` degrees. A node is land where the nearest ROMS cell is land, so the coast stays ROMS's own; below the sea floor there is no flow. It averages the records of each UTC day and writes `<out>/{u,v,w}/<prefix>_<variable>_<year>_<month>.nc`. At the end it prints the `flow.nested` entry to use, with the bounds and the number of levels. `--south/--north/--west/--east` write only part of the ROMS grid, `--grid` names a file to take the grid from when the output files do not carry it, and `--vtransform` supplies it when the files do not say.
+
+A month the ROMS files do not cover in full is not written, because Zissou reads a whole month at a time, and the script says which. If the files have no `w`, it writes 0 and tells you to set `flow.includeVerticalVelocity` to false. ROMS's `w` is taken to be the vertical velocity in m/s. The script is tested on a made-up rotated ROMS grid (`python3 scripts/test_roms_to_zissou.py`) and its output read by Zissou, but not yet on a real model's files; the variable names are ROMS's standard ones.
+
 A nested model must have files for the month the run starts in or the run does not start. If its files end before the run does, the log warns of it and the main flow carries larvae through the area from then on. Larvae are only killed for leaving the main flow's grid.
 
 ### Moving the larvae
