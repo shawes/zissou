@@ -30,7 +30,8 @@ object GriddedFlowDataset {
     */
   def write(
       root: File, months: Seq[(Int, Int)], lons: Array[Double], lats: Array[Double], packedScale: Option[Double] = None,
-      variables: Seq[String] = Seq("u", "v", "w") // and "temp", for the temperature
+      variables: Seq[String] = Seq("u", "v", "w"), // and "temp", for the temperature
+      seaFloor: Option[(Double, Double) => Double] = None // the depth of the sea floor at a longitude and latitude: there is no flow below it
   )(
       value: (String, Double, Double, Long) => Double
   ): Unit =
@@ -39,7 +40,7 @@ object GriddedFlowDataset {
       directory.mkdirs()
       // like BRAN2020, u and v can be packed in 16 bits with a scale factor and w left as it is
       val scale = packedScale.filter(_ => variable != "w")
-      writeMonth(new File(directory, f"ocean_${variable}_$year%d_$month%02d.nc"), variable, year, month, lons, lats, value, scale)
+      writeMonth(new File(directory, f"ocean_${variable}_$year%d_$month%02d.nc"), variable, year, month, lons, lats, value, scale, seaFloor)
     }
 
   private def writeMonth(
@@ -50,7 +51,8 @@ object GriddedFlowDataset {
       lons: Array[Double],
       lats: Array[Double],
       value: (String, Double, Double, Long) => Double,
-      packedScale: Option[Double]
+      packedScale: Option[Double],
+      seaFloor: Option[(Double, Double) => Double]
   ): Unit = {
     val days = YearMonth.of(year, month).lengthOfMonth
     val (nz, ny, nx) = (Depths.length, lats.length, lons.length)
@@ -99,8 +101,9 @@ object GriddedFlowDataset {
         case None =>
           val data = new Array[Float](days * nz * ny * nx)
           var i = 0
-          for (t <- 0 until days; _ <- 0 until nz; y <- 0 until ny; x <- 0 until nx) {
-            data(i) = flow(t, y, x).toFloat
+          for (t <- 0 until days; z <- 0 until nz; y <- 0 until ny; x <- 0 until nx) {
+            // below the sea floor there is nothing: not a number, as an ocean model's data have it
+            data(i) = if (seaFloor.exists(floor => Depths(z) > floor(lons(x), lats(y)))) Float.NaN else flow(t, y, x).toFloat
             i += 1
           }
           writer.write(name, NcArray.factory(DataType.FLOAT, Array(days, nz, ny, nx), data))

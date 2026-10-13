@@ -66,10 +66,21 @@ class FlowLayer(val reader: FlowFileIterator) extends Logging {
     pair.interpolatedVelocity(coordinate, pair.weightOfLater(time))
   }
 
-  /** The temperature in degrees C at a position and time, interpolated and blended like the flow; None where there is none or it was not read. */
+  /**
+    * The temperature in degrees C at a position and time, interpolated and blended like the flow; None where there is
+    * none or it was not read. A position below the sea floor, which a larva that migrates deep over a shelf is, has none
+    * of its own: it is the temperature of the water above it, in the first level up that has any.
+    */
   def getTemperature(coordinate: GeoCoordinate, time: LocalDateTime): Option[Double] = {
     val pair = pairAt(time)
-    pair.temperature(coordinate, pair.weightOfLater(time))
+    val weight = pair.weightOfLater(time)
+    var found = pair.temperature(coordinate, weight)
+    var depth = coordinate.depth - FlowLayer.FloorSearchStep
+    while (found.isEmpty && depth >= 0 && pair.hasTemperature) {
+      found = pair.temperature(new GeoCoordinate(coordinate.latitude, coordinate.longitude, depth), weight)
+      depth -= FlowLayer.FloorSearchStep
+    }
+    found
   }
 
   // Only the field(s) the time needs are read; where either one is missing (land) so is the flow
@@ -85,6 +96,11 @@ class FlowLayer(val reader: FlowFileIterator) extends Logging {
         later <- at(false)
       } yield earlier * (1.0 - laterWeight) + later * laterWeight
   }
+}
+
+object FlowLayer {
+  /** How far up, in metres, to look for the water above a position that is below the sea floor. */
+  val FloorSearchStep = 5.0
 }
 
 /**

@@ -37,14 +37,22 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Option[Turbulence]
     def flowAt(position: GeoCoordinate, at: LocalDateTime): Option[Velocity] =
       flow.getVelocityOfCoordinate(position, at)
 
+    // The flow where the larva starts, and where it is: with none there, on land, there is nothing to move it. Below the
+    // sea floor there is none either, and vertical migration takes a larva to depths of its own choosing: it is taken up to
+    // the water above it, where it is carried by the flow, instead of staying where it was for every step spent too deep.
+    val (origin, start) = flowAt(coordinate, time).map((coordinate, _)).orElse(aboveTheFloor(coordinate, time)) match {
+      case Some((where, k)) => (where, Some(k))
+      case None => (coordinate, None)
+    }
+
     // where the larva is, some seconds on from the start, moving at a velocity and swimming
     def after(seconds: Double, velocity: Velocity): GeoCoordinate =
-      geometry.translatePoint(coordinate, velocity, seconds, swim, includeVerticalVelocity)
+      geometry.translatePoint(origin, velocity, seconds, swim, includeVerticalVelocity)
 
-    // The flow where the larva starts: with none there, on land, there is nothing to move it. At the other samples,
-    // beyond what the first would carry it, a coast in the data is a cell or two out from the real one: where the larva is
-    // sampled over land it is given the flow of the sample before, so that one sample off the coast does not stop it.
-    flowAt(coordinate, time).flatMap { k1 =>
+    // At the other samples, beyond what the first would carry it, a coast in the data is a cell or two out from the real
+    // one: where the larva is sampled over land it is given the flow of the sample before, so that one sample off the
+    // coast does not stop it.
+    start.flatMap { k1 =>
       val k2 = flowAt(after(timeStep / 2.0, k1), middle).getOrElse(k1)
       val k3 = flowAt(after(timeStep / 2.0, k2), middle).getOrElse(k2)
       val k4 = flowAt(after(timeStep, k3), end).getOrElse(k3)
@@ -52,8 +60,25 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Option[Turbulence]
       val velocity = turbulence.map(_.apply(mean)).getOrElse(mean)
       val point = after(timeStep, velocity)
       if (isSea(point)) Some(point)
-      else tryMovingLarvaeUp(point, 10.0).orElse(alongTheCoast(coordinate, point))
+      else tryMovingLarvaeUp(point, 10.0).orElse(alongTheCoast(origin, point))
     }
+  }
+
+  // how far up, in metres, to look for the water above a larva that is below the sea floor
+  private val FloorSearchStep = 5.0
+
+  /** Where a larva below the sea floor is taken to: the water above it, in the first level up from it that has flow, and the flow there. */
+  private def aboveTheFloor(position: GeoCoordinate, time: LocalDateTime): Option[(GeoCoordinate, Velocity)] = {
+    var depth = position.depth - FloorSearchStep
+    while (depth >= 0) {
+      val up = new GeoCoordinate(position.latitude, position.longitude, depth)
+      if (isSea(up)) {
+        val flowThere = flow.getVelocityOfCoordinate(up, time)
+        if (flowThere.isDefined) return Some((up, flowThere.get))
+      }
+      depth -= FloorSearchStep
+    }
+    None
   }
 
   private def isSea(position: GeoCoordinate): Boolean = flow.getVelocity(position).isDefined
