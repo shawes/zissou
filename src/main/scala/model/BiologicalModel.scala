@@ -23,7 +23,9 @@ import physical.habitat.HabitatManager
 class BiologicalModel(
     val config: Configuration,
     clock: SimulationClock,
-    integrator: RungeKuttaIntegration
+    integrator: RungeKuttaIntegration,
+    // the temperature at a position and time, for mortality that depends on it
+    temperature: Option[(GeoCoordinate, LocalDateTime) => Option[Double]] = None
 ) extends Logging {
 
   // Before the larvae's traits are built from it: a mortality rate that is a percentage, or
@@ -48,6 +50,20 @@ class BiologicalModel(
   val mortality: Mortality = new MortalityConstant(
     config.larva.mortalityRate.getOrElse(0)
   )
+
+  // Mortality that depends on the temperature the larva is in, if it is asked for: the rate above is then the rate at the
+  // reference temperature. A run says what rate it really applied, and how often it did not know the temperature.
+  private val temperatureMortality: Option[TemperatureMortality] =
+    config.larva.temperatureMortality.filter(_ => config.larva.isMortal.getOrElse(false)).map { t =>
+      new TemperatureMortality(config.larva.mortalityRate.getOrElse(0.0), t.referenceTemperature, t.q10)
+    }
+  private val ratesApplied = new java.util.concurrent.atomic.DoubleAdder()
+  private val mortalityChecks = new java.util.concurrent.atomic.LongAdder()
+  private val temperatureUnknown = new java.util.concurrent.atomic.LongAdder()
+
+  /** The mean daily death rate applied so far where it depends on temperature, and how many larvae there was no temperature for. */
+  def temperatureMortalitySummary: Option[(Double, Long, Long)] =
+    temperatureMortality.map(_ => (if (mortalityChecks.sum == 0) 0.0 else ratesApplied.sum / mortalityChecks.sum, mortalityChecks.sum, temperatureUnknown.sum))
 
   def apply(): Unit = {
     spawnLarvae()
@@ -140,7 +156,18 @@ class BiologicalModel(
   }
 
   private def mortality(larva: Larva): Unit = {
-    if (RandomNumberGenerator.get < mortality.getRate) {
+    val rate = temperatureMortality match {
+      case Some(byTemperature) =>
+        val here = temperature.flatMap(lookup => lookup(larva.position, clock.now))
+        if (here.isEmpty) temperatureUnknown.increment()
+        val rate = byTemperature.rateAt(here)
+        ratesApplied.add(rate)
+        mortalityChecks.increment()
+        rate
+      case None => mortality.getRate
+    }
+    // one draw for each larva either way, so that a run without the temperature is as it was
+    if (RandomNumberGenerator.get < rate) {
       larva.kill()
     }
   }

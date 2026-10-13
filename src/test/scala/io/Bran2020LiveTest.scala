@@ -62,6 +62,27 @@ class Bran2020LiveTest extends AnyFlatSpec {
     } finally iterator.shutdown()
   }
 
+  it should "give the temperature of the sea off NSW, in degrees C, cooler with depth" in {
+    assume(live, "set ZISSOU_LIVE_TESTS to run the tests that need the network")
+    val config = flow(utc(2019, 11, 1), 3, FlowRegion(-36, -28, 150, 156), 15)
+    config.includeTemperature = true
+    val iterator = new FlowFileIterator(config)
+    try {
+      val controller = new FlowController(iterator, config)
+      val time = new LocalDateTime(2019, 11, 1, 12, 0)
+      controller.advanceTo(time)
+      val surface = controller.getTemperature(new GeoCoordinate(-33.0, 152.5, 5.0), time).get
+      val deep = controller.getTemperature(new GeoCoordinate(-33.0, 152.5, 100.0), time).get
+      // spring off Sydney: the water is about 17 to 22 degrees at the surface and cooler at 100 m
+      assert(surface > 12 && surface < 30, s"the surface was $surface degrees")
+      assert(deep < surface && deep > 5, s"100 m was $deep degrees against $surface at the surface")
+      // and the warm East Australian Current is warmer than the water off the south
+      val north = controller.getTemperature(new GeoCoordinate(-29.5, 154.5, 5.0), time).get
+      val south = controller.getTemperature(new GeoCoordinate(-35.5, 151.5, 5.0), time).get
+      assert(north > south, s"$north degrees at 29.5 south, $south at 35.5 south")
+    } finally iterator.shutdown()
+  }
+
   it should "say which month has no data when the run starts before it begins" in {
     assume(live, "set ZISSOU_LIVE_TESTS to run the tests that need the network")
     val problem = intercept[IllegalArgumentException](new FlowFileIterator(flow(utc(1992, 12, 5), 5)))

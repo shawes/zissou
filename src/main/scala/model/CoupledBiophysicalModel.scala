@@ -39,7 +39,14 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
     turbulence,
     flow.timeStep.totalSeconds
   )
-  val biology = new BiologicalModel(config, clock, integrator)
+  val biology = new BiologicalModel(
+    config,
+    clock,
+    integrator,
+    if (config.larva.temperatureMortality.isDefined)
+      Some((position: physical.GeoCoordinate, time: LocalDateTime) => ocean.flowController.getTemperature(position, time))
+    else None
+  )
 
   def run(): Unit = {
     try {
@@ -68,6 +75,11 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       }
       val time: Double = simulationTimer.stop() / 60.0
       info(f"Simulation run completed in $time%.2f minutes")
+      biology.temperatureMortalitySummary.foreach { case (mean, checks, unknown) =>
+        val reference = config.larva.mortalityRate.getOrElse(0.0)
+        info(f"Mortality by temperature: ${mean * 100}%.1f%% of the larvae died a day on average, where ${reference * 100}%.1f%% is the rate at ${config.larva.temperatureMortality.get.referenceTemperature}%.1f degrees" +
+          (if (unknown > 0) s"; there was no temperature for $unknown of $checks larvae, which were given the reference rate" else ""))
+      }
       if (biology.larvaeLostFromDomain > 0) {
         warn(
           s"${biology.larvaeLostFromDomain} larvae left the edge of the flow grid and were killed"

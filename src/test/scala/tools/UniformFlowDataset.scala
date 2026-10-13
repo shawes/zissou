@@ -29,6 +29,20 @@ object UniformFlowDataset {
 
   def dayNumber(year: Int, month: Int, day: Int): Long = dayNumber(LocalDate.of(year, month, day))
 
+  /**
+    * As write, and the temperature, in degrees C, under root/temp: `temperature` gives it at a longitude and latitude on a
+    * day, the day being its number counted from 2002-01-01, the same at every depth.
+    */
+  def writeWithTemperature(root: File, months: Seq[(Int, Int)], temperature: (Double, Double, Long) => Double): Unit =
+    GriddedFlowDataset.write(root, months, Lons, Lats, None, Seq("u", "v", "w", "temp")) { (variable, lon, lat, day) =>
+      variable match {
+        case "u" => day * U
+        case "v" => day * V
+        case "w" => day * W
+        case _ => temperature(lon, lat, day)
+      }
+    }
+
   /** Writes one file per (year, month) under root/u, root/v and root/w. */
   def write(root: File, months: Seq[(Int, Int)], packedScale: Option[Double] = None): Unit =
     GriddedFlowDataset.write(root, months, Lons, Lats, packedScale) { (variable, _, _, day) =>

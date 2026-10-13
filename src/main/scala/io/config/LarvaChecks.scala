@@ -13,7 +13,18 @@ object LarvaChecks {
   private val Tolerance = 1e-6
 
   def problems(larva: LarvaConfig): Seq[String] =
-    mortality(larva).toSeq ++ diel(larva) ++ ontogenetic(larva)
+    mortality(larva).toSeq ++ temperatureMortality(larva) ++ diel(larva) ++ ontogenetic(larva)
+
+  // Mortality that depends on temperature is the rate at a reference temperature, scaled by Q10 from there
+  private def temperatureMortality(larva: LarvaConfig): Seq[String] =
+    larva.temperatureMortality.toSeq.flatMap { t =>
+      Seq(
+        if (!larva.isMortal.getOrElse(false)) Some("larva.temperatureMortality needs larva.isMortal to be true, and a larva.mortalityRate, which is the rate at the reference temperature.") else None,
+        if (larva.mortalityRate.exists(_ >= 1.0)) Some("larva.mortalityRate must be below 1 with larva.temperatureMortality: it is the share that die a day at the reference temperature, and a rate of 1 leaves nothing for the temperature to change.") else None,
+        if (!(t.q10 > 0) || t.q10.isInfinite) Some(s"larva.temperatureMortality.q10 must be more than 0 (2 doubles the death rate for every 10 degrees warmer), not ${t.q10}.") else None,
+        if (t.referenceTemperature.isNaN || t.referenceTemperature.isInfinite) Some(s"larva.temperatureMortality.referenceTemperature must be a temperature in degrees C, not ${t.referenceTemperature}.") else None
+      ).flatten
+    }
 
   // a share of the larvae, not a percentage
   private def mortality(larva: LarvaConfig): Option[String] =

@@ -20,7 +20,8 @@ class FlowFileIterator(val flow: Flow, source: FlowSource, reportAfterSeconds: I
 
   private type Day = (List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)
 
-  val variables = FlowFileIterator.Variables
+  // u, v and w, and the temperature after them when it is wanted: the flow is the first three
+  val variables = FlowFileIterator.variablesFor(flow)
   var dataset: List[(GridDataset, String)] = List.empty
   val grids = new Queue[Day]
   // the depth of each level read, from the surface, as the data's own depth axis gives them;
@@ -264,8 +265,11 @@ object FlowFileIterator {
 
   val Variables = List("u", "v", "w") //TODO: Put this into the config file
 
+  /** The variables a flow reads: the three components of the flow, and the temperature if it is wanted. */
+  def variablesFor(flow: Flow): List[String] = if (flow.includeTemperature) Variables :+ "temp" else Variables
+
   /** The folder, or the OPeNDAP server, that a flow is configured to read. */
   def sourceFor(flow: Flow): FlowSource =
-    if (OpenDapFlowSource.isUrl(flow.netcdfFilePath)) new OpenDapFlowSource(flow.netcdfFilePath, flow.filePrefix)
-    else new LocalFlowSource(flow.netcdfFilePath, Variables)
+    if (OpenDapFlowSource.isUrl(flow.netcdfFilePath)) new OpenDapFlowSource(flow.netcdfFilePath, flow.filePrefix, variablesFor(flow))
+    else new LocalFlowSource(flow.netcdfFilePath, variablesFor(flow))
 }

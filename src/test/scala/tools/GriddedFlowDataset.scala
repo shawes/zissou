@@ -28,10 +28,13 @@ object GriddedFlowDataset {
     * @param value the flow, in m/s, of a variable ("u", "v" or "w") at a longitude and latitude
     *              on a day, the day being its number counted from 2002-01-01
     */
-  def write(root: File, months: Seq[(Int, Int)], lons: Array[Double], lats: Array[Double], packedScale: Option[Double] = None)(
+  def write(
+      root: File, months: Seq[(Int, Int)], lons: Array[Double], lats: Array[Double], packedScale: Option[Double] = None,
+      variables: Seq[String] = Seq("u", "v", "w") // and "temp", for the temperature
+  )(
       value: (String, Double, Double, Long) => Double
   ): Unit =
-    for (variable <- Seq("u", "v", "w"); (year, month) <- months) {
+    for (variable <- variables; (year, month) <- months) {
       val directory = new File(root, variable)
       directory.mkdirs()
       // like BRAN2020, u and v can be packed in 16 bits with a scale factor and w left as it is

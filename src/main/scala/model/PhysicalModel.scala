@@ -10,6 +10,8 @@ import physical.flow.{Flow, FlowController}
 class PhysicalModel(val config: Configuration) extends Logging {
 
   private val flow: Flow = config.flow
+  // mortality that depends on temperature needs the ocean model's temperature as well as its flow
+  flow.includeTemperature = config.larva.temperatureMortality.isDefined
   val flowFile = new FlowFileIterator(flow)
   // finer models nested inside the flow, each read from its own files
   private val nestedFiles = flow.nests.map(nest => new FlowFileIterator(nest))

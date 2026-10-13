@@ -156,6 +156,23 @@ Earlier versions:
 - left a larva with both migrations at its day depth for good once dawn lasted more than one step;
 - let a larva that died of old age settle on the step it died.
 
+### Mortality that depends on temperature
+
+By default a larva dies each day with the probability `larva.mortalityRate` whatever the water is like. A constant rate only changes how many larvae are left, not where they went: releasing more larvae gives the same pattern. With `larva.temperatureMortality` the death rate follows the temperature of the water the larva is in:
+
+```yaml
+larva:
+  isMortal: true
+  mortalityRate: 0.10            # the share that die a day at the reference temperature
+  temperatureMortality:
+    referenceTemperature: 22     # degrees C
+    q10: 2                       # the death rate doubles for every 10 degrees warmer
+```
+
+The hazard of dying, `-ln(1 - mortalityRate)`, is multiplied by `q10 ^ ((T - referenceTemperature) / 10)` at a temperature T, and the share that die in a day is `1 - exp(-hazard)`. At the reference temperature that is exactly `mortalityRate`; with a `q10` of 2, 10 degrees warmer doubles the hazard and 10 degrees cooler halves it; a `q10` of 1 changes nothing. Warm water kills faster and cool water more slowly. `mortalityRate` must be below 1, and `isMortal` true.
+
+The temperature is the ocean model's, at the larva's own position, depth and time, interpolated like the flow, so a larva that migrates deeper meets cooler water. It is read from `temp` files with the flow: a `temp` folder beside `u`, `v` and `w` (`ocean_temp_2019_11.nc`, with a variable `temp` in degrees C), or, for an OPeNDAP address, `ocean_temp_<year>_<month>.nc` in the same directory (BRAN2020 has them). Without `temperatureMortality` the temperature is not read at all and a run is as it always was. Where there is no temperature (on land, or off the data) a larva is given the reference rate; the log says at the end of the run what the mean daily death rate really was and how many larvae had no temperature.
+
 ## Building and running
 
 Zissou needs a JDK (17 or later) and [sbt](https://www.scala-sbt.org/).

@@ -31,6 +31,9 @@ class Flow(
     /** Finer models nested inside this one, tried in this order before it: list the finest first. */
     val nests: List[Flow] = List.empty
 ) {
+  /** Whether the ocean model's temperature is read as well as its flow (files `temp`, like `u`, `v` and `w`), for mortality that depends on it. */
+  var includeTemperature: Boolean = false
+
   var dimensions = new Dimensions(
     new ContinuousRange(),
     new ContinuousRange(),

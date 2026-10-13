@@ -163,23 +163,40 @@ class FlowGridWrapper(
     */
   def interpolatedVelocity(coordinate: GeoCoordinate, laterWeight: Double): Option[Velocity] = {
     val where = locate(coordinate, withGeometry = true)
-    val components = new Array[Double](axes.length)
+    val components = new Array[Double](3) // u, v and w: the temperature, if there is one, is the fourth variable
     var c = 0
-    while (c < axes.length) {
-      components(c) =
-        if (laterWeight <= 0.0) interpolatedValue(c, where, true)
-        else if (laterWeight >= 1.0) interpolatedValue(c, where, false)
-        else {
-          val earlier = interpolatedValue(c, where, true)
-          val later = interpolatedValue(c, where, false)
-          // as Velocity does it: earlier * (1 - weight) + later * weight
-          if (earlier.isNaN || later.isNaN) Double.NaN else earlier * (1.0 - laterWeight) + later * laterWeight
-        }
+    while (c < 3) {
+      components(c) = blended(c, where, laterWeight)
       if (components(c).isNaN) return None
       c += 1
     }
     Some(new Velocity(components(0), components(1), components(2)))
   }
+
+  // One variable at a position, blended in time as `laterWeight` of the later field and the rest of the earlier
+  private def blended(c: Int, where: Location, laterWeight: Double): Double =
+    if (laterWeight <= 0.0) interpolatedValue(c, where, true)
+    else if (laterWeight >= 1.0) interpolatedValue(c, where, false)
+    else {
+      val earlier = interpolatedValue(c, where, true)
+      val later = interpolatedValue(c, where, false)
+      // as Velocity does it: earlier * (1 - weight) + later * weight
+      if (earlier.isNaN || later.isNaN) Double.NaN else earlier * (1.0 - laterWeight) + later * laterWeight
+    }
+
+  /** Whether the temperature was read as well as the flow. */
+  def hasTemperature: Boolean = data.head.size > 3
+
+  /**
+    * The temperature, in degrees C, at a position, interpolated across the grid among the nodes of its own and
+    * blended in time like the flow; None where there is none (land) or it was not read.
+    */
+  def temperature(coordinate: GeoCoordinate, laterWeight: Double): Option[Double] =
+    if (!hasTemperature) None
+    else {
+      val value = blended(3, locate(coordinate, withGeometry = true), laterWeight)
+      if (value.isNaN) None else Some(value)
+    }
 
   // One variable at a position, in one field: NaN where it has no flow
   private def interpolatedValue(c: Int, where: Location, isEarlier: Boolean): Double = {

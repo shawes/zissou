@@ -206,7 +206,9 @@ class ConfigStore(val dir: Path, baseDir: Path) {
     if (io.OpenDapFlowSource.isUrl(flow)) ()
     else if (missing(flow)) warnings += s"The flow folder '$flow' does not exist."
     else {
-      val absent = Seq("u", "v", "w").filter(v => missing(s"$flow/$v"))
+      // the temperature is read, from a folder of its own, only if mortality depends on it
+      val variables = Seq("u", "v", "w") ++ (if (config.larva.temperatureMortality.isDefined) Seq("temp") else Seq.empty)
+      val absent = variables.filter(v => missing(s"$flow/$v"))
       if (absent.nonEmpty) warnings += s"The flow folder '$flow' has no ${absent.mkString(", ")} sub-folder."
     }
     config.flow.nested.getOrElse(List.empty).zipWithIndex.foreach { case (n, i) =>

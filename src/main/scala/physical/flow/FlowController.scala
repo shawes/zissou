@@ -66,6 +66,12 @@ class FlowLayer(val reader: FlowFileIterator) extends Logging {
     pair.interpolatedVelocity(coordinate, pair.weightOfLater(time))
   }
 
+  /** The temperature in degrees C at a position and time, interpolated and blended like the flow; None where there is none or it was not read. */
+  def getTemperature(coordinate: GeoCoordinate, time: LocalDateTime): Option[Double] = {
+    val pair = pairAt(time)
+    pair.temperature(coordinate, pair.weightOfLater(time))
+  }
+
   // Only the field(s) the time needs are read; where either one is missing (land) so is the flow
   private def blend(pair: FlowGridWrapper, time: LocalDateTime)(
       at: Boolean => Option[Velocity]
@@ -135,4 +141,8 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow, nests: Seq[Fl
   /** The flow at a position and time: interpolated across the grid, and blended between the two fields. */
   def getVelocityOfCoordinate(coordinate: GeoCoordinate, time: LocalDateTime): Option[Velocity] =
     layerAt(coordinate).getVelocityOfCoordinate(coordinate, time)
+
+  /** The temperature in degrees C at a position and time, from the main model's `temp` files (none where there are none). */
+  def getTemperature(coordinate: GeoCoordinate, time: LocalDateTime): Option[Double] =
+    main.getTemperature(coordinate, time)
 }

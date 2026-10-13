@@ -102,6 +102,30 @@ class ConfigStoreTest extends AnyFlatSpec {
     assert(!warnings.exists(w => w.contains("flow folder") || w.contains("shapefile")), warnings.toString)
   }
 
+  it should "warn that the temperature folder is missing, when mortality depends on temperature, and only then" in {
+    val (configs, base) = store()
+    Seq("flow/u", "flow/v", "flow/w", "habitat").foreach(d => Files.createDirectories(base.resolve(d)))
+    Files.writeString(base.resolve("habitat/reefs.shp"), "x")
+    val withTemperature = SampleConfig.yaml().replace("  mortalityRate: 0.26\n", "  mortalityRate: 0.26\n  temperatureMortality:\n    referenceTemperature: 22\n    q10: 2\n")
+    assert(withTemperature != SampleConfig.yaml())
+    assert(configs.validate(withTemperature).warnings.exists(w => w.contains("flow folder") && w.contains("temp")), "no temp folder")
+    assert(!configs.validate(SampleConfig.yaml()).warnings.exists(_.contains("temp")), "not asked for")
+    Files.createDirectories(base.resolve("flow/temp"))
+    assert(!configs.validate(withTemperature).warnings.exists(_.contains("flow folder")))
+  }
+
+  it should "reject temperature mortality that is not well defined, with what to change" in {
+    val (configs, _) = store()
+    def with_(block: String) = SampleConfig.yaml().replace("  mortalityRate: 0.26\n", s"  mortalityRate: 0.26\n  temperatureMortality:\n$block")
+    assert(configs.validate(with_("    referenceTemperature: 22\n    q10: 2\n")).ok)
+    val noQ10 = configs.validate(with_("    referenceTemperature: 22\n    q10: 0\n"))
+    assert(!noQ10.ok && noQ10.error.exists(_.contains("larva.temperatureMortality.q10 must be more than 0")), noQ10.error.toString)
+    val immortal = configs.validate(with_("    referenceTemperature: 22\n    q10: 2\n").replace("isMortal: true", "isMortal: false"))
+    assert(!immortal.ok && immortal.error.exists(_.contains("needs larva.isMortal")), immortal.error.toString)
+    val certain = configs.validate(with_("    referenceTemperature: 22\n    q10: 2\n").replace("mortalityRate: 0.26", "mortalityRate: 1"))
+    assert(!certain.ok && certain.error.exists(_.contains("must be below 1")), certain.error.toString)
+  }
+
   it should "warn when the flow period starts before the first release, which ends the run at once" in {
     val (configs, _) = store()
     val warnings = configs.validate(SampleConfig.yaml(periodStart = "2002-01-01")).warnings

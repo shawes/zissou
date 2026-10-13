@@ -95,8 +95,16 @@ case class LarvaConfig(
     dielProbabilities: Option[DielMigrationConfig],
     pelagicLarvalDuration: PelagicLarvalDurationConfig,
     isMortal: Option[Boolean],
-    mortalityRate: Option[Double]
+    mortalityRate: Option[Double],
+    temperatureMortality: Option[TemperatureMortalityConfig]
 ) derives Decoder
+
+/**
+  * Mortality that depends on the temperature a larva is in. `mortalityRate` is then the share that die each day at
+  * the reference temperature, and the hazard of dying is multiplied by `q10` for every 10 degrees warmer, and divided
+  * by it for every 10 degrees cooler. The temperature comes from the ocean model's `temp` files, with the flow.
+  */
+case class TemperatureMortalityConfig(referenceTemperature: Double, q10: Double) derives Decoder
 
 case class OntogenyConfig(
     // read, so that configurations that give it still load, but not used: a larva is in

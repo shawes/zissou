@@ -109,9 +109,13 @@ object ModelFixture {
   }
 
   /** A folder holding the flow files and the reef. */
-  def inputs(): File = {
+  /** A folder of inputs: `temperature` makes the sea that many degrees C everywhere, in files the flow is read with. */
+  def inputs(temperature: Option[Double] = None): File = {
     val root = Files.createTempDirectory("zissou-model-test").toFile
-    UniformFlowDataset.write(new File(root, "flow"), Seq((2002, 1), (2002, 2)))
+    temperature match {
+      case Some(t) => UniformFlowDataset.writeWithTemperature(new File(root, "flow"), Seq((2002, 1), (2002, 2)), (_, _, _) => t)
+      case None => UniformFlowDataset.write(new File(root, "flow"), Seq((2002, 1), (2002, 2)))
+    }
     ShapefileTestUtil.writeReefs(
       new File(root, "reefs.shp"),
       Seq((101, "Reef", Seq((153.0, -28.5), (154.0, -28.5), (154.0, -27.5), (153.0, -27.5))))
