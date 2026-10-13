@@ -51,7 +51,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       stepTimer.start()
       while (clock.stillTime && biology.isDispersing(clock.now) && flowReaches(clock.now)) {
         biology()
-        if (clock.isMidnight) {
+        if (clock.isFirstStepOfDay) {
           if (config.larva.isMortal.getOrElse(false)) {
             biology.applyMortality()
           }

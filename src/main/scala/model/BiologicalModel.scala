@@ -131,7 +131,7 @@ class BiologicalModel(
       }
     }
     larva.ovmMigrate(
-      new OntogeneticMigrationVariables(recentlyDeveloped, clock.isMidnight)
+      new OntogeneticMigrationVariables(recentlyDeveloped, clock.isFirstStepOfDay)
     )
   }
 
@@ -179,10 +179,13 @@ class BiologicalModel(
     }
   }
 
+  // Larvae are released on the first step of a release day
   private def spawnLarvae(): Unit = {
-    val spawningSites = spawn.getSitesWhereFishAreSpawning(clock.now)
-    if (spawningSites.nonEmpty) {
-      spawnFish(spawningSites)
+    if (clock.isFirstStepOfDay) {
+      val spawningSites = spawn.getSitesWhereFishAreSpawning(clock.now)
+      if (spawningSites.nonEmpty) {
+        spawnFish(spawningSites)
+      }
     }
   }
 

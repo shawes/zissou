@@ -27,7 +27,13 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Loggin
   }
 
   def stillTime: Boolean = now.toDateTime(DateTimeZone.UTC) < end
-  def isMidnight: Boolean = now.getHourOfDay == 0
+
+  // The first step of a day: the one that starts on a date the step before it did not.
+  // What happens once a day happens on it. Taking every step that starts in the hour after
+  // midnight instead did it twice a day with half hour steps, and skipped days with steps
+  // that do not divide a day: with 5 hour steps, four days in five.
+  def isFirstStepOfDay: Boolean =
+    now.toLocalDate != now.minusSeconds(timeStep.totalSeconds).toLocalDate
 
   def isSunSetting(location : GeoCoordinate) : Boolean = {
     new SunTimes(location).isNear(Sun.Setting)

@@ -52,11 +52,12 @@ class SpawningLocationTest extends AnyFlatSpec {
     assert(!site.timeToSpawn(start.plusDays(15).toLocalDateTime))
   }
 
-  it should "release a spawn site only at midnight, through Spawn" in {
+  // the model asks on the first step of each day (see DailyEventsTest), so the time of day is not Spawn's to judge
+  it should "release a spawn site on its release days, through Spawn" in {
     val start = new DateTime(2002, 1, 5, 0, 0, DateTimeZone.UTC)
     val spawn = new Spawn(List(new SpawningLocation("s", 100, 1, new GeoCoordinate(-28, 154), start to start.plusDays(10), 5)))
     assert(spawn.getSitesWhereFishAreSpawning(start.plusDays(5).toLocalDateTime).size == 1)
-    assert(spawn.getSitesWhereFishAreSpawning(start.plusDays(5).plusHours(2).toLocalDateTime).isEmpty)
+    assert(spawn.getSitesWhereFishAreSpawning(start.plusDays(5).plusHours(5).toLocalDateTime).size == 1)
     assert(spawn.getSitesWhereFishAreSpawning(start.plusDays(7).toLocalDateTime).isEmpty, "day 7 is not a release day for interval 5")
   }
 }

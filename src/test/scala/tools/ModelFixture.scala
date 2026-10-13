@@ -16,11 +16,20 @@ import model.CoupledBiophysicalModel
   */
 object ModelFixture {
 
-  /** A larva that drifts, never dies but of old age, and can settle after a day. */
-  def driftingLarva(pld: Double = 3, nonSettlementPeriod: Double = 1, extra: String = ""): String =
+  /**
+    * A larva that drifts and can settle after a day, and dies only of old age unless it is
+    * given a daily mortality rate.
+    */
+  def driftingLarva(
+      pld: Double = 3,
+      nonSettlementPeriod: Double = 1,
+      mortalityRate: Option[Double] = None,
+      extra: String = ""
+  ): String =
     s"""larva:
        |  species: fish
-       |  isMortal: false
+       |  isMortal: ${mortalityRate.isDefined}
+       |  mortalityRate: ${mortalityRate.getOrElse(0.0)}
        |  ontogeny:
        |    hatching: 0
        |    preflexion: 1

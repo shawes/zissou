@@ -139,7 +139,7 @@ class Fish(
         val migrates = ovm.implementation match {
           case TimeStepMigration         => true
           case OntogeneticStageMigration => variables.recentlyDeveloped
-          case DailyMigration            => variables.isMidnight
+          case DailyMigration            => variables.isFirstStepOfDay
         }
         if (migrates) {
           if (isAtDayDepth) nightDepth = ovm(ontogeny, nightDepth)

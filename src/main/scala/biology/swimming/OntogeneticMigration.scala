@@ -147,5 +147,5 @@ class OntogeneticMigration(
 
 case class OntogeneticMigrationVariables(
     recentlyDeveloped: Boolean = false,
-    isMidnight: Boolean = false
+    isFirstStepOfDay: Boolean = false
 )
