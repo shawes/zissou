@@ -40,10 +40,6 @@ class ConfigStore(val dir: Path, baseDir: Path) {
 
   private val NamePattern = "^[A-Za-z0-9][A-Za-z0-9._-]*\\.ya?ml$".r
 
-  // The grid limits hard-coded in FlowFileIterator
-  private val LatitudeRange = (-50.0, -10.0)
-  private val LongitudeRange = (142.0, 180.0)
-
   /** Only plain file names are allowed, so a name can never leave the directory. */
   def isValidName(name: String): Boolean = NamePattern.matches(name)
 
@@ -82,7 +78,7 @@ class ConfigStore(val dir: Path, baseDir: Path) {
     new ConfigurationFile().parse(text) match {
       case Left(failure) => Validation(false, Some(describe(failure)), None, Seq.empty)
       case Right(config) =>
-        invalidDate(config).orElse(invalidInterval(config)).orElse(invalidDiffusion(config)).orElse(LarvaChecks.problems(config.larva).headOption) match {
+        invalidDate(config).orElse(invalidInterval(config)).orElse(invalidDiffusion(config)).orElse(LarvaChecks.problems(config.larva).headOption).orElse(invalidFlowRegion(config)) match {
           case Some(problem) => Validation(false, Some(problem), None, Seq.empty)
           case None => Validation(true, None, Some(summarise(config)), warningsFor(config))
         }
@@ -136,6 +132,15 @@ class ConfigStore(val dir: Path, baseDir: Path) {
       .collectFirst { case (name, value) if value < 0 || value.isNaN => s"turbulence.$name must be zero or more." }
   }
 
+  // the part of the flow grid that is read, and how many depth levels of it
+  private def invalidFlowRegion(config: Configuration): Option[String] = {
+    val flow = config.flow
+    flow.bounds.collectFirst {
+      case b if !(b.south < b.north) => s"flow.bounds.south (${b.south}) must be less than flow.bounds.north (${b.north})."
+      case b if !(b.west < b.east) => s"flow.bounds.west (${b.west}) must be less than flow.bounds.east (${b.east})."
+    }.orElse(flow.depthLevels.collectFirst { case n if n < 1 => s"flow.depthLevels must be at least 1, not $n." })
+  }
+
   private def summarise(config: Configuration): ConfigSummary =
     ConfigSummary(
       config.flow.period.start,
@@ -175,11 +180,13 @@ class ConfigStore(val dir: Path, baseDir: Path) {
         "Start the flow period on the first release day."
     }
 
+    val region = config.flow.bounds
+      .map(b => physical.flow.FlowRegion(b.south, b.north, b.west, b.east))
+      .getOrElse(physical.flow.FlowRegion.Default)
     sites.foreach { s =>
-      val (south, north) = LatitudeRange
-      val (west, east) = LongitudeRange
-      if (s.site.latitude < south || s.site.latitude > north || s.site.longitude < west || s.site.longitude > east) {
-        warnings += s"${s.name} lies outside the supported flow grid (latitude $south to $north, longitude $west to $east)."
+      if (!region.contains(s.site.latitude, s.site.longitude)) {
+        warnings += s"${s.name} lies outside the flow region that is read (latitude ${region.south} to ${region.north}, " +
+          s"longitude ${region.west} to ${region.east})."
       }
     }
     if (config.larva.pelagicLarvalDuration.pldType.equalsIgnoreCase("fixed") &&

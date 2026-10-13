@@ -17,8 +17,9 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   var dataset: List[(GridDataset, String)] = List.empty
   val grids =
     new Queue[(List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)]
-  val depths = List(2.5, 7.5, 12.5, 17.5, 22.7, 28.2, 34.2, 41.0, 48.5, 56.7,
-    65.7, 75.2, 85.0, 95.0, 105.0) //TODO: Get this info from the netcdf file
+  // the depth of each level read, from the surface, as the data's own depth axis gives them;
+  // set once the first file is open
+  var depths: List[Double] = List.empty
   // the month of the file read last; declared before initialFlowData runs, which reads a file
   private var loadedMonth: Option[java.time.YearMonth] = None
   val netcdfHandler = new NetcdfFileHandler()
@@ -26,19 +27,36 @@ class FlowFileIterator(val flow: Flow) extends Logging {
   var currentFile: Int = getFileInformation._2
   val files = getFileInformation._1
   val latLonBounds = new LatLonRect(
-    LatLonPoint.create(-50.0, 142.0),
-    LatLonPoint.create(-10.0, 180.0)
+    LatLonPoint.create(flow.region.south, flow.region.west),
+    LatLonPoint.create(flow.region.north, flow.region.east)
   )
-  val depthRange: Range = new Range(0, 14)
+  val depthRange: Range = new Range(0, flow.depthLevels - 1)
 
   initialFlowData()
 
   private def initialFlowData(): Unit = {
     readMonth()
+    depths = readDepths()
     val startDay: Int = flow.period.getStart.toLocalDate.dayOfMonth.get
     grids.enqueue((readDay(startDay, latLonBounds, depthRange), startDay, getDaysInMonth))
     ensureFollowingDayExists()
     loadFollowingDay()
+  }
+
+  // The depths of the levels read: the first of the depth axis, which fails with a message
+  // if the data has fewer levels than are asked for, or none
+  private def readDepths(): List[Double] = {
+    val (grids, name) = dataset.head
+    val axis = grids.findGridByName(name).getCoordinateSystem.getVerticalAxis
+    if (axis == null) {
+      throw new IllegalStateException(s"The flow data has no depth axis, so the depth of its levels is not known")
+    }
+    if (axis.getSize < flow.depthLevels) {
+      throw new IllegalArgumentException(
+        s"The flow data has ${axis.getSize} depth levels, fewer than the ${flow.depthLevels} that flow.depthLevels asks for"
+      )
+    }
+    List.tabulate(flow.depthLevels)(level => axis.getCoordValue(level))
   }
 
   /** The two daily fields held now: the day the run starts on and the day after. */

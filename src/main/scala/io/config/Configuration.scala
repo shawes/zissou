@@ -47,8 +47,12 @@ case class FlowConfig(
     netcdfFilePath: String,
     period: PeriodConfig,
     timeStep: TimeStepConfig,
-    includeVerticalVelocity: Boolean
+    includeVerticalVelocity: Boolean,
+    bounds: Option[BoundsConfig],
+    depthLevels: Option[Int]
 ) derives Decoder
+
+case class BoundsConfig(south: Double, north: Double, west: Double, east: Double) derives Decoder
 
 case class PeriodConfig(start: String, end: String) derives Decoder
 

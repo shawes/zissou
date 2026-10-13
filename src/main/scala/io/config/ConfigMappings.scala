@@ -10,7 +10,7 @@ import io.OutputFiles
 import locals._
 import maths.ContinuousRange
 import org.apache.commons.math3.distribution.NormalDistribution
-import physical.flow.{Flow}
+import physical.flow.{Flow, FlowRegion}
 import physical.habitat.Buffer
 import physical.{GeoCoordinate, TimeStep}
 import scala.jdk.CollectionConverters._
@@ -28,7 +28,9 @@ object ConfigMappings {
         DateTimeZone.UTC
       ),
       f.timeStep,
-      f.includeVerticalVelocity
+      f.includeVerticalVelocity,
+      f.bounds.map(b => FlowRegion(b.south, b.north, b.west, b.east)).getOrElse(FlowRegion.Default),
+      f.depthLevels.getOrElse(FlowRegion.DefaultDepthLevels)
     )
 
   implicit def timeStepConfigToTimeStep(t: TimeStepConfig): TimeStep =

@@ -127,7 +127,7 @@ class ConfigStoreTest extends AnyFlatSpec {
 
   it should "warn about a site outside the supported grid" in {
     val (configs, _) = store()
-    assert(configs.validate(SampleConfig.yaml(latitude = -60.0)).warnings.exists(_.contains("outside the supported flow grid")))
+    assert(configs.validate(SampleConfig.yaml(latitude = -60.0)).warnings.exists(_.contains("outside the flow region")))
   }
 
   it should "warn that pldType is case-sensitive" in {
@@ -154,6 +154,26 @@ class ConfigStoreTest extends AnyFlatSpec {
     assert(!missing.ok && missing.error.exists(_.contains("larva.mortalityRate is missing")))
     assert(configs.validate(SampleConfig.yaml().replace("isMortal: true", "isMortal: false").replace("  mortalityRate: 0.26\n", "")).ok,
       "an immortal larva needs no rate")
+  }
+
+  it should "warn about a site outside the configured flow bounds, not the default ones" in {
+    val (configs, _) = store()
+    def withBounds(bounds: String) = SampleConfig.yaml().replace("  includeVerticalVelocity: true\n", s"  includeVerticalVelocity: true\n  bounds: $bounds\n")
+    // the sample site is at 28.8 south, 153.7 east: inside the default region, outside this one
+    assert(configs.validate(withBounds("{south: -20, north: -10, west: 140, east: 150}")).warnings.exists(_.contains("outside the flow region")))
+    assert(!configs.validate(withBounds("{south: -35, north: -25, west: 150, east: 160}")).warnings.exists(_.contains("outside the flow region")))
+  }
+
+  it should "reject flow bounds that are the wrong way round, and fewer than one depth level" in {
+    val (configs, _) = store()
+    def with_(extra: String) = SampleConfig.yaml().replace("  includeVerticalVelocity: true\n", s"  includeVerticalVelocity: true\n$extra\n")
+    val northSouth = configs.validate(with_("  bounds: {south: -10, north: -35, west: 150, east: 160}"))
+    assert(!northSouth.ok && northSouth.error.exists(_.contains("flow.bounds.south (-10.0) must be less than flow.bounds.north (-35.0)")))
+    val eastWest = configs.validate(with_("  bounds: {south: -35, north: -10, west: 160, east: 150}"))
+    assert(!eastWest.ok && eastWest.error.exists(_.contains("flow.bounds.west")))
+    val noLevels = configs.validate(with_("  depthLevels: 0"))
+    assert(!noLevels.ok && noLevels.error.exists(_.contains("flow.depthLevels must be at least 1")))
+    assert(configs.validate(with_("  depthLevels: 20\n  bounds: {south: -35, north: -10, west: 150, east: 160}")).ok)
   }
 
   it should "reject migration probabilities that do not add up to 1" in {

@@ -18,7 +18,7 @@ class EndToEndTest extends AnyFlatSpec {
     // the generated configs do trip the pldType warning, but nothing may be wrong with
     // their files, grid or period
     val problems = check.warnings.filter(w =>
-      Seq("does not exist", "sub-folder", "end immediately", "outside the supported").exists(w.contains))
+      Seq("does not exist", "sub-folder", "end immediately", "outside the flow region").exists(w.contains))
     assert(problems.isEmpty, problems.toString)
 
     val started = runs.start("smoke.yaml", configs.read("smoke.yaml").get).toOption.get
