@@ -114,6 +114,8 @@ class Fish(
     changeLarvaState(Dead)
   }
 
+  def recordPosition(): Unit = saveState()
+
   private def changeLarvaState(newState: PelagicLarvaeState): Unit = {
     larvaState = newState
     saveState()

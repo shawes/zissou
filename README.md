@@ -80,6 +80,8 @@ Diel migration follows the sun where the larva is. At dawn the larva goes to a d
 
 A larva can settle once it is older than its competency period (`nonSettlementPeriod`, which is capped at its PLD), and dies of old age once it is older than its PLD, without settling on that step.
 
+A run can end with larvae still drifting, when its period, or the flow files, end before their PLDs do. They are written with the rest: their paths, up to where they are at the end, are in the dispersal shapefile and the larvae history (with the state `pelagic`), and the log says how many there were. They are in neither the connectivity matrix nor the dispersal kernel, which are for larvae that settled. Earlier versions left them out of the results altogether.
+
 Earlier versions:
 
 - read the clock as local time when finding sunrise and sunset, and used the `day` probabilities by night and the `night` ones by day. Off eastern Australia the two nearly cancelled, leaving larvae at their day depths from about 05:00 to 15:00 local; elsewhere they were further out;

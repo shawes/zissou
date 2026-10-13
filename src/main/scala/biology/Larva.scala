@@ -30,7 +30,9 @@ trait Larva extends Swimming with History with Ontogeny {
   def incrementAge(seconds: Int): Boolean
   def settle(reefId: Int, date: LocalDateTime): Unit
   def swim(): Option[Velocity]
-  def kill(): Unit 
+  def kill(): Unit
+  /** Adds where the larva is now to its history: for a larva still drifting when the run ends. */
+  def recordPosition(): Unit
 
   def dielMigrate(time: DielVerticalMigrationType): Unit
   def ovmMigrate(variables: OntogeneticMigrationVariables): Unit

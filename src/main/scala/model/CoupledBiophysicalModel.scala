@@ -75,8 +75,16 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       debug(s"Still movin': $still and dispersin': $disperse")
       ocean.shutdown()
 
+      // Larvae still drifting when the run ends, at the end of its period or of the flow
+      // files, are written with the rest: their paths, to where they are now, are part of
+      // the dispersal, though they have not settled
+      val drifting = biology.pelagicLarvae
+      if (drifting.nonEmpty) {
+        info(s"${drifting.size} larvae were still drifting when the run ended")
+        drifting.foreach(_.recordPosition())
+      }
       val resultsWriter =
-        new ResultsWriter(biology.stationaryLarvae.toArray, config.output, name)
+        new ResultsWriter((biology.stationaryLarvae ++ drifting).toArray, config.output, name)
       resultsWriter.write()
 
     } catch {

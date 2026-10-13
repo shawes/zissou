@@ -57,7 +57,8 @@ object ModelFixture {
       sites: Seq[(Double, Double)] = Seq((-28.0, 153.5)),
       depth: Double = 5,
       settlement: Double = 5,
-      olfactory: Double = 10
+      olfactory: Double = 10,
+      includeLarvaeHistory: Boolean = false
   ): String = {
     val spawningLocations = sites.zipWithIndex.map { case ((latitude, longitude), i) =>
       s"""    - name: site ${i + 1}
@@ -98,7 +99,7 @@ object ModelFixture {
        |    settlement: $settlement
        |    olfactory: $olfactory
        |output:
-       |  includeLarvaeHistory: false
+       |  includeLarvaeHistory: $includeLarvaeHistory
        |  saveOutputFilePath: ${new File(root, "output")}
        |  percentage: 100
        |  prefix: fixture
