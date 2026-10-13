@@ -24,7 +24,10 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Option[Turbulence]
   private val geometry = new Geometry
   private val notSwimming = new Velocity(0, 0, 0)
 
-  /** Where the larva is a time step on, or None where the flow does not take it (the sea floor or the coast). */
+  /**
+    * Where the larva is a time step on, or None where it cannot go at all: it begins on land, or the flow carries it
+    * into the sea floor or a corner of the coast. A step that would end on land is shortened, or made along the coast.
+    */
   def integrate(coordinate: GeoCoordinate, time: LocalDateTime, swimming: Option[Velocity]): Option[GeoCoordinate] = {
     val swim = swimming.getOrElse(notSwimming)
     val includeVerticalVelocity = flow.flow.includeVerticalVelocity
@@ -38,19 +41,42 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Option[Turbulence]
     def after(seconds: Double, velocity: Velocity): GeoCoordinate =
       geometry.translatePoint(coordinate, velocity, seconds, swim, includeVerticalVelocity)
 
-    val meanFlow = for {
-      k1 <- flowAt(coordinate, time)
-      k2 <- flowAt(after(timeStep / 2.0, k1), middle)
-      k3 <- flowAt(after(timeStep / 2.0, k2), middle)
-      k4 <- flowAt(after(timeStep, k3), end)
-    } yield (k1 + k2 * 2.0 + k3 * 2.0 + k4) * (1.0 / 6.0)
-
-    meanFlow.flatMap { mean =>
+    // The flow where the larva starts: with none there, on land, there is nothing to move it. At the other samples,
+    // beyond what the first would carry it, a coast in the data is a cell or two out from the real one: where the larva is
+    // sampled over land it is given the flow of the sample before, so that one sample off the coast does not stop it.
+    flowAt(coordinate, time).flatMap { k1 =>
+      val k2 = flowAt(after(timeStep / 2.0, k1), middle).getOrElse(k1)
+      val k3 = flowAt(after(timeStep / 2.0, k2), middle).getOrElse(k2)
+      val k4 = flowAt(after(timeStep, k3), end).getOrElse(k3)
+      val mean = (k1 + k2 * 2.0 + k3 * 2.0 + k4) * (1.0 / 6.0)
       val velocity = turbulence.map(_.apply(mean)).getOrElse(mean)
       val point = after(timeStep, velocity)
-      if (flow.getVelocity(point).isDefined) Some(point)
-      else tryMovingLarvaeUp(point, 10.0)
+      if (isSea(point)) Some(point)
+      else tryMovingLarvaeUp(point, 10.0).orElse(alongTheCoast(coordinate, point))
     }
+  }
+
+  private def isSea(position: GeoCoordinate): Boolean = flow.getVelocity(position).isDefined
+
+  /**
+    * Where a step that ends on land can go instead: the farthest it can get towards where it was going that is in the
+    * sea. The step is tried a part of the way (three quarters, a half, a quarter), and along each of the two axes on its
+    * own, so that a larva carried into a coast and along it goes on along the coast, and one carried straight at it
+    * goes as far as the coast. None where it can go nowhere, as when it is carried straight into a corner.
+    */
+  private def alongTheCoast(from: GeoCoordinate, to: GeoCoordinate): Option[GeoCoordinate] = {
+    val east = to.longitude - from.longitude
+    val north = to.latitude - from.latitude
+    val cosine = math.cos(math.toRadians(from.latitude))
+    val candidates = for {
+      part <- Seq(1.0, 0.75, 0.5, 0.25)
+      (de, dn) <- Seq((east, north), (east, 0.0), (0.0, north))
+      if !(part == 1.0 && de != 0.0 && dn != 0.0) // the whole step, in both, is what failed
+      if de != 0.0 || dn != 0.0
+    } yield new GeoCoordinate(from.latitude + dn * part, from.longitude + de * part, to.depth)
+    candidates
+      .filter(isSea)
+      .maxByOption(p => math.pow((p.longitude - from.longitude) * cosine, 2) + math.pow(p.latitude - from.latitude, 2))
   }
 
   private def tryMovingLarvaeUp(position: GeoCoordinate, amount: Double): Option[GeoCoordinate] = {

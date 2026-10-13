@@ -276,6 +276,12 @@ class FlowGridWrapper(
   private def fractionAcross(nodes: Array[Double], k: Int, value: Double): Double =
     (value - nodes(k)) / (nodes(k + 1) - nodes(k))
 
+  /** Whether a position is on the grid, which getIndex fails for when it is not. */
+  def covers(coordinate: GeoCoordinate): Boolean = {
+    val index = data.head.head._2.findXYindexFromLatLon(coordinate.latitude, coordinate.longitude, null)
+    isInsideGrid(index(0), index(1))
+  }
+
   def getIndex(coordinate: GeoCoordinate): (Int, Int, Int, Boolean) = {
     getIndex(coordinate, InterpolateToday)
   }

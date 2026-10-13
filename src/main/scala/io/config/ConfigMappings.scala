@@ -20,19 +20,31 @@ import scala.language.implicitConversions
   * The config mappings object has implicit definitions to map each config class to its corresponding object
   */
 object ConfigMappings {
-  implicit def flowConfigToFlow(f: FlowConfig): Flow =
+  implicit def flowConfigToFlow(f: FlowConfig): Flow = {
+    val period = new DateTime(f.period.start, DateTimeZone.UTC) to new DateTime(f.period.end, DateTimeZone.UTC)
+    val timeStep: TimeStep = f.timeStep
+    val depthLevels = f.depthLevels.getOrElse(FlowRegion.DefaultDepthLevels)
     new Flow(
       f.netcdfFilePath,
-      new DateTime(f.period.start, DateTimeZone.UTC) to new DateTime(
-        f.period.end,
-        DateTimeZone.UTC
-      ),
-      f.timeStep,
+      period,
+      timeStep,
       f.includeVerticalVelocity,
       f.bounds.map(b => FlowRegion(b.south, b.north, b.west, b.east)).getOrElse(FlowRegion.Default),
-      f.depthLevels.getOrElse(FlowRegion.DefaultDepthLevels),
-      f.filePrefix.getOrElse("ocean")
+      depthLevels,
+      f.filePrefix.getOrElse("ocean"),
+      f.nested.getOrElse(List.empty).map { n =>
+        new Flow(
+          n.netcdfFilePath,
+          period,
+          timeStep,
+          f.includeVerticalVelocity,
+          FlowRegion(n.bounds.south, n.bounds.north, n.bounds.west, n.bounds.east),
+          n.depthLevels.getOrElse(depthLevels),
+          n.filePrefix.getOrElse("ocean")
+        )
+      }
     )
+  }
 
   implicit def timeStepConfigToTimeStep(t: TimeStepConfig): TimeStep =
     new TimeStep(t.duration, TimeStepType.withName(t.unit))

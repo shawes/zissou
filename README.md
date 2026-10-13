@@ -35,9 +35,15 @@ Zissou models connectivity patterns of marine larvae using offline hydrodynamic 
 
 ### Reaching land
 
-When a time step would take a larva onto land, below the sea floor or onto the coast, it goes 10 m higher than that instead if there is sea there, and otherwise stays where it was for that step. A larva that drifts off the edge of the flow grid is killed, and the log says how many were.
+Land, in an ocean model's data, is where there is no flow, and the coast of a model with cells of 10 km is a cell or two out from the real one. When a time step would take a larva onto land, below the sea floor or onto the coast:
 
-Earlier versions of this README said a larva reaching land could instead be killed or moved at a reduced speed; there has been no setting for either.
+- if it is below the sea floor, it goes 10 m higher than that instead, if there is sea there;
+- otherwise it goes as far as it can in the direction it was going, that is in the sea: three quarters, a half or a quarter of the way, or the whole way along one of the two axes (east-west or north-south) on its own. A larva carried into a coast and along it goes on along the coast, and one carried straight at it goes up to it;
+- and where it can go nowhere, as when it is carried into a corner, it stays where it was for that step.
+
+A larva that is on land at the start of a step has no flow to move it and stays. A flow sample of the four of a step that is over land is given the flow of the sample before it, so that one sample off the coast does not cancel the step. A larva that drifts off the edge of the flow grid is killed, and the log says how many were.
+
+Earlier versions cancelled a step altogether when it ended on land, or when any of its four samples was over land, so a larva carried against a coast stopped there for good: on the NSW coast, in BRAN2020, a quarter of the larvae that settled had never moved, and the paths hugged the shore. Earlier versions of this README also said a larva reaching land could be killed or moved at a reduced speed; there has been no setting for either.
 
 
 ### Turbulence
@@ -77,9 +83,29 @@ The files are `<address>/<prefix>_<variable>_<year>_<month>.nc`, all in the one 
 
 A server cannot list its files, so the data end at the first month it has no file for (December 2023 for BRAN2020, which begins in January 1993): a run that reaches it stops there with a warning, as with a folder, and a gap in the months cannot be told from the end. Nothing is checked about an address until the run starts, so a mistyped one fails there, saying which month it found no file for. `ZISSOU_LIVE_TESTS=1 sbt "testOnly io.Bran2020LiveTest"` runs the tests that read BRAN2020 itself.
 
+
+#### Finer models nested inside the flow
+
+A model with cells of about 10 km, such as BRAN2020, does not resolve the coast, so near a reef its currents and its coastline are poor. If you have a finer model of part of the coast (a regional ROMS, say), list it under `flow.nested` and larvae inside it are carried by it instead:
+
+```yaml
+flow:
+  netcdfFilePath: https://thredds.nci.org.au/thredds/dodsC/gb6/BRAN/BRAN2020/daily
+  bounds: {south: -33, north: -24, west: 150, east: 158}
+  nested:                                   # finest first
+    - netcdfFilePath: /data/roms-moreton-bay
+      bounds: {south: -28.2, north: -27.0, west: 152.8, east: 153.8}
+      depthLevels: 30                       # optional: the main flow's if left out
+      filePrefix: roms                      # optional: "ocean" if left out
+```
+
+Each nested model is laid out like the main one (monthly `u`, `v` and `w` files, in a folder or on an OPeNDAP server) and is read for the same period and time step; it has its own grid, depth levels and file names, and only the part inside its `bounds` is read. Any position on a nested model's grid takes its flow, interpolated on that grid; the nested models are tried in the order listed, so list the finest first, and a position on none of them takes the main model's. Inside a nested model the coast is the nested model's: where it has no flow (land), a larva is on land, even where the main model has sea. The flow is not blended across the edge of a nested model, so a larva crossing it meets a change in flow there.
+
+A nested model must have files for the month the run starts in or the run does not start. If its files end before the run does, the log warns of it and the main flow carries larvae through the area from then on. Larvae are only killed for leaving the main flow's grid.
+
 ### Moving the larvae
 
-Each time step a larva is moved by the classical fourth order Runge-Kutta method. The flow is sampled four times: where the larva is at the start of the step (k1); at the middle of the step, from where k1 would have carried it by then (k2); at the middle again, from where k2 would have (k3); and at the end, from where k3 would have (k4). The larva then moves at the weighted mean (k1 + 2·k2 + 2·k3 + k4) / 6, with turbulence added to the mean and its swimming velocity added to that. Each sample is the flow at its own time as well as its own place. If the step would take a larva into land, the sea floor or the coast, it goes 10 m higher than that instead if there is sea there, and otherwise stays where it was.
+Each time step a larva is moved by the classical fourth order Runge-Kutta method. The flow is sampled four times: where the larva is at the start of the step (k1); at the middle of the step, from where k1 would have carried it by then (k2); at the middle again, from where k2 would have (k3); and at the end, from where k3 would have (k4). The larva then moves at the weighted mean (k1 + 2·k2 + 2·k3 + k4) / 6, with turbulence added to the mean and its swimming velocity added to that. Each sample is the flow at its own time as well as its own place. If the step would take a larva into land, the sea floor or the coast, it is taken as far as it can go in the sea, along the coast if that is how the flow runs (see "Reaching land").
 
 Earlier versions sampled the flow a whole step too far along each leg (at 1, 1.5, 1.5 and 2 steps' worth of travel from the start, where the method has 0, 0.5, 0.5 and 1), took the starting flow from the nearest cell and left it out of the mean. That made a larva carried round an eddy spiral in towards its centre: one that the exact flow takes round a circle of radius 50 km was 36 km from the centre after five days of 2-hour steps, and where it ended depended on the length of the step. Results that depended on larvae dispersing through eddies will move.
 

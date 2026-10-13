@@ -50,6 +50,18 @@ case class FlowConfig(
     includeVerticalVelocity: Boolean,
     bounds: Option[BoundsConfig],
     depthLevels: Option[Int],
+    filePrefix: Option[String],
+    nested: Option[List[NestedFlowConfig]]
+) derives Decoder
+
+/**
+  * A finer ocean model inside the main one, whose monthly files are laid out like the main model's.
+  * Its period and time step are the main flow's, and its depth levels are too unless it gives its own.
+  */
+case class NestedFlowConfig(
+    netcdfFilePath: String,
+    bounds: BoundsConfig,
+    depthLevels: Option[Int],
     filePrefix: Option[String]
 ) derives Decoder
 

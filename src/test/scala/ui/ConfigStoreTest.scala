@@ -205,4 +205,21 @@ class ConfigStoreTest extends AnyFlatSpec {
     val result = configs.validate(withDiel("[30, 70]"))
     assert(!result.ok && result.error.contains("larva.dielProbabilities.day must add up to 1, or be all 0 to leave larvae where they are at dawn, not 100."))
   }
+
+  private def withNest(nest: String): String =
+    SampleConfig.yaml().replace("  includeVerticalVelocity: true\n", s"  includeVerticalVelocity: true\n  nested:\n$nest")
+
+  "A nested flow" should "be accepted, with its bounds, and a missing folder warned of" in {
+    val (configs, _) = store()
+    val result = configs.validate(withNest("    - netcdfFilePath: fine\n      bounds: {south: -29, north: -27, west: 153, east: 154}\n"))
+    assert(result.ok, result.error)
+    assert(result.warnings.exists(_.contains("nested flow folder 'fine'")))
+  }
+
+  it should "need bounds, with the south below the north" in {
+    val (configs, _) = store()
+    assert(configs.validate(withNest("    - netcdfFilePath: fine\n")).error.exists(_.contains("flow.nested[0].bounds is missing")))
+    val upside = configs.validate(withNest("    - netcdfFilePath: fine\n      bounds: {south: -27, north: -29, west: 153, east: 154}\n"))
+    assert(upside.error.exists(_.contains("flow.nested[0].bounds.south")))
+  }
 }
