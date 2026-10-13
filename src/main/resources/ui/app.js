@@ -89,6 +89,66 @@ function renderSidebar() {
   redraw(runsList, [state.runs.map((r) => [r.id, r.status, r.config, r.startedAt]), selected], () => buildRunList());
 }
 
+// ---- a new configuration ---------------------------------------------------
+
+const CONFIG_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+
+function newConfigDialog() {
+  if (isDirty() && !confirm('Discard your unsaved changes?')) return;
+  const name = h('input', { type: 'text', id: 'new-name', spellcheck: 'false', autocomplete: 'off', placeholder: 'my-experiment' });
+  const from = h('select', { id: 'new-from' }, h('option', { value: '' }, 'A blank configuration'),
+    state.configs.map((c) => h('option', { value: c.name }, `A copy of ${c.name}`)));
+  const error = h('div', { class: 'field-error', role: 'alert' });
+  const create = h('button', { class: 'btn primary', type: 'submit' }, 'Create');
+  const dialog = h('dialog', { class: 'picker small', 'aria-label': 'New configuration' },
+    h('form', { method: 'dialog', onsubmit: (event) => { event.preventDefault(); submit(); } },
+      h('h3', {}, 'New configuration'),
+      h('div', { class: 'field' }, h('label', { for: 'new-name' }, 'Name', h('span', { class: 'unit' }, ' (.yaml is added)')), name, error),
+      h('div', { class: 'field' }, h('label', { for: 'new-from' }, 'Start from'), from),
+      h('p', { class: 'hint' }, 'A copy gets its own output folder and log, named after the new configuration.'),
+      h('div', { class: 'picker-foot' }, h('span', {}),
+        h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', onclick: () => dialog.close() }, 'Cancel'), create))));
+  dialog.addEventListener('close', () => dialog.remove());
+  document.body.append(dialog);
+  dialog.showModal();
+  name.focus();
+
+  async function submit() {
+    const stem = name.value.trim().replace(/\.ya?ml$/, '');
+    const file = `${stem}.yaml`;
+    if (!CONFIG_NAME.test(stem)) { error.textContent = 'Use letters, digits, ".", "-" and "_", starting with a letter or digit.'; return; }
+    if (state.configs.some((c) => c.name === file || c.name === `${stem}.yml`)) { error.textContent = `${file} already exists.`; return; }
+    create.disabled = true;
+    try {
+      let text = ConfigForm.TEMPLATE;
+      const source = from.value;
+      if (source) text = (await api('GET', `/api/configs/${encodeURIComponent(source)}`)).text;
+      text = ZissouEditor.edit(text, (doc) => renameOutputs(doc, source.replace(/\.ya?ml$/, ''), stem));
+      await api('PUT', `/api/configs/${encodeURIComponent(file)}`, { text });
+      dialog.close();
+      state.configs = await api('GET', '/api/configs');
+      state.editor.name = null;
+      state.selected = null;
+      await selectConfig(file);
+    } catch (e) {
+      error.textContent = e.data?.validation?.error || e.message;
+      create.disabled = false;
+    }
+  }
+}
+
+// a copy would write over the source's results, so what names the source in the output
+// settings now names the copy; the blank template names itself "new"
+function renameOutputs(doc, oldStem, stem) {
+  const old = oldStem || 'new';
+  for (const key of ['saveOutputFilePath', 'logFile', 'prefix']) {
+    const value = doc.getIn(['output', key]);
+    // whole names only: copying "a" must not change the "a" in "data"
+    const named = new RegExp(`(^|[/._-])${old.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=$|[/._-])`, 'g');
+    if (typeof value === 'string' && named.test(value)) doc.setIn(['output', key], value.replace(named, `$1${stem}`));
+  }
+}
+
 function buildConfigList() {
   const configs = state.configs.map((config) =>
     h('li', {}, h('button', {
@@ -770,6 +830,8 @@ async function tick() {
   }
   setTimeout(tick, state.running ? 1000 : 4000);
 }
+
+$('#new-config').addEventListener('click', newConfigDialog);
 
 document.addEventListener('keydown', (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key === 's' && state.selected?.type === 'config') {

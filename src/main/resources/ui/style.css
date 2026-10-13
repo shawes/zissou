@@ -275,3 +275,9 @@ dialog.picker::backdrop { background: rgb(0 0 0 / .45); }
 .map .area { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
 .map .pick { fill: var(--accent); stroke: var(--panel); stroke-width: 2; }
 .map .pick-area { fill: color-mix(in srgb, var(--accent) 18%, transparent); stroke: var(--accent); stroke-width: 2; }
+
+.section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.section-head h2 { margin: 0; }
+dialog.picker.small { width: min(420px, 94vw); }
+dialog.picker.small .field { margin-top: 12px; }
+dialog.picker.small .field input, dialog.picker.small .field select { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); font: inherit; }

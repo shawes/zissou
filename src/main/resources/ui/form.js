@@ -123,6 +123,64 @@ const ConfigForm = (() => {
     ] },
   ];
 
+  // What a new configuration starts as: every required setting, with values that run
+  const TEMPLATE = `# A new Zissou configuration. Change the values below, in the form or here.
+settings:
+  randomSeed: 1
+spawn:
+  spawningLocation:
+    - name: Site 1
+      patchNumber: 1
+      site:
+        longitude: 153.35
+        latitude: -29.71
+        depth: 5
+      numberOfLarvae: 1000
+      releasePeriod:
+        start: 2020-01-01
+        end: 2020-01-31
+      interval: 7
+turbulence:
+  horizontalDiffusionCoefficient: 300
+  verticalDiffusionCoefficient: 15
+  applyTurbulence: true
+  interval: 1
+larva:
+  species: fish
+  isMortal: false
+  ontogeny:
+    preflexion: 2
+    flexion: 5
+    postflexion: 8
+  pelagicLarvalDuration:
+    mean: 15
+    stdev: 1.5
+    pldType: fixed
+    nonSettlementPeriod: 5
+flow:
+  netcdfFilePath: data/flow
+  bounds: { south: -45, north: -26, west: 147, east: 166 }
+  period:
+    start: 2020-01-01
+    end: 2020-03-01
+  timeStep:
+    unit: Hour
+    duration: 2
+  includeVerticalVelocity: true
+habitat:
+  shapeFilePath: data/habitat.shp
+  buffer:
+    settlement: 5
+    olfactory: 10
+output:
+  includeLarvaeHistory: false
+  saveOutputFilePath: runs/new
+  percentage: 2
+  prefix: new
+  logLevel: info
+  logFile: runs/new/new.log
+`;
+
   // ---- the form ------------------------------------------------------------------------------
 
   function create(container, { text, onText, pick }) {
@@ -503,5 +561,5 @@ const ConfigForm = (() => {
     };
   }
 
-  return { create, SECTIONS, pathKey };
+  return { create, SECTIONS, pathKey, TEMPLATE };
 })();

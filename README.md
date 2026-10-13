@@ -176,6 +176,7 @@ The launcher uses the throughput (Parallel) garbage collector, which suits a bat
 `scripts/zissou.sh ui` serves a page at <http://127.0.0.1:8787/> where you can:
 
 - pick a configuration, edit it, and see straight away whether it is valid, what it will release and where, and anything that looks wrong (missing input files, a flow period that would end the run at once, a site outside the supported grid)
+- start a **new configuration** from a blank one or a copy of any other (a copy gets its own output folder and log)
 - edit it as a **form** or as **YAML**; the two views change the same file, and the one you used last is remembered. The form has a section for each part of the configuration, with units and hints, adds, duplicates and removes release sites (and sets one value for all of them at once), edits the migration depth tables with each row's total shown, and lets you place a site or draw the flow region on a map instead of typing coordinates. It edits the YAML in place, so your comments, ordering and any settings it has no field for are kept. The YAML view is a code editor with highlighting and folding. Every problem with the configuration is listed at once and marked on its field or its line
 - start a run and watch it: the day it has reached, the larvae in the water, and the log as it is written
 - cancel a run, and keep a history of runs, each with its own folder holding the exact configuration, the log and the results
