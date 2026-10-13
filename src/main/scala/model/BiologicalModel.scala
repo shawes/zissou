@@ -71,15 +71,16 @@ class BiologicalModel(
   /*
    Cycles through all the biological processes per time iteration
    - increment the age
+   - kill if too old
    - move
    - sense habitat
-   - kill if too old
    */
   private def biology(larva: Larva): Unit = {
     val recentlyDeveloped = ageLarvae(larva)
     mortalityDueToOldAgeCheck(larva)
-    // A larva that has left the flow grid is dead and must not settle
-    if (move(larva, recentlyDeveloped)) sense(larva)
+    // A larva that has just died of old age, or has left the flow grid, is dead and must
+    // not move or settle
+    if (larva.isPelagic && move(larva, recentlyDeveloped)) sense(larva)
   }
 
   /** Moves the larva, returning false if it left the flow grid and was killed. */
