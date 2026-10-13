@@ -58,6 +58,23 @@ Earlier versions of Zissou took the flow from one to two days ahead of the clock
 
 The files must follow on month after month, one for each month from the one the run starts in, with no gap; Zissou stops with a message if one is missing. If the flow files end before the run does, the simulation stops there with a warning in its log and the results of what it simulated are still written. Earlier versions never read the last file in the folder, and when the months ran out silently started the last month's flow again.
 
+#### Reading the flow from an OPeNDAP server
+
+Instead of a folder, `flow.netcdfFilePath` can be the address of a directory of monthly files on an OPeNDAP server, such as a THREDDS `dodsC` directory, so that nothing has to be downloaded first. For CSIRO's BRAN2020 daily flow at NCI:
+
+```yaml
+flow:
+  netcdfFilePath: https://thredds.nci.org.au/thredds/dodsC/gb6/BRAN/BRAN2020/daily
+  bounds: {south: -33, north: -24, west: 150, east: 158}   # BRAN2020 is global: read only what you need
+  period:
+    start: 2019-01-25
+    end: 2019-02-10
+```
+
+The files are `<address>/<prefix>_<variable>_<year>_<month>.nc`, all in the one directory (`ocean_u_2019_01.nc`, `ocean_v_2019_01.nc`, `ocean_w_2019_01.nc`); `flow.filePrefix` changes `ocean` for a model that names them differently. Only the part of each day that is read, the `bounds` and `depthLevels`, crosses the network, about 4 seconds a day for BRAN2020 from Australia. While the larvae move, the day after the next is read on a thread of its own, so the run waits only when a time step takes less time than that. A request that fails is tried again a few times before the run stops with the reason.
+
+A server cannot list its files, so the data end at the first month it has no file for (December 2023 for BRAN2020, which begins in January 1993): a run that reaches it stops there with a warning, as with a folder, and a gap in the months cannot be told from the end. Nothing is checked about an address until the run starts, so a mistyped one fails there, saying which month it found no file for. `ZISSOU_LIVE_TESTS=1 sbt "testOnly io.Bran2020LiveTest"` runs the tests that read BRAN2020 itself.
+
 ### Moving the larvae
 
 Each time step a larva is moved by the classical fourth order Runge-Kutta method. The flow is sampled four times: where the larva is at the start of the step (k1); at the middle of the step, from where k1 would have carried it by then (k2); at the middle again, from where k2 would have (k3); and at the end, from where k3 would have (k4). The larva then moves at the weighted mean (k1 + 2·k2 + 2·k3 + k4) / 6, with turbulence added to the mean and its swimming velocity added to that. Each sample is the flow at its own time as well as its own place. If the step would take a larva into land, the sea floor or the coast, it goes 10 m higher than that instead if there is sea there, and otherwise stays where it was.

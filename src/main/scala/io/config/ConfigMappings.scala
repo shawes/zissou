@@ -30,7 +30,8 @@ object ConfigMappings {
       f.timeStep,
       f.includeVerticalVelocity,
       f.bounds.map(b => FlowRegion(b.south, b.north, b.west, b.east)).getOrElse(FlowRegion.Default),
-      f.depthLevels.getOrElse(FlowRegion.DefaultDepthLevels)
+      f.depthLevels.getOrElse(FlowRegion.DefaultDepthLevels),
+      f.filePrefix.getOrElse("ocean")
     )
 
   implicit def timeStepConfigToTimeStep(t: TimeStepConfig): TimeStep =

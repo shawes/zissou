@@ -49,7 +49,8 @@ case class FlowConfig(
     timeStep: TimeStepConfig,
     includeVerticalVelocity: Boolean,
     bounds: Option[BoundsConfig],
-    depthLevels: Option[Int]
+    depthLevels: Option[Int],
+    filePrefix: Option[String]
 ) derives Decoder
 
 case class BoundsConfig(south: Double, north: Double, west: Double, east: Double) derives Decoder

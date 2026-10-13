@@ -38,6 +38,8 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-xml" % "2.5.0",
   "org.scala-lang.modules" %% "scala-parallel-collections" % "1.2.0",
   "edu.ucar" % "cdm-core" % netcdfVersion,
+  // reads from OPeNDAP servers such as THREDDS, which cdm-core does not on its own
+  "edu.ucar" % "opendap" % netcdfVersion,
   "org.geotools" % "gt-shapefile" % geotoolsVersion,
   "org.geotools" % "gt-main" % geotoolsVersion,
   "org.geotools" % "gt-referencing" % geotoolsVersion,

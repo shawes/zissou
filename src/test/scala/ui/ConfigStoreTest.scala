@@ -164,6 +164,25 @@ class ConfigStoreTest extends AnyFlatSpec {
     assert(!configs.validate(withBounds("{south: -35, north: -25, west: 150, east: 160}")).warnings.exists(_.contains("outside the flow region")))
   }
 
+  it should "accept a flow address in place of a folder, and not look for it on disk" in {
+    val (configs, _) = store()
+    val bran = "https://thredds.nci.org.au/thredds/dodsC/gb6/BRAN/BRAN2020/daily"
+    val result = configs.validate(SampleConfig.yaml(flow = bran))
+    assert(result.ok, result.error.toString)
+    assert(!result.warnings.exists(w => w.contains("flow folder") || w.contains("does not exist") && w.contains("thredds")), result.warnings.toString)
+    assert(configs.validate(SampleConfig.yaml(flow = bran + "/")).ok)
+  }
+
+  it should "reject a flow address that is not a directory on a server" in {
+    val (configs, _) = store()
+    val withFile = configs.validate(SampleConfig.yaml(flow = "https://thredds.nci.org.au/thredds/dodsC/gb6/BRAN/BRAN2020/daily/ocean_u_2019_01.nc"))
+    assert(!withFile.ok && withFile.error.exists(_.contains("without a file name or query")))
+    val withQuery = configs.validate(SampleConfig.yaml(flow = "https://example.org/dodsC/daily?x=1"))
+    assert(!withQuery.ok && withQuery.error.exists(_.contains("without a file name or query")))
+    val noHost = configs.validate(SampleConfig.yaml(flow = "https:///dodsC/daily"))
+    assert(!noHost.ok && noHost.error.exists(_.contains("is not a valid address")))
+  }
+
   it should "reject flow bounds that are the wrong way round, and fewer than one depth level" in {
     val (configs, _) = store()
     def with_(extra: String) = SampleConfig.yaml().replace("  includeVerticalVelocity: true\n", s"  includeVerticalVelocity: true\n$extra\n")

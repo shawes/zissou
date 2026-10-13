@@ -26,7 +26,8 @@ class Flow(
     var timeStep: TimeStep,
     val includeVerticalVelocity: Boolean,
     val region: FlowRegion = FlowRegion.Default,
-    val depthLevels: Int = FlowRegion.DefaultDepthLevels
+    val depthLevels: Int = FlowRegion.DefaultDepthLevels,
+    val filePrefix: String = "ocean"
 ) {
   var dimensions = new Dimensions(
     new ContinuousRange(),

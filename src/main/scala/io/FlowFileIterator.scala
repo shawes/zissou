@@ -1,6 +1,7 @@
 package io
 
 import java.time.YearMonth
+import java.util.concurrent.{ExecutionException, Executors, Future, ThreadFactory, TimeUnit}
 import scala.collection.mutable.{ListBuffer, Queue}
 import com.github.nscala_time.time.Imports._
 import exceptions.FlowDataExhaustedException
@@ -13,24 +14,39 @@ import ucar.unidata.geoloc.{LatLonPoint, LatLonRect}
 
 class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
 
-  /** Reads the flow from the folder the flow is configured with. */
-  def this(flow: Flow) = this(flow, new LocalFlowSource(flow.netcdfFilePath, FlowFileIterator.Variables))
+  /** Reads the flow from the folder, or the OPeNDAP server, the flow is configured with. */
+  def this(flow: Flow) = this(flow, FlowFileIterator.sourceFor(flow))
+
+  private type Day = (List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)
 
   val variables = FlowFileIterator.Variables
   var dataset: List[(GridDataset, String)] = List.empty
-  val grids =
-    new Queue[(List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)]
+  val grids = new Queue[Day]
   // the depth of each level read, from the surface, as the data's own depth axis gives them;
   // set once the first file is open
   var depths: List[Double] = List.empty
   // the month of the file read last; declared before initialFlowData runs, which reads a file
-  private var loadedMonth: Option[YearMonth] = None
+  @volatile private var loadedMonth: Option[YearMonth] = None
   val netcdfHandler = new NetcdfFileHandler()
   val latLonBounds = new LatLonRect(
     LatLonPoint.create(flow.region.south, flow.region.west),
     LatLonPoint.create(flow.region.north, flow.region.east)
   )
   val depthRange: Range = new Range(0, flow.depthLevels - 1)
+
+  // From a source that is slow to read, the day after the newest one held is read while the
+  // larvae are moved, by one thread of its own, so that the run waits only for what is not
+  // ready. It reads the datasets, which only it uses while it is reading.
+  private val reader =
+    if (source.isRemote) Some(Executors.newSingleThreadExecutor(new ThreadFactory {
+      def newThread(task: Runnable): Thread = {
+        val thread = new Thread(task, "zissou-flow-reader")
+        thread.setDaemon(true)
+        thread
+      }
+    }))
+    else None
+  private var ahead: Option[Future[Day]] = None
 
   initialFlowData()
 
@@ -83,9 +99,7 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
   }
 
   // The time a day's field is for, read from the time axis of the data (noon, for daily means)
-  private def stampOf(
-      day: (List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)
-  ): LocalDateTime = {
+  private def stampOf(day: Day): LocalDateTime = {
     val axis = day._1.head._2.getTimeAxis1D
     if (axis == null) {
       throw new IllegalStateException("The flow data has no time axis, so the time of each day's field is not known")
@@ -93,8 +107,14 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
     new LocalDateTime(axis.getCalendarDate(0).getMillis, DateTimeZone.UTC)
   }
 
-  /** Whether there is a file that has not been read yet, for a month after the one read last. */
-  def hasNext: Boolean = loadedMonth.exists(month => source.firstAfter(month).isDefined)
+  /**
+    * Whether the files hold a month after the newest day held. That is not the month read last:
+    * a source that reads ahead may have opened the next month's file already.
+    */
+  def hasNext: Boolean = {
+    val newest = stampOf(grids.last).toLocalDate
+    source.firstAfter(YearMonth.of(newest.getYear, newest.getMonthOfYear)).isDefined
+  }
 
   def closeAllOpenDatasets(): Unit = {
     if (dataset.nonEmpty) {
@@ -109,6 +129,12 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
   }
 
   def shutdown(): Unit = {
+    ahead.foreach(_.cancel(true))
+    ahead = None
+    reader.foreach { reader =>
+      reader.shutdownNow()
+      reader.awaitTermination(10, TimeUnit.SECONDS)
+    }
     closeAllOpenDatasets()
     netcdfHandler.shutdown()
   }
@@ -117,7 +143,7 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
       dayOfMonth: Int,
       latLonBounds: LatLonRect,
       depthRange: Range
-  ): List[(Array[Array[Array[Float]]], GridCoordSystem)] = {
+  ): List[(Array[Array[Array[Float]]], GridCoordSystem)] = source.retrying(s"reading day $dayOfMonth of ${loadedMonth.getOrElse("the first month")}") {
 
     val day = dataset
       .map(
@@ -177,16 +203,35 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
   }
 
   private def loadFollowingDay(): Unit = {
-    val newest = grids.last
+    val day = ahead match {
+      case Some(future) =>
+        ahead = None
+        try future.get()
+        catch { case e: ExecutionException => throw e.getCause }
+      case None => fetchFollowingDay(grids.last)
+    }
+    grids.enqueue(day)
+    readAhead()
+  }
+
+  // The day after one: read from its month's file, or from the next month's if it is the last
+  private def fetchFollowingDay(newest: Day): Day = {
     val startsNextMonth = isLastDayOfMonth(newest)
     if (startsNextMonth) readMonth(loadedMonth.get.plusMonths(1))
     val day = if (startsNextMonth) 1 else newest._2 + 1
-    grids.enqueue((readDay(day, latLonBounds, depthRange), day, getDaysInMonth))
+    (readDay(day, latLonBounds, depthRange), day, getDaysInMonth)
   }
 
-  private def isLastDayOfMonth(
-      day: (List[(Array[Array[Array[Float]]], GridCoordSystem)], Int, Int)
-  ): Boolean = day._2 == day._3
+  // Starts reading the day after the newest one held, unless the files end there
+  private def readAhead(): Unit =
+    reader.foreach { reader =>
+      val newest = grids.last
+      if (!(isLastDayOfMonth(newest) && !hasNext)) {
+        ahead = Some(reader.submit(new java.util.concurrent.Callable[Day] { def call(): Day = fetchFollowingDay(newest) }))
+      }
+    }
+
+  private def isLastDayOfMonth(day: Day): Boolean = day._2 == day._3
 
   private def getDaysInMonth: Int =
     dataset.head._1.getCalendarDateEnd.getDayOfMonth()
@@ -195,4 +240,9 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
 
 object FlowFileIterator {
   val Variables = List("u", "v", "w") //TODO: Put this into the config file
+
+  /** The folder, or the OPeNDAP server, that a flow is configured to read. */
+  def sourceFor(flow: Flow): FlowSource =
+    if (OpenDapFlowSource.isUrl(flow.netcdfFilePath)) new OpenDapFlowSource(flow.netcdfFilePath, flow.filePrefix)
+    else new LocalFlowSource(flow.netcdfFilePath, Variables)
 }

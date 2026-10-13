@@ -78,7 +78,7 @@ class ConfigStore(val dir: Path, baseDir: Path) {
     new ConfigurationFile().parse(text) match {
       case Left(failure) => Validation(false, Some(describe(failure)), None, Seq.empty)
       case Right(config) =>
-        invalidDate(config).orElse(invalidInterval(config)).orElse(invalidDiffusion(config)).orElse(LarvaChecks.problems(config.larva).headOption).orElse(invalidFlowRegion(config)) match {
+        invalidDate(config).orElse(invalidInterval(config)).orElse(invalidDiffusion(config)).orElse(LarvaChecks.problems(config.larva).headOption).orElse(invalidFlowRegion(config)).orElse(invalidFlowAddress(config)) match {
           case Some(problem) => Validation(false, Some(problem), None, Seq.empty)
           case None => Validation(true, None, Some(summarise(config)), warningsFor(config))
         }
@@ -132,6 +132,17 @@ class ConfigStore(val dir: Path, baseDir: Path) {
       .collectFirst { case (name, value) if value < 0 || value.isNaN => s"turbulence.$name must be zero or more." }
   }
 
+  // an address is a directory on an OPeNDAP server: the files are <address>/<prefix>_<variable>_<year>_<month>.nc
+  private def invalidFlowAddress(config: Configuration): Option[String] = {
+    val path = config.flow.netcdfFilePath
+    if (!io.OpenDapFlowSource.isUrl(path)) None
+    else if (scala.util.Try(java.net.URI.create(path)).toOption.forall(uri => uri.getHost == null))
+      Some(s"flow.netcdfFilePath '$path' is not a valid address.")
+    else if (path.contains("?") || path.endsWith(".nc"))
+      Some(s"flow.netcdfFilePath must be the directory of the monthly files on the server, without a file name or query: '$path'.")
+    else None
+  }
+
   // the part of the flow grid that is read, and how many depth levels of it
   private def invalidFlowRegion(config: Configuration): Option[String] = {
     val flow = config.flow
@@ -160,7 +171,9 @@ class ConfigStore(val dir: Path, baseDir: Path) {
 
     def missing(path: String): Boolean = !Files.exists(baseDir.resolve(path))
     val flow = config.flow.netcdfFilePath
-    if (missing(flow)) warnings += s"The flow folder '$flow' does not exist."
+    // an address is not checked here: that takes the network, and the run says if the server has no data
+    if (io.OpenDapFlowSource.isUrl(flow)) ()
+    else if (missing(flow)) warnings += s"The flow folder '$flow' does not exist."
     else {
       val absent = Seq("u", "v", "w").filter(v => missing(s"$flow/$v"))
       if (absent.nonEmpty) warnings += s"The flow folder '$flow' has no ${absent.mkString(", ")} sub-folder."
