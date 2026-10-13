@@ -28,13 +28,15 @@ object GriddedFlowDataset {
     * @param value the flow, in m/s, of a variable ("u", "v" or "w") at a longitude and latitude
     *              on a day, the day being its number counted from 2002-01-01
     */
-  def write(root: File, months: Seq[(Int, Int)], lons: Array[Double], lats: Array[Double])(
+  def write(root: File, months: Seq[(Int, Int)], lons: Array[Double], lats: Array[Double], packedScale: Option[Double] = None)(
       value: (String, Double, Double, Long) => Double
   ): Unit =
     for (variable <- Seq("u", "v", "w"); (year, month) <- months) {
       val directory = new File(root, variable)
       directory.mkdirs()
-      writeMonth(new File(directory, f"ocean_${variable}_$year%d_$month%02d.nc"), variable, year, month, lons, lats, value)
+      // like BRAN2020, u and v can be packed in 16 bits with a scale factor and w left as it is
+      val scale = packedScale.filter(_ => variable != "w")
+      writeMonth(new File(directory, f"ocean_${variable}_$year%d_$month%02d.nc"), variable, year, month, lons, lats, value, scale)
     }
 
   private def writeMonth(
@@ -44,7 +46,8 @@ object GriddedFlowDataset {
       month: Int,
       lons: Array[Double],
       lats: Array[Double],
-      value: (String, Double, Double, Long) => Double
+      value: (String, Double, Double, Long) => Double,
+      packedScale: Option[Double]
   ): Unit = {
     val days = YearMonth.of(year, month).lengthOfMonth
     val (nz, ny, nx) = (Depths.length, lats.length, lons.length)
@@ -62,8 +65,16 @@ object GriddedFlowDataset {
       .addAttribute(new Attribute("units", "degrees_north")).addAttribute(new Attribute("axis", "Y"))
     builder.addVariable("xu_ocean", DataType.DOUBLE, "xu_ocean")
       .addAttribute(new Attribute("units", "degrees_east")).addAttribute(new Attribute("axis", "X"))
-    builder.addVariable(name, DataType.FLOAT, "Time st_ocean yu_ocean xu_ocean")
-      .addAttribute(new Attribute("units", "m/s")).addAttribute(new Attribute("_FillValue", -1.0e20f)).addAttribute(new Attribute("missing_value", -1.0e20f))
+    packedScale match {
+      case Some(scale) =>
+        builder.addVariable(name, DataType.SHORT, "Time st_ocean yu_ocean xu_ocean")
+          .addAttribute(new Attribute("units", "m/s")).addAttribute(new Attribute("scale_factor", scale.toFloat))
+          .addAttribute(new Attribute("add_offset", 0.0f)).addAttribute(new Attribute("_FillValue", (-32768).toShort))
+          .addAttribute(new Attribute("missing_value", (-32768).toShort))
+      case None =>
+        builder.addVariable(name, DataType.FLOAT, "Time st_ocean yu_ocean xu_ocean")
+          .addAttribute(new Attribute("units", "m/s")).addAttribute(new Attribute("_FillValue", -1.0e20f)).addAttribute(new Attribute("missing_value", -1.0e20f))
+    }
 
     val writer = builder.build()
     try {
@@ -71,13 +82,26 @@ object GriddedFlowDataset {
       writer.write("st_ocean", NcArray.factory(DataType.DOUBLE, Array(nz), Depths))
       writer.write("yu_ocean", NcArray.factory(DataType.DOUBLE, Array(ny), lats))
       writer.write("xu_ocean", NcArray.factory(DataType.DOUBLE, Array(nx), lons))
-      val data = new Array[Float](days * nz * ny * nx)
-      var i = 0
-      for (t <- 0 until days; _ <- 0 until nz; y <- 0 until ny; x <- 0 until nx) {
-        data(i) = value(name, lons(x), lats(y), java.time.temporal.ChronoUnit.DAYS.between(UniformFlowDataset.Epoch, LocalDate.of(year, month, 1).plusDays(t))).toFloat
-        i += 1
+      def flow(t: Int, y: Int, x: Int): Double =
+        value(name, lons(x), lats(y), java.time.temporal.ChronoUnit.DAYS.between(UniformFlowDataset.Epoch, LocalDate.of(year, month, 1).plusDays(t)))
+      packedScale match {
+        case Some(scale) =>
+          val data = new Array[Short](days * nz * ny * nx)
+          var i = 0
+          for (t <- 0 until days; _ <- 0 until nz; y <- 0 until ny; x <- 0 until nx) {
+            data(i) = math.round(flow(t, y, x) / scale).toShort
+            i += 1
+          }
+          writer.write(name, NcArray.factory(DataType.SHORT, Array(days, nz, ny, nx), data))
+        case None =>
+          val data = new Array[Float](days * nz * ny * nx)
+          var i = 0
+          for (t <- 0 until days; _ <- 0 until nz; y <- 0 until ny; x <- 0 until nx) {
+            data(i) = flow(t, y, x).toFloat
+            i += 1
+          }
+          writer.write(name, NcArray.factory(DataType.FLOAT, Array(days, nz, ny, nx), data))
       }
-      writer.write(name, NcArray.factory(DataType.FLOAT, Array(days, nz, ny, nx), data))
     } finally writer.close()
   }
 }

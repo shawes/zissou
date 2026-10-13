@@ -44,6 +44,24 @@ class Bran2020LiveTest extends AnyFlatSpec {
     } finally iterator.shutdown()
   }
 
+  it should "have the strength of flow the East Australian Current has, in m/s" in {
+    assume(live, "set ZISSOU_LIVE_TESTS to run the tests that need the network")
+    // u and v are stored in 16 bits with a scale factor; scaled twice they came out 3,000 times too small
+    val config = flow(utc(2019, 11, 1), 3, FlowRegion(-36, -28, 150, 156), 3)
+    val iterator = new FlowFileIterator(config)
+    try {
+      val controller = new FlowController(iterator, config)
+      val time = new LocalDateTime(2019, 11, 1, 12, 0)
+      controller.advanceTo(time)
+      val speeds = for (lat <- (0 to 12).map(-35.0 + _ * 0.5); lon <- (0 to 10).map(150.5 + _ * 0.5))
+        yield controller.getVelocityOfCoordinate(new GeoCoordinate(lat, lon, 5.0), time).map(v => math.hypot(v.u, v.v))
+      val open = speeds.flatten
+      assert(open.size > 50, "most of the sea off NSW has flow")
+      assert(open.max > 0.3 && open.max < 3.0, s"the fastest of ${open.size} points was ${open.max} m/s")
+      assert(open.sum / open.size > 0.05, s"the mean was ${open.sum / open.size} m/s")
+    } finally iterator.shutdown()
+  }
+
   it should "say which month has no data when the run starts before it begins" in {
     assume(live, "set ZISSOU_LIVE_TESTS to run the tests that need the network")
     val problem = intercept[IllegalArgumentException](new FlowFileIterator(flow(utc(1992, 12, 5), 5)))

@@ -30,8 +30,8 @@ object UniformFlowDataset {
   def dayNumber(year: Int, month: Int, day: Int): Long = dayNumber(LocalDate.of(year, month, day))
 
   /** Writes one file per (year, month) under root/u, root/v and root/w. */
-  def write(root: File, months: Seq[(Int, Int)]): Unit =
-    GriddedFlowDataset.write(root, months, Lons, Lats) { (variable, _, _, day) =>
+  def write(root: File, months: Seq[(Int, Int)], packedScale: Option[Double] = None): Unit =
+    GriddedFlowDataset.write(root, months, Lons, Lats, packedScale) { (variable, _, _, day) =>
       day * (variable match { case "u" => U; case "v" => V; case _ => W })
     }
 }

@@ -149,33 +149,21 @@ class FlowFileIterator(val flow: Flow, source: FlowSource) extends Logging {
       depthRange: Range
   ): List[(Array[Array[Array[Float]]], GridCoordSystem)] = source.retrying(s"reading day $dayOfMonth of ${loadedMonth.getOrElse("the first month")}") {
 
-    val day = dataset
-      .map(
-        dataset =>
-          dataset._1
-            .findGridByName(dataset._2)
-            .subset(
-              new Range(dayOfMonth - 1, dayOfMonth - 1),
-              depthRange,
-              latLonBounds,
-              0,
-              0,
-              0
-            )
-      )
-      .toList
-
-    day.map(
-      grid =>
-        (
-          grid
-            .readDataSlice(0, -1, -1, -1)
-            .copyToNDJavaArray()
-            .asInstanceOf[Array[Array[Array[Float]]]],
-          grid.getCoordinateSystem()
-        )
-    )
-
+    dataset.map { case (grids, name) =>
+      val grid = grids.findGridByName(name)
+      val subset = grid.subset(new Range(dayOfMonth - 1, dayOfMonth - 1), depthRange, latLonBounds, 0, 0, 0)
+      // The data are read from the variable and not through the grid, which scales data that are packed in
+      // integers a second time: BRAN2020's u and v, stored in 16 bits with a scale factor of 3.05e-4, came out
+      // 3,000 times too small. The variable gives m/s, with NaN where there is no flow.
+      val (yRange, xRange) = {
+        val ranges = grid.getCoordinateSystem.getRangesFromLatLonRect(latLonBounds)
+        (ranges.get(0), ranges.get(1))
+      }
+      val section = new ucar.ma2.Section(java.util.Arrays.asList(
+        new Range(dayOfMonth - 1, dayOfMonth - 1), depthRange, yRange, xRange))
+      val values = grid.getVariable.read(section).reduce(0)
+      (values.copyToNDJavaArray().asInstanceOf[Array[Array[Array[Float]]]], subset.getCoordinateSystem())
+    }
   }
 
   // Reads the files of a month: the one the run starts in, or the one after the month read last
