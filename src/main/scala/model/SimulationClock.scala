@@ -35,14 +35,6 @@ class SimulationClock(interval: Interval, val timeStep: TimeStep) extends Loggin
   def isFirstStepOfDay: Boolean =
     now.toLocalDate != now.minusSeconds(timeStep.totalSeconds).toLocalDate
 
-  def isSunSetting(location : GeoCoordinate) : Boolean = {
-    new SunTimes(location).isNear(Sun.Setting)
-  }
-
-  def isSunRising(location : GeoCoordinate) : Boolean = {
-    new SunTimes(location).isNear(Sun.Rising)
-  }
-
   /** Which sun event, if any, the location is near, sharing one calculator for both checks. */
   def sunEvent(location : GeoCoordinate) : Option[Sun] = {
     val sunTimes = new SunTimes(location)

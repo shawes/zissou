@@ -93,12 +93,4 @@ class SimulationClockSunTest extends AnyFlatSpec {
     assert(at(clockWithStepOf(6), sunrise.plusHours(3)) == Some(Sun.Rising))
     assert(at(clockWithStepOf(2), sunrise.plusHours(3)) == None)
   }
-
-  it should "agree between the single-event checks and the combined one" in {
-    val clock = clockWithStepOf(1)
-    clock.now = sunset
-    assert(!clock.isSunRising(place) && clock.isSunSetting(place))
-    clock.now = sunrise
-    assert(clock.isSunRising(place) && !clock.isSunSetting(place))
-  }
 }

@@ -128,19 +128,6 @@ class BiologicalModel(
     )
   }
 
-  private def canDielMigrate(larva: Larva): Unit = {
-    larva.diel match {
-      case Some(diel) => {
-        if (clock.isSunRising(larva.position)) {
-          larva.dielMigrate(Day)
-        } else if (clock.isSunSetting(larva.position)) {
-          larva.dielMigrate(Night)
-        }
-      }
-      case None =>
-    }
-  }
-
   private def ageLarvae(larva: Larva): Boolean = {
     larva.incrementAge(clock.timeStep.totalSeconds)
   }

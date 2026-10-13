@@ -3,8 +3,6 @@ package physical.flow
 import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
 import io.FlowFileIterator
-import locals._
-import maths.RandomNumberGenerator
 import maths.interpolation.Interpolation
 import physical.{GeoCoordinate, Velocity}
 
@@ -64,38 +62,5 @@ class FlowController(val reader: FlowFileIterator, var flow: Flow)
         earlier <- at(true)
         later <- at(false)
       } yield earlier * (1.0 - laterWeight) + later * laterWeight
-  }
-
-  def updateHydrodynamicFlow(next: FlowGridWrapper): Unit = {
-    hydrodynamicFlow = next
-  }
-
-  private def bumpCoordinate(coordinate: GeoCoordinate): GeoCoordinate = {
-    val bumpedLongitude = coordinate.longitude + shiftAmount(
-      RandomNumberGenerator.coinToss,
-      Constants.MaxLongitudeShift
-    )
-    val bumpedLatitude = coordinate.latitude + shiftAmount(
-      RandomNumberGenerator.coinToss,
-      Constants.MaxLatitudeShift
-    )
-    new GeoCoordinate(bumpedLatitude, bumpedLongitude, coordinate.depth)
-  }
-
-  private def shiftAmount(toss: Boolean, maxShiftAmount: Double): Double =
-    toss match {
-      case true  => RandomNumberGenerator.get * maxShiftAmount
-      case false => RandomNumberGenerator.get * maxShiftAmount * (-1)
-    }
-
-  private def correctNegativeCoordinate(value: Double): Double = {
-    if (value < 0) value + 180 else value
-  }
-
-  private def ensureDepthIsInRange(value: Int): Int = {
-    if (value < 0) 0
-    else if (value > flow.dimensions.cellSize.depth)
-      flow.dimensions.cellSize.depth
-    else value
   }
 }
