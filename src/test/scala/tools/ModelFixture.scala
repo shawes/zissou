@@ -53,27 +53,31 @@ object ModelFixture {
       periodStart: String = "2002-01-05",
       periodEnd: String = "2002-01-20",
       timeStep: String = "unit: Hour\n    duration: 2",
-      latitude: Double = -28.0,
-      longitude: Double = 153.5,
+      // the (latitude, longitude) of each release site, in the order the configuration lists them
+      sites: Seq[(Double, Double)] = Seq((-28.0, 153.5)),
       depth: Double = 5,
       settlement: Double = 5,
       olfactory: Double = 10
-  ): String =
+  ): String = {
+    val spawningLocations = sites.zipWithIndex.map { case ((latitude, longitude), i) =>
+      s"""    - name: site ${i + 1}
+         |      patchNumber: 101
+         |      site:
+         |        longitude: $longitude
+         |        latitude: $latitude
+         |        depth: $depth
+         |      numberOfLarvae: $numberOfLarvae
+         |      releasePeriod:
+         |        start: $releaseStart
+         |        end: $releaseEnd
+         |      interval: $interval
+         |""".stripMargin
+    }
     s"""settings:
        |  randomSeed: 1234
        |spawn:
        |  spawningLocation:
-       |    - name: patch 101
-       |      patchNumber: 101
-       |      site:
-       |        longitude: $longitude
-       |        latitude: $latitude
-       |        depth: $depth
-       |      numberOfLarvae: $numberOfLarvae
-       |      releasePeriod:
-       |        start: $releaseStart
-       |        end: $releaseEnd
-       |      interval: $interval
+       |${spawningLocations.mkString.stripLineEnd}
        |turbulence:
        |  horizontalDiffusionCoefficient: 0
        |  verticalDiffusionCoefficient: 0
@@ -101,6 +105,7 @@ object ModelFixture {
        |  logLevel: info
        |  logFile: ""
        |""".stripMargin
+  }
 
   /** A folder holding the flow files and the reef. */
   def inputs(): File = {

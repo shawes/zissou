@@ -56,6 +56,28 @@ class DailyEventsTest extends AnyFlatSpec {
     }
   }
 
+  it should "kill a larva or not whatever happens to the other larvae" in {
+    // two sites, listed first in the configuration so its larvae come first in the model's list
+    def run(firstSite: (Double, Double)) = {
+      val larva = ModelFixture.driftingLarva(pld = 5, nonSettlementPeriod = 5, mortalityRate = Some(0.3))
+      ModelFixture.run(ModelFixture.yaml(inputs, larva, numberOfLarvae = 200, sites = Seq(firstSite, (-28.0, 153.5))))
+    }
+    // the first site's larvae drift off the east edge of the grid and die on the first day,
+    // or stay on it
+    val offTheGrid = run((-28.0, 153.99))
+    val onTheGrid = run((-28.0, 153.4))
+    assert(offTheGrid.biology.larvaeLostFromDomain > 50 && onTheGrid.biology.larvaeLostFromDomain == 0)
+
+    // the second site's larvae are the same larvae, moved the same way, in both runs
+    def secondSite(model: CoupledBiophysicalModel) =
+      model.biology.stationaryLarvae.filter(_.birthplace.name == "site 2").map(larva => larva.id -> larva.age).toMap
+    val fates = secondSite(offTheGrid)
+    assert(fates.size == 200)
+    assert(secondSite(onTheGrid) == fates)
+    val killed = fates.values.count(_ <= 5 * 86400)
+    assert(killed > 100 && killed < 200, s"$killed of 200 died before their PLD ran out")
+  }
+
   it should "be a share of the larvae, from 0 to 1, given for mortal larvae" in {
     val percentage = ModelFixture.yaml(inputs, ModelFixture.driftingLarva(mortalityRate = Some(26)))
     val message = intercept[IllegalArgumentException](ModelFixture.run(percentage)).getMessage
