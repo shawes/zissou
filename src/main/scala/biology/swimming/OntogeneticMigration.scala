@@ -40,12 +40,15 @@ class OntogeneticMigration(
 
   def enabled: Boolean = probabilities.nonEmpty
 
-  def apply(ontogeny: OntogeneticState, currentDepth: Double): Double = {
-    implementation match {
-      case TimeStepMigration => getDepthRestricted(ontogeny, currentDepth)
-      case _                 => getDepthRandom(ontogeny)
-    }
-  }
+  // A stage whose probabilities are all 0 does not migrate: the larva stays at the depth it
+  // has. Drawn from, they sent every larva to the deepest band, as the draw ran past them all.
+  def apply(ontogeny: OntogeneticState, currentDepth: Double): Double =
+    if (probabilities.forall(p => getProbability(p, ontogeny)._2 == 0)) currentDepth
+    else
+      implementation match {
+        case TimeStepMigration => getDepthRestricted(ontogeny, currentDepth)
+        case _                 => getDepthRandom(ontogeny)
+      }
 
   private def getDepthRandom(ontogeny: OntogeneticState): Double = {
     val list: ListBuffer[(ContinuousRange, Double)] =

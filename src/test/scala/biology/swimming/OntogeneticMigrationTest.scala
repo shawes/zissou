@@ -28,4 +28,20 @@ class OntogeneticMigrationTest
     assert(result.depth.isInclusive)
   } */
 
+  private def migration(implementation: String) = new OntogeneticMigration(
+    io.config.OntogeneticMigrationConfig(implementation, List(5, 50, 100), List(0, 0, 0), List(0.4, 0.5, 0.1), List(0, 1, 0), List(0, 0, 1))
+  )
+
+  "A stage whose probabilities are all 0" should "leave the larva where it is" in {
+    for (implementation <- Seq("stage", "daily", "timestep"); depth <- Seq(2.5, 30.0, 80.0)) {
+      assert(migration(implementation)(locals.Hatching, depth) == depth, s"$implementation from $depth m")
+    }
+  }
+
+  "A stage with probabilities" should "take the larva to a depth drawn from them" in {
+    for (implementation <- Seq("stage", "daily")) {
+      val depth = migration(implementation)(locals.Postflexion, 2.5)
+      assert(depth >= 51 && depth <= 100, s"$implementation: $depth m")
+    }
+  }
 }
