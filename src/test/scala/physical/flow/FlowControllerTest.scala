@@ -76,6 +76,27 @@ class FlowControllerTest extends AnyFlatSpec {
     }
   }
 
+  it should "be the day number of any time within a step, when the step runs on into the next pair of fields" in {
+    // 2 hour steps from 11:00: each step runs past noon, the time of the later field
+    val controller = controllerStartingAt(utc(2002, 1, 5))
+    for (day <- 6 to 12; minutes <- Seq(30, 60, 90, 120)) {
+      val start = new LocalDateTime(2002, 1, day, 11, 0)
+      controller.advanceTo(start)
+      val time = start.plusMinutes(minutes)
+      assert(math.abs(dayNumberOf(controller.getVelocityOfCoordinate(point, time)) - expectedDay(time)) < 1e-5, s"interpolated at $time")
+      assert(math.abs(dayNumberOf(controller.getVelocity(point, time)) - expectedDay(time)) < 1e-5, s"nearest cell at $time")
+    }
+  }
+
+  it should "hold the last field for the rest of a step that runs past the end of the files" in {
+    val controller = controllerStartingAt(utc(2002, 3, 28))
+    val start = new LocalDateTime(2002, 3, 31, 11, 0) // the last field is for noon on 31 March
+    controller.advanceTo(start)
+    val last = UniformFlowDataset.dayNumber(2002, 3, 31).toDouble
+    assert(math.abs(dayNumberOf(controller.getVelocityOfCoordinate(point, start.plusHours(2))) - last) < 1e-5)
+    assert(math.abs(dayNumberOf(controller.getVelocityOfCoordinate(point, start.plusMinutes(30))) - expectedDay(start.plusMinutes(30))) < 1e-5)
+  }
+
   "Advancing the flow" should "move on to the next pair of fields exactly when the time reaches the later one's" in {
     val controller = controllerStartingAt(utc(2002, 1, 5))
     val first = UniformFlowDataset.dayNumber(2002, 1, 5).toDouble

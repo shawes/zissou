@@ -48,6 +48,32 @@ class RungeKuttaIntegrationTest extends AnyFlatSpec {
     }
   }
 
+  it should "move as far as the flow takes it when the step runs past the time of a daily field" in {
+    val root = Files.createTempDirectory("zissou-integration-test")
+    UniformFlowDataset.write(root.toFile, Seq((2002, 1), (2002, 2)))
+    val timeStep = new TimeStep(6, TimeStepType.Hour)
+    // steps from 09:00, 15:00, 21:00 and 03:00: every fourth one runs past noon, into the next pair of fields
+    val first = new LocalDateTime(2002, 1, 6, 9, 0)
+    val flow = new Flow(root.toString, new LocalDateTime(2002, 1, 5, 0, 0).toDateTime(DateTimeZone.UTC) to first.toDateTime(DateTimeZone.UTC).plusDays(30), timeStep, false)
+    val controller = new FlowController(new FlowFileIterator(flow), flow)
+    val integrator = new RungeKuttaIntegration(controller, None, timeStep.totalSeconds)
+
+    var larva = new GeoCoordinate(-28.0, 153.2, 5.0)
+    var time = first
+    val seconds = timeStep.totalSeconds
+    for (step <- 0 until 20) {
+      controller.advanceTo(time)
+      val moved = integrator.integrate(larva, time, None).getOrElse(fail(s"step $step went nowhere"))
+      val middle = day(time.plusSeconds(seconds / 2))
+      val eastMetres = UniformFlowDataset.U * middle * seconds
+      val expectedLongitude = larva.longitude + eastMetres / Constants.EarthsRadius * (180 / math.Pi) / math.cos(larva.latitude * math.Pi / 180)
+      val errorMetres = (moved.longitude - expectedLongitude) * math.Pi / 180 * Constants.EarthsRadius * math.cos(larva.latitude * math.Pi / 180)
+      assert(math.abs(errorMetres) < 0.01, s"step $step from $time: $errorMetres m east of where the flow takes it")
+      larva = moved
+      time = time.plusSeconds(seconds)
+    }
+  }
+
   // ---- round an eddy -----------------------------------------------------------
 
   /**

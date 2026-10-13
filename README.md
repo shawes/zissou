@@ -62,6 +62,8 @@ Each time step a larva is moved by the classical fourth order Runge-Kutta method
 
 Earlier versions sampled the flow a whole step too far along each leg (at 1, 1.5, 1.5 and 2 steps' worth of travel from the start, where the method has 0, 0.5, 0.5 and 1), took the starting flow from the nearest cell and left it out of the mean. That made a larva carried round an eddy spiral in towards its centre: one that the exact flow takes round a circle of radius 50 km was 36 km from the centre after five days of 2-hour steps, and where it ended depended on the length of the step. Results that depended on larvae dispersing through eddies will move.
 
+A step can run on past the time of the later of the two daily fields the clock lies between, when the step does not divide 12 hours (or the fields are not for noon). The samples after that time are blended from the next pair of fields. Earlier versions held the later field for the rest of the step instead. Where the flow files end within a step, the last field is still held for the rest of it.
+
 ### Swimming
 
 `larva.swimming.ability` says how a larva that can swim chooses where to go:
