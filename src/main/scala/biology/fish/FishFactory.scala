@@ -104,16 +104,11 @@ class FishFactory(config: LarvaConfig) extends LarvaeFactory with Logging {
       RandomNumberGenerator.get(0, site.location.depth)
     )
 
-    def getNonSettlementPeriod(): Int = {
-      val settlement = config.pelagicLarvalDuration.nonSettlementPeriod
-      if (settlement < pld) {
-        Time.convertDaysToSeconds(settlement)
-      } else {
-        pld
-      }
-    }
-
-    val nonSettlementPeriod = getNonSettlementPeriod()
+    // in seconds, as the PLD is, and no longer than it
+    val nonSettlementPeriod = math.min(
+      Time.convertDaysToSeconds(config.pelagicLarvalDuration.nonSettlementPeriod),
+      pld
+    )
 
     larvaeCount += 1
     val fish = new Fish(
