@@ -1,0 +1,21 @@
+{
+  "name": "zissou-ui-vendor",
+  "private": true,
+  "description": "Bundles the YAML editor (CodeMirror) and YAML library the web interface uses into src/main/resources/ui/vendor/editor.js",
+  "scripts": {
+    "build": "esbuild entry.js --bundle --minify --format=iife --outfile=../src/main/resources/ui/vendor/editor.js"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.8.0",
+    "@codemirror/lang-yaml": "^6.1.2",
+    "@codemirror/language": "^6.11.0",
+    "@codemirror/lint": "^6.8.5",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.0",
+    "@lezer/highlight": "^1.2.5",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

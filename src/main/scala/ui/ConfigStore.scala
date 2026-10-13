@@ -3,7 +3,7 @@ package ui
 import java.nio.file.{Files, Path, StandardCopyOption}
 import com.github.nscala_time.time.Imports.{DateTime, DateTimeZone}
 import io.circe.{CursorOp, DecodingFailure, Encoder, ParsingFailure}
-import io.config.{Configuration, ConfigurationFile, LarvaChecks}
+import io.config.{BoundsConfig, Configuration, ConfigurationFile, LarvaChecks}
 import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
@@ -28,11 +28,19 @@ case class ConfigSummary(
     sites: Seq[SiteSummary]
 ) derives Encoder.AsObject
 
+/**
+  * One thing wrong with a configuration. `path` is where, as the dotted field names the messages
+  * use (`spawn.spawningLocation[0].interval`), empty when it is the file as a whole; `line` and
+  * `column` (from 1) are given when the YAML itself cannot be read.
+  */
+case class Problem(message: String, path: String = "", line: Option[Int] = None, column: Option[Int] = None) derives Encoder.AsObject
+
 case class Validation(
     ok: Boolean,
     error: Option[String],
     summary: Option[ConfigSummary],
-    warnings: Seq[String]
+    warnings: Seq[String],
+    problems: Seq[Problem] = Seq.empty
 ) derives Encoder.AsObject
 
 /** The configuration files in one directory, and checks on their contents. */
@@ -76,25 +84,33 @@ class ConfigStore(val dir: Path, baseDir: Path) {
 
   def validate(text: String): Validation =
     new ConfigurationFile().parse(text) match {
-      case Left(failure) => Validation(false, Some(describe(failure)), None, Seq.empty)
+      case Left(failure) => failed(Seq(describe(failure)))
       case Right(config) =>
-        invalidDate(config).orElse(invalidInterval(config)).orElse(invalidDiffusion(config)).orElse(LarvaChecks.problems(config.larva).headOption).orElse(invalidFlowRegion(config)).orElse(invalidFlowAddress(config)) match {
-          case Some(problem) => Validation(false, Some(problem), None, Seq.empty)
-          case None => Validation(true, None, Some(summarise(config)), warningsFor(config))
-        }
+        // every check runs, so that fixing one problem does not just reveal the next
+        val problems = invalidDate(config) ++ invalidInterval(config) ++ invalidDiffusion(config) ++
+          LarvaChecks.problems(config.larva).map(larvaProblem) ++ invalidFlowRegion(config) ++ invalidFlowAddress(config)
+        if (problems.nonEmpty) failed(problems)
+        else Validation(true, None, Some(summarise(config)), warningsFor(config))
     }
 
-  private def describe(failure: io.circe.Error): String = failure match {
+  private def failed(problems: Seq[Problem]): Validation =
+    Validation(false, problems.headOption.map(_.message), None, Seq.empty, problems)
+
+  // LarvaChecks messages begin with the field they are about
+  private def larvaProblem(message: String): Problem =
+    Problem(message, """^larva(\.\w+)*""".r.findFirstIn(message).getOrElse(""))
+
+  private def describe(failure: io.circe.Error): Problem = failure match {
     case parse: ParsingFailure =>
       // the parser's own message repeats the offending text over several lines
       val first = parse.message.linesIterator.nextOption().getOrElse("").trim
-      val position = """line (\d+), column (\d+)""".r.findFirstMatchIn(parse.message)
-        .map(m => s" (line ${m.group(1)}, column ${m.group(2)})").getOrElse("")
-      s"The file is not valid YAML: $first$position"
+      val at = """line (\d+), column (\d+)""".r.findFirstMatchIn(parse.message)
+      val position = at.map(m => s" (line ${m.group(1)}, column ${m.group(2)})").getOrElse("")
+      Problem(s"The file is not valid YAML: $first$position", "", at.map(_.group(1).toInt), at.map(_.group(2).toInt))
     case decode: DecodingFailure =>
       val field = CursorOp.opsToPath(decode.history).stripPrefix(".")
       val subject = if (field.isEmpty) "The configuration" else field
-      decode.message match {
+      val message = decode.message match {
         case "Int" | "Long" => s"$subject must be a whole number."
         case "Double" | "Float" => s"$subject must be a number."
         case "String" => s"$subject must be text."
@@ -102,64 +118,69 @@ class ConfigStore(val dir: Path, baseDir: Path) {
         case m if m.contains("Missing required field") => s"$subject is missing."
         case m => s"$subject: $m"
       }
+      Problem(message, field)
   }
 
   private def isDate(text: String): Boolean =
     Try(new DateTime(text, DateTimeZone.UTC)).isSuccess
 
-  private def invalidDate(config: Configuration): Option[String] = {
+  private def invalidDate(config: Configuration): Seq[Problem] = {
     val dates =
-      Seq("flow.period.start" -> config.flow.period.start, "flow.period.end" -> config.flow.period.end) ++
-        config.spawn.spawningLocation.flatMap(site =>
+      Seq(("flow.period.start", "flow.period.start", config.flow.period.start), ("flow.period.end", "flow.period.end", config.flow.period.end)) ++
+        config.spawn.spawningLocation.zipWithIndex.flatMap { case (site, i) =>
+          val at = s"spawn.spawningLocation[$i].releasePeriod"
           Seq(
-            s"release start of ${site.name}" -> site.releasePeriod.start,
-            s"release end of ${site.name}" -> site.releasePeriod.end
+            (s"release start of ${site.name}", s"$at.start", site.releasePeriod.start),
+            (s"release end of ${site.name}", s"$at.end", site.releasePeriod.end)
           )
-        )
-    dates.collectFirst { case (where, value) if !isDate(value) => s"'$value' is not a valid date ($where)" }
+        }
+    dates.collect { case (where, path, value) if !isDate(value) => Problem(s"'$value' is not a valid date ($where)", path) }
   }
 
   // the release schedule divides by the interval, so zero would crash the run
-  private def invalidInterval(config: Configuration): Option[String] =
-    config.spawn.spawningLocation.collectFirst {
-      case site if site.interval < 1 => s"The release interval of ${site.name} must be at least 1 day."
+  private def invalidInterval(config: Configuration): Seq[Problem] =
+    config.spawn.spawningLocation.zipWithIndex.collect {
+      case (site, i) if site.interval < 1 =>
+        Problem(s"The release interval of ${site.name} must be at least 1 day.", s"spawn.spawningLocation[$i].interval")
     }
 
   // the random walk takes the square root of the diffusion coefficient
-  private def invalidDiffusion(config: Configuration): Option[String] = {
+  private def invalidDiffusion(config: Configuration): Seq[Problem] = {
     val t = config.turbulence
     Seq("horizontalDiffusionCoefficient" -> t.horizontalDiffusionCoefficient, "verticalDiffusionCoefficient" -> t.verticalDiffusionCoefficient)
-      .collectFirst { case (name, value) if value < 0 || value.isNaN => s"turbulence.$name must be zero or more." }
+      .collect { case (name, value) if value < 0 || value.isNaN => Problem(s"turbulence.$name must be zero or more.", s"turbulence.$name") }
   }
 
   // an address is a directory on an OPeNDAP server: the files are <address>/<prefix>_<variable>_<year>_<month>.nc
-  private def invalidFlowAddress(config: Configuration): Option[String] = {
+  private def invalidFlowAddress(config: Configuration): Seq[Problem] = {
     val paths = ("flow.netcdfFilePath" -> config.flow.netcdfFilePath) +:
       config.flow.nested.getOrElse(List.empty).zipWithIndex.map { case (n, i) => s"flow.nested[$i].netcdfFilePath" -> n.netcdfFilePath }
     paths.flatMap { case (name, path) =>
       if (!io.OpenDapFlowSource.isUrl(path)) None
       else if (scala.util.Try(java.net.URI.create(path)).toOption.forall(uri => uri.getHost == null))
-        Some(s"$name '$path' is not a valid address.")
+        Some(Problem(s"$name '$path' is not a valid address.", name))
       else if (path.contains("?") || path.endsWith(".nc"))
-        Some(s"$name must be the directory of the monthly files on the server, without a file name or query: '$path'.")
+        Some(Problem(s"$name must be the directory of the monthly files on the server, without a file name or query: '$path'.", name))
       else None
-    }.headOption
+    }
   }
 
   // the part of the flow grid that is read, and how many depth levels of it
-  private def invalidFlowRegion(config: Configuration): Option[String] = {
+  private def invalidFlowRegion(config: Configuration): Seq[Problem] = {
     val flow = config.flow
-    flow.bounds.collectFirst {
-      case b if !(b.south < b.north) => s"flow.bounds.south (${b.south}) must be less than flow.bounds.north (${b.north})."
-      case b if !(b.west < b.east) => s"flow.bounds.west (${b.west}) must be less than flow.bounds.east (${b.east})."
-    }.orElse(flow.depthLevels.collectFirst { case n if n < 1 => s"flow.depthLevels must be at least 1, not $n." })
-      .orElse(flow.nested.getOrElse(List.empty).zipWithIndex.collectFirst {
-        case (n, i) if !(n.bounds.south < n.bounds.north) =>
-          s"flow.nested[$i].bounds.south (${n.bounds.south}) must be less than its north (${n.bounds.north})."
-        case (n, i) if !(n.bounds.west < n.bounds.east) =>
-          s"flow.nested[$i].bounds.west (${n.bounds.west}) must be less than its east (${n.bounds.east})."
-        case (n, i) if n.depthLevels.exists(_ < 1) => s"flow.nested[$i].depthLevels must be at least 1."
-      })
+    def check(path: String, label: String, bounds: BoundsConfig, depthLevels: Option[Int]): Seq[Problem] =
+      Seq(
+        Option.when(!(bounds.south < bounds.north))(
+          Problem(s"$label.south (${bounds.south}) must be less than $label.north (${bounds.north}).", s"$path.bounds.south")),
+        Option.when(!(bounds.west < bounds.east))(
+          Problem(s"$label.west (${bounds.west}) must be less than $label.east (${bounds.east}).", s"$path.bounds.west")),
+        depthLevels.collect { case n if n < 1 => Problem(s"$path.depthLevels must be at least 1, not $n.", s"$path.depthLevels") }
+      ).flatten
+    flow.bounds.toSeq.flatMap(b => check("flow", "flow.bounds", b, None)) ++
+      flow.depthLevels.collect { case n if n < 1 => Problem(s"flow.depthLevels must be at least 1, not $n.", "flow.depthLevels") } ++
+      flow.nested.getOrElse(List.empty).zipWithIndex.flatMap { case (n, i) =>
+        check(s"flow.nested[$i]", s"flow.nested[$i].bounds", n.bounds, n.depthLevels)
+      }
   }
 
   private def summarise(config: Configuration): ConfigSummary =

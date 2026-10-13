@@ -176,6 +176,7 @@ The launcher uses the throughput (Parallel) garbage collector, which suits a bat
 `scripts/zissou.sh ui` serves a page at <http://127.0.0.1:8787/> where you can:
 
 - pick a configuration, edit it, and see straight away whether it is valid, what it will release and where, and anything that looks wrong (missing input files, a flow period that would end the run at once, a site outside the supported grid)
+- edit it as a **form** or as **YAML**; the two views change the same file, and the one you used last is remembered. The form has a section for each part of the configuration, with units and hints, adds, duplicates and removes release sites (and sets one value for all of them at once), edits the migration depth tables with each row's total shown, and lets you place a site or draw the flow region on a map instead of typing coordinates. It edits the YAML in place, so your comments, ordering and any settings it has no field for are kept. The YAML view is a code editor with highlighting and folding. Every problem with the configuration is listed at once and marked on its field or its line
 - start a run and watch it: the day it has reached, the larvae in the water, and the log as it is written
 - cancel a run, and keep a history of runs, each with its own folder holding the exact configuration, the log and the results
 - look at what a finished run produced (settlement by release site, the connectivity matrix, how far larvae travelled) and download its files
@@ -194,6 +195,8 @@ mkdir -p data/land && curl -L -o data/land/ne_10m_land.zip https://naturalearth.
 ```
 
 Without it maps are drawn with no land. Only the part of the coast in view is sent to the page, simplified to about a pixel.
+
+The YAML editor (CodeMirror) and the YAML library behind the form are bundled into one file, `src/main/resources/ui/vendor/editor.js`, which is committed, so building Zissou needs no JavaScript tools. To change what goes into it, edit `ui-vendor/entry.js` and run `npm install && npm run build` in `ui-vendor`.
 
 Run it from the folder the configurations' relative paths refer to (the repository folder, for the bundled examples). By default it listens on this machine only. `--host 0.0.0.0` makes it reachable from other machines, for example to drive a Mac mini from a laptop, but **there is no login**: anyone who can reach the port can start runs and write configuration files, so only do that on a network you trust. Requests that do not come from the page itself (another website, an unexpected `Host`) are refused.
 

@@ -138,6 +138,9 @@ class RunManager(
 
   def map(id: String, trackLimit: Int): Option[RunMap] = dirOf(id).flatMap(MapReader.read(_, workDir, trackLimit, landFile))
 
+  /** The rings of the land inside a box (west, south, east, north), for a map that is not of a run; empty with no land layer. */
+  def land(box: Seq[Double]): Seq[Seq[Seq[Double]]] = landFile.map(MapReader.landWithin(_, box)).getOrElse(Seq.empty)
+
   /** Removes a finished run and everything it wrote. A run still going cannot be deleted. */
   def delete(id: String): Either[String, Unit] = synchronized {
     Option(entries.get(id)) match {

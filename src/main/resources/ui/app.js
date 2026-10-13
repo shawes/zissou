@@ -141,34 +141,145 @@ async function selectConfig(name) {
   }
 }
 
-const isDirty = () => state.selected?.type === 'config' && state.editor.text !== state.editor.saved;
+// Opens the map to choose a site's position, a new site, or a region of the flow.
+// `target` is the path of the site, or of the bounds, in the configuration.
+function pickOnMap(mode, target) {
+  const form = state.editor.refs.form;
+  const data = form.data() || {};
+  const sites = (data.spawn?.spawningLocation ?? []).map((s, i) => ({ index: i, name: s.name, longitude: s.site?.longitude, latitude: s.site?.latitude }))
+    .filter((s) => Number.isFinite(s.longitude) && Number.isFinite(s.latitude));
+  const box = (b) => b && [b.west, b.south, b.east, b.north].every(Number.isFinite) ? [b.west, b.south, b.east, b.north] : null;
+  const main = box(data.flow?.bounds);
+  const nested = (data.flow?.nested ?? []).map((n) => box(n.bounds));
+  const set = (doc, path, value) => doc.setIn(path, value);
+
+  if (mode === 'region') {
+    const own = target.includes('nested') ? nested[target[target.indexOf('nested') + 1]] : main;
+    const others = target.includes('nested') ? [main, ...nested.filter((_, i) => i !== target[target.indexOf('nested') + 1])] : nested;
+    MapPicker.open({
+      mode: 'region', title: 'Choose the area', region: own, sites, regions: others.filter(Boolean),
+      view: MapPicker.fit([own, main, ...sites.map((s) => [s.longitude, s.latitude, s.longitude, s.latitude])], 0.3),
+      onChoose: (r) => form.change((doc) => ['south', 'north', 'west', 'east'].forEach((k) => set(doc, [...target, k], r[k]))),
+    });
+  } else if (mode === 'site') {
+    const index = target[2];
+    const current = sites.find((s) => s.index === index);
+    MapPicker.open({
+      mode: 'point', title: `Place ${data.spawn.spawningLocation[index]?.name ?? 'the site'}`,
+      point: current ? [current.longitude, current.latitude] : null, sites: sites.filter((s) => s.index !== index), regions: [main, ...nested].filter(Boolean),
+      view: MapPicker.fit([main, current && [current.longitude, current.latitude, current.longitude, current.latitude]], 0.1),
+      onChoose: (p) => form.change((doc) => { set(doc, [...target, 'site', 'latitude'], p.latitude); set(doc, [...target, 'site', 'longitude'], p.longitude); }),
+    });
+  } else {
+    const template = data.spawn?.spawningLocation?.at(-1);
+    MapPicker.open({
+      mode: 'point', title: 'Add a release site', sites, regions: [main, ...nested].filter(Boolean),
+      view: MapPicker.fit([main, ...sites.map((s) => [s.longitude, s.latitude, s.longitude, s.latitude])], 0.15),
+      onChoose: (p) => form.change((doc) => {
+        const site = template ? structuredClone(template) : { patchNumber: 0, numberOfLarvae: 1000, interval: 7, site: { depth: 5 }, releasePeriod: { start: data.flow?.period?.start ?? '2020-01-01', end: data.flow?.period?.end ?? '2020-01-31' } };
+        site.name = `Site ${sites.length + 1}`;
+        site.site = { ...site.site, latitude: p.latitude, longitude: p.longitude };
+        if (!doc.hasIn(['spawn', 'spawningLocation'])) doc.setIn(['spawn', 'spawningLocation'], doc.createNode([]));
+        doc.addIn(['spawn', 'spawningLocation'], doc.createNode(site));
+      }),
+    });
+  }
+}
+
+const viewPreference = {
+  get() { try { return localStorage.getItem('zissou.configView') === 'yaml' ? 'yaml' : 'form'; } catch (e) { return 'form'; } },
+  set(view) { try { localStorage.setItem('zissou.configView', view); } catch (e) { /* private window */ } },
+};
+
+// the form and the code editor each hold a copy of the text, and the one that is not on show
+// is brought up to date when its tab is opened
+function teardownEditor() {
+  const { refs } = state.editor;
+  if (refs && refs.codeEditor) refs.codeEditor.destroy();
+  if (state.editor.refs) state.editor.refs = {};
+}
 
 function renderConfig() {
+  teardownEditor();
   const refs = (state.editor.refs = {});
+  state.editor.view = viewPreference.get();
   refs.title = h('h1', {}, state.editor.name);
   refs.dirty = h('span', { class: 'dirty' });
   refs.save = h('button', { class: 'btn', type: 'button', onclick: saveConfig }, 'Save');
   refs.run = h('button', { class: 'btn primary', type: 'button', onclick: runConfig }, 'Run');
-  refs.textarea = h('textarea', {
-    class: 'editor', spellcheck: 'false', 'aria-label': `Configuration ${state.editor.name}`,
-    oninput: (event) => { state.editor.text = event.target.value; refreshEditorControls(); scheduleValidate(); },
-  });
-  refs.textarea.value = state.editor.text;
   refs.validation = h('div', { 'aria-live': 'polite' });
   refs.message = h('div', { 'aria-live': 'polite' });
+  refs.formPane = h('div', { class: 'form-pane', role: 'tabpanel', id: 'pane-form' });
+  refs.yamlPane = h('div', { class: 'yaml-pane', role: 'tabpanel', id: 'pane-yaml' });
+  refs.tabs = ['form', 'yaml'].map((view) => h('button', {
+    type: 'button', role: 'tab', class: 'tab', 'data-view': view, 'aria-controls': `pane-${view}`,
+    onclick: () => showEditorView(view),
+  }, view === 'form' ? 'Form' : 'YAML'));
 
   clear($('#main'),
     h('div', { class: 'head' },
-      h('div', {}, refs.title, h('div', { class: 'sub' }, 'Edit the YAML, check it below, then run it.')),
+      h('div', {}, refs.title, h('div', { class: 'sub' }, 'Edit the settings in the form or the YAML; both change the same file.')),
       h('div', { class: 'actions' }, refs.dirty, refs.save, refs.run)),
-    h('div', { class: 'card' }, refs.textarea, refs.message, refs.validation));
+    h('div', { class: 'tabs', role: 'tablist', 'aria-label': 'Editing view' }, refs.tabs),
+    refs.validation,
+    refs.message,
+    refs.formPane, refs.yamlPane);
+  showEditorView(state.editor.view, false);
   refreshEditorControls();
   renderValidation();
 }
 
+function showEditorView(view, remember = true) {
+  const { refs } = state.editor;
+  state.editor.view = view;
+  if (remember) viewPreference.set(view);
+  refs.tabs.forEach((tab) => tab.setAttribute('aria-selected', String(tab.dataset.view === view)));
+  refs.formPane.hidden = view !== 'form';
+  refs.yamlPane.hidden = view !== 'yaml';
+
+  if (view === 'form') {
+    if (!refs.form) {
+      refs.form = ConfigForm.create(refs.formPane, { text: state.editor.text, onText: onTextFromForm, pick: pickOnMap });
+      refs.formStale = false;
+    } else if (refs.formStale) {
+      refs.form.setText(state.editor.text);
+      refs.formStale = false;
+    }
+    refs.form.setProblems(currentProblems());
+  } else {
+    if (!refs.codeEditor) {
+      refs.codeEditor = ZissouEditor.createEditor(refs.yamlPane, { text: state.editor.text, onChange: onTextFromCode });
+    } else {
+      refs.codeEditor.setText(state.editor.text);
+    }
+    refs.codeEditor.setProblems(currentProblems());
+  }
+}
+
+function onTextFromForm(text) {
+  state.editor.text = text;
+  state.editor.refs.codeEditor?.setText(text);
+  textChanged();
+}
+
+function onTextFromCode(text) {
+  state.editor.text = text;
+  state.editor.refs.formStale = true;
+  textChanged();
+}
+
+function textChanged() {
+  refreshEditorControls();
+  scheduleValidate();
+}
+
+const currentProblems = () => state.editor.validation?.problems ?? [];
+
+const isDirty = () => state.selected?.type === 'config' && state.editor.text !== state.editor.saved;
+
 function refreshEditorControls() {
   const { refs, validation } = state.editor;
-  if (!refs.save) return;
+  if (!refs || !refs.save) return;
   const valid = validation ? validation.ok : false;
   refs.dirty.textContent = isDirty() ? 'Unsaved changes' : '';
   refs.save.disabled = !isDirty() || !valid;
@@ -192,31 +303,49 @@ async function validateNow() {
     state.editor.validation = validation;
     renderValidation();
     refreshEditorControls();
+    const { refs } = state.editor;
+    refs.form?.setProblems(validation.problems);
+    refs.codeEditor?.setProblems(validation.problems);
   } catch (e) { /* the connection banner covers this */ }
+}
+
+// where a problem is in the text, for jumping to it from the YAML view
+function offsetOf(problem) {
+  const text = state.editor.text;
+  if (problem.line) {
+    const lines = text.split('\n');
+    const line = Math.min(problem.line, lines.length) - 1;
+    return lines.slice(0, line).reduce((n, l) => n + l.length + 1, 0) + Math.max((problem.column || 1) - 1, 0);
+  }
+  return ZissouEditor.locate(text, problem.path)?.from ?? 0;
+}
+
+function goToProblem(problem) {
+  const { refs } = state.editor;
+  if (state.editor.view === 'yaml') refs.codeEditor.reveal(offsetOf(problem));
+  else if (problem.path) refs.form.focusPath(problem.path);
+  else showEditorView('yaml'), refs.codeEditor.reveal(offsetOf(problem));
 }
 
 function renderValidation() {
   const { refs, validation } = state.editor;
   if (!refs.validation) return;
   if (!validation) return clear(refs.validation, h('p', { class: 'hint' }, 'Checking…'));
-  if (!validation.ok) return clear(refs.validation, h('div', { class: 'notice error' }, validation.error));
+  if (!validation.ok) {
+    const problems = validation.problems?.length ? validation.problems : [{ message: validation.error }];
+    return clear(refs.validation, h('div', { class: 'notice error' },
+      problems.length === 1 ? 'There is a problem with this configuration:' : `There are ${problems.length} problems with this configuration:`,
+      h('ul', {}, problems.map((p) => h('li', {}, p.path || p.line
+        ? h('button', { class: 'link', type: 'button', title: 'Go to it', onclick: () => goToProblem(p) }, p.message)
+        : p.message)))));
+  }
 
   const summary = validation.summary;
-  const sites = summary.sites.map((s) => h('tr', {},
-    h('td', {}, s.name), h('td', { class: 'num' }, s.patch),
-    h('td', { class: 'num' }, `${s.latitude}, ${s.longitude}`),
-    h('td', { class: 'num' }, formatNumber(s.larvae)),
-    h('td', {}, `${s.releaseStart.slice(0, 10)} to ${s.releaseEnd.slice(0, 10)}`),
-    h('td', { class: 'num' }, `every ${s.interval} d`)));
   clear(refs.validation,
-    h('div', { class: 'notice ok' }, `Valid. Flow period ${summary.periodStart.slice(0, 10)} to ${summary.periodEnd.slice(0, 10)}, ${summary.timeStep} steps.`),
+    h('div', { class: 'notice ok' }, `Valid. ${summary.sites.length} release site${summary.sites.length === 1 ? '' : 's'}, flow period ${summary.periodStart.slice(0, 10)} to ${summary.periodEnd.slice(0, 10)}, ${summary.timeStep} steps.`),
     validation.warnings.length
       ? h('div', { class: 'notice warn' }, 'Worth a look:', h('ul', {}, validation.warnings.map((w) => h('li', {}, w))))
-      : null,
-    h('div', { class: 'scroll' }, h('table', {},
-      h('thead', {}, h('tr', {}, ['Release site', 'Patch', 'Lat, lon', 'Larvae per release', 'Release period', 'Interval']
-        .map((t, i) => h('th', { class: i === 1 || i === 3 || i === 5 ? 'num' : '' }, t)))),
-      h('tbody', {}, sites))));
+      : null);
 }
 
 async function saveConfig() {
@@ -248,6 +377,7 @@ async function runConfig() {
 async function selectRun(id, force = false) {
   if (!force && state.selected?.type === 'run' && state.selected.id === id) return;
   if (state.selected?.type === 'config' && isDirty() && !confirm('Discard your unsaved changes?')) return;
+  teardownEditor();
   state.selected = { type: 'run', id };
   state.run = { id, detail: null, results: null, map: undefined, mapOptions: { settled: true, sampled: false }, logOffset: 0, refs: {} };
   renderSidebar();
@@ -651,6 +781,7 @@ document.addEventListener('keydown', (event) => {
 (async function start() {
   try {
     state.configs = await api('GET', '/api/configs');
+    state.maxConcurrent = (await api('GET', '/api/info')).maxConcurrent || 1;
     await refreshRuns();
     const active = state.runs.find((r) => r.status === 'running');
     if (active) await selectRun(active.id);
@@ -661,4 +792,3 @@ document.addEventListener('keydown', (event) => {
   }
   tick();
 })();
-    state.maxConcurrent = (await api('GET', '/api/info')).maxConcurrent || 1;

@@ -94,3 +94,6 @@ project/project/
 # Generated synthetic dataset (see src/test/scala/tools/SyntheticDataset.scala)
 data/
 runs/
+
+# The web interface's bundled editor is built from here; see README
+ui-vendor/node_modules/

@@ -28,6 +28,7 @@ class WebServer(host: String, port: Int, configs: ConfigStore, runs: RunManager)
     "/" -> ("index.html", "text/html; charset=utf-8"),
     "/app.js" -> ("app.js", "text/javascript; charset=utf-8"),
     "/form.js" -> ("form.js", "text/javascript; charset=utf-8"),
+    "/picker.js" -> ("picker.js", "text/javascript; charset=utf-8"),
     "/vendor/editor.js" -> ("vendor/editor.js", "text/javascript; charset=utf-8"),
     "/style.css" -> ("style.css", "text/css; charset=utf-8")
   )
@@ -117,6 +118,7 @@ class WebServer(host: String, port: Int, configs: ConfigStore, runs: RunManager)
       case ("PUT", List("api", "configs", name)) => saveConfig(name, request)
       case ("POST", List("api", "validate")) =>
         bodyText(request, "text").fold(error(400, _), text => json(200, configs.validate(text).asJson))
+      case ("GET", List("api", "land")) => land(request)
       case ("GET", List("api", "runs")) => json(200, runs.list().asJson)
       case ("POST", List("api", "runs")) => startRun(request)
       case ("GET", List("api", "runs", id)) => orNotFound(runs.detail(id))(d => json(200, d.asJson))
@@ -134,6 +136,16 @@ class WebServer(host: String, port: Int, configs: ConfigStore, runs: RunManager)
         orNotFound(runs.map(id, limit))(m => json(200, m.asJson))
       case ("GET", List("api", "runs", id, "files", name)) => download(id, name)
       case _ => error(404, "Not found.")
+    }
+  }
+
+  // the coastline inside a box, for the map where a site or a flow region is chosen
+  private def land(request: Request): Response = {
+    val box = Seq("west", "south", "east", "north").map(k => request.query.get(k).flatMap(_.toDoubleOption).filter(!_.isNaN))
+    box.flatten match {
+      case Seq(west, south, east, north) if box.forall(_.isDefined) && west < east && south < north && east - west <= 360 && north - south <= 180 =>
+        json(200, Json.obj("land" -> runs.land(Seq(west, south, east, north)).asJson))
+      case _ => error(400, "Give west, south, east and north, with west less than east and south less than north.")
     }
   }
 

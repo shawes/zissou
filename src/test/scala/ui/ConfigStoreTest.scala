@@ -222,4 +222,27 @@ class ConfigStoreTest extends AnyFlatSpec {
     val upside = configs.validate(withNest("    - netcdfFilePath: fine\n      bounds: {south: -27, north: -29, west: 153, east: 154}\n"))
     assert(upside.error.exists(_.contains("flow.nested[0].bounds.south")))
   }
+
+  "Problems" should "say where a YAML syntax error is" in {
+    val (configs, _) = store()
+    val problem = configs.validate("settings:\n  randomSeed: [unclosed").problems.head
+    assert(problem.line.isDefined && problem.column.isDefined && problem.path.isEmpty, problem.toString)
+  }
+
+  it should "give the path of the field that is wrong" in {
+    val (configs, _) = store()
+    assert(configs.validate(SampleConfig.yaml().replace("randomSeed: 1234", "randomSeed: abc")).problems.map(_.path) == Seq("settings.randomSeed"))
+    assert(configs.validate(SampleConfig.yaml(interval = 0)).problems.map(_.path) == Seq("spawn.spawningLocation[0].interval"))
+    assert(configs.validate(SampleConfig.yaml(releaseStart = "x")).problems.map(_.path) == Seq("spawn.spawningLocation[0].releasePeriod.start"))
+    val broken = SampleConfig.yaml().replace("mortalityRate: 0.26", "mortalityRate: 26")
+    assert(configs.validate(broken).problems.map(_.path) == Seq("larva.mortalityRate"))
+  }
+
+  it should "list every problem at once, not just the first" in {
+    val (configs, _) = store()
+    val broken = SampleConfig.yaml(interval = 0, releaseStart = "x").replace("mortalityRate: 0.26", "mortalityRate: 26")
+    val result = configs.validate(broken)
+    assert(result.problems.size == 3, result.problems.toString)
+    assert(result.error.contains(result.problems.head.message))
+  }
 }

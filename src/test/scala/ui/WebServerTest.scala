@@ -76,6 +76,27 @@ class WebServerTest extends AnyFlatSpec with BeforeAndAfterAll {
     assert(get("/style.css").statusCode() == 200)
   }
 
+  it should "serve the form, the map picker and the code editor the page loads" in {
+    val page = get("/").body()
+    for (script <- Seq("/form.js", "/picker.js", "/vendor/editor.js")) {
+      assert(page.contains(s"""src="$script""""), script)
+      val response = get(script)
+      assert(response.statusCode() == 200 && response.headers().firstValue("Content-Type").get.startsWith("text/javascript"), script)
+      assert(response.body().nonEmpty, script)
+    }
+  }
+
+  "The land endpoint" should "answer with the land in a box, none when there is no land layer" in {
+    val response = get("/api/land?west=148&south=-40&east=154&north=-30")
+    assert(response.statusCode() == 200)
+    assert(parse(response).hcursor.downField("land").as[Seq[Json]].toOption.exists(_.isEmpty))
+  }
+
+  it should "refuse a box that is not one" in {
+    for (query <- Seq("", "west=1&south=1&east=2", "west=2&south=1&east=1&north=2", "west=a&south=1&east=2&north=2", "west=0&south=0&east=500&north=10"))
+      assert(get(s"/api/land?$query").statusCode() == 400, query)
+  }
+
   it should "send headers that stop caching and content sniffing" in {
     val page = get("/")
     assert(page.headers().firstValue("Cache-Control").get == "no-store")
