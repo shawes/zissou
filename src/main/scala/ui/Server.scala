@@ -6,7 +6,7 @@ import java.nio.file.{Files, Path}
 object Server {
 
   private val Usage =
-    """Usage: zissou ui [--port 8787] [--host 127.0.0.1] [--configs DIR] [--runs DIR]
+    """Usage: zissou ui [--port 8787] [--host 127.0.0.1] [--configs DIR] [--runs DIR] [--land FILE]
       |
       |  --port     the port to listen on (default 8787)
       |  --host     the address to listen on (default 127.0.0.1, this machine only).
@@ -14,6 +14,8 @@ object Server {
       |             so anyone who can reach the port can start runs and write files.
       |  --configs  the folder of configuration files (default: data/synthetic, else configs)
       |  --runs     where each run's log and results are kept (default: runs)
+      |  --land     a shapefile of the land, drawn on maps so the water shows
+      |             (default: data/land/ne_10m_land.shp, if it is there)
       |
       |Run it from the folder the configurations' relative paths refer to.
       |""".stripMargin
@@ -23,7 +25,7 @@ object Server {
       print(Usage)
     } else {
       val options = args.toSeq.grouped(2).collect { case Seq(k, v) if k.startsWith("--") => k.drop(2) -> v }.toMap
-      val unknown = options.keySet -- Set("port", "host", "configs", "runs")
+      val unknown = options.keySet -- Set("port", "host", "configs", "runs", "land")
       if (unknown.nonEmpty || args.length % 2 != 0) {
         Console.err.print(Usage)
         sys.exit(2)
@@ -37,7 +39,9 @@ object Server {
       val port = options.get("port").flatMap(_.toIntOption).getOrElse(8787)
 
       Files.createDirectories(runsDir)
-      val runs = new RunManager(runsDir, workDir, RunManager.jvmCommand)
+      // the coastline the map shows the land from, if there is one: Natural Earth's land, see the README
+      val land = Some(Path.of(options.getOrElse("land", "data/land/ne_10m_land.shp"))).filter(Files.isRegularFile(_))
+      val runs = new RunManager(runsDir, workDir, RunManager.jvmCommand, land)
       val server = new WebServer(host, port, new ConfigStore(configDir, workDir), runs)
       server.start()
       Runtime.getRuntime.addShutdownHook(new Thread(() => {
@@ -47,6 +51,7 @@ object Server {
       println(s"Zissou is running at http://${if (host == "0.0.0.0") "localhost" else host}:${server.boundPort}/")
       println(s"  configurations: ${configDir.toAbsolutePath}")
       println(s"  runs:           ${runsDir.toAbsolutePath}")
+      println(s"  land on maps:   ${land.map(_.toAbsolutePath.toString).getOrElse("none (see the README to add it)")}")
       if (host != "127.0.0.1" && host != "localhost" && host != "::1") {
         println("  Listening beyond this machine: there is no login, so anyone who can reach this port can start runs.")
       }

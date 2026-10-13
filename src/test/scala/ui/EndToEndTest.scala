@@ -35,7 +35,7 @@ class EndToEndTest extends AnyFlatSpec {
     // and the map is drawable from what was written: reefs, sites, and paths that start at a release site
     val map = runs.map(started.id, 400).get
     assert(map.notes.isEmpty, map.notes.toString)
-    assert(map.reefs.size == 8 && map.sites.size == 3)
+    assert(map.reefs.map(_.patch).toSet == Set(101, 104, 107) && map.sites.size == 3, "only the reefs the three sites release from")
     assert(map.settled.total == results.settled && map.settled.tracks.nonEmpty)
     assert(map.settled.tracks.forall(t => t.points.size >= 2 && t.points.forall(p => p(0) >= map.bounds(0) && p(0) <= map.bounds(2) && p(1) >= map.bounds(1) && p(1) <= map.bounds(3))))
     assert(map.settled.tracks.forall { t =>

@@ -416,13 +416,15 @@ function mapSvg(map, options) {
     grid.push(svg('line', { class: 'grid', x1: 0, y1: y(lat), x2: width, y2: y(lat) }), textNode(4, Number(y(lat)) - 4, `${lat.toFixed(2)}°`, 'start'));
   }
 
-  const reefs = map.reefs.flatMap((reef) => {
-    const outline = svg('path', { class: `reef ${reef.habitat === 'Reef' ? '' : 'other'}`, d: reef.rings.map((ring) => path(ring) + 'Z').join('') },
-      svg('title', {}, document.createTextNode(`Patch ${reef.patch}${reef.habitat ? ` (${reef.habitat})` : ''}`)));
-    const points = reef.rings[0];
-    const centre = [(Math.min(...points.map((p) => p[0])) + Math.max(...points.map((p) => p[0]))) / 2, Math.min(...points.map((p) => p[1]))];
-    return [outline, textNode(Number(x(centre[0])), Number(y(centre[1])) + 13, String(reef.patch), 'middle')];
-  });
+  // the reefs larvae were released from, outlined; the hover says which
+  // the land, under everything else, so that what is not land is the water
+  const land = map.land && map.land.length
+    ? [svg('path', { class: 'land', d: map.land.map((ring) => path(ring) + 'Z').join('') })]
+    : [];
+
+  const reefs = map.reefs.map((reef) =>
+    svg('path', { class: `reef ${reef.habitat === 'Reef' ? '' : 'other'}`, d: reef.rings.map((ring) => path(ring) + 'Z').join('') },
+      svg('title', {}, document.createTextNode(`Patch ${reef.patch}${reef.habitat ? ` (${reef.habitat})` : ''}`))));
 
   const tracks = (set, extra) => set.tracks.map((t) =>
     svg('path', { class: `track ${extra}`, d: path(t.points), style: `stroke: var(--c${t.site < 0 ? 7 : t.site % 8})` }));
@@ -433,8 +435,8 @@ function mapSvg(map, options) {
     (() => { const label = textNode(Number(x(site.longitude)) + 9, Number(y(site.latitude)) + 4, site.name, 'start'); label.setAttribute('class', 'site-label'); return label; })(),
   ]);
 
-  return svg('svg', { class: 'map', viewBox: `0 0 ${width.toFixed(0)} ${height.toFixed(0)}`, role: 'img', 'aria-label': 'Map of the reefs, release sites and larva paths' },
-    ...grid, ...reefs, ...(options.sampled ? tracks(map.sampled, 'sampled') : []), ...(options.settled ? tracks(map.settled, '') : []), ...sites);
+  return svg('svg', { class: 'map', viewBox: `0 0 ${width.toFixed(0)} ${height.toFixed(0)}`, role: 'img', 'aria-label': 'Map of the land, the reefs larvae were released from, and larva paths' },
+    ...land, ...grid, ...reefs, ...(options.sampled ? tracks(map.sampled, 'sampled') : []), ...(options.settled ? tracks(map.settled, '') : []), ...sites);
 }
 
 const metric = (value, label) => h('div', { class: 'metric' }, h('div', { class: 'value' }, value), h('div', { class: 'label' }, label));

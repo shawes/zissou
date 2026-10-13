@@ -72,13 +72,14 @@ class MapReaderTest extends AnyFlatSpec {
     val (run, base) = runWith(Seq(line(100), line(50)), Seq(line(30)))
     val map = MapReader.read(run, base, 400).get
     assert(map.sites == Seq(Site("patch 101", 101, -28.8, 153.7)))
-    assert(map.reefs.map(r => (r.patch, r.habitat)) == Seq((101, "Reef"), (102, "Other")))
+    assert(map.reefs.map(r => (r.patch, r.habitat)) == Seq((101, "Reef")), "patch 102 was not released from")
     assert(map.reefs.head.rings.head.size == 5, "a closed ring")
     assert(map.settled.total == 2 && map.settled.tracks.size == 2)
     assert(map.sampled.total == 1)
     assert(map.settled.tracks.head.points.head == Seq(153.7, -28.8) && map.settled.tracks.head.site == 0)
     assert(map.notes.isEmpty)
-    assert(map.bounds(0) < 153.65 && map.bounds(2) > 153.95)
+    // round the release reef and the paths, no further: patch 102's reef, to the east, is not drawn
+    assert(map.bounds(0) < 153.65 && map.bounds(2) > 153.75 && map.bounds(2) < 153.95)
   }
 
   it should "thin and simplify the paths it sends, and say how many there really were" in {
@@ -91,55 +92,46 @@ class MapReaderTest extends AnyFlatSpec {
 
   private def round(v: Double) = math.round(v * 10000.0) / 10000.0
 
-  // a polygon of `vertices` corners round a centre
-  private def disc(lon: Double, lat: Double, radius: Double, vertices: Int): Seq[(Double, Double)] =
-    (0 until vertices).map(i => (lon + radius * math.cos(2 * math.Pi * i / vertices), lat + radius * math.sin(2 * math.Pi * i / vertices)))
-
-  private def mapOfReefs(reefs: Seq[(Int, String, Seq[(Double, Double)])]) = {
+  it should "draw only the reefs larvae were released from, however many are in the habitat layer" in {
     val (run, base) = runWith(Seq(line(10)), Seq.empty, withHabitat = false)
-    ShapefileTestUtil.writeReefs(base.resolve("reefs.shp").toFile, reefs)
-    MapReader.read(run, base, 400).get
+    // the configuration releases from patch 101; the layer has thousands of others
+    val others = (0 until 3000).map(i => (1000 + i, "Reef", Seq((153.0 + i * 0.001, -29.0), (153.0 + i * 0.001, -28.99), (153.001 + i * 0.001, -28.99), (153.001 + i * 0.001, -29.0))))
+    ShapefileTestUtil.writeReefs(base.resolve("reefs.shp").toFile,
+      Seq((101, "Reef", Seq((153.65, -28.85), (153.65, -28.75), (153.75, -28.75), (153.75, -28.85)))) ++ others)
+    val map = MapReader.read(run, base, 400).get
+    assert(map.reefs.map(_.patch) == Seq(101))
+    assert(map.notes.isEmpty, map.notes.toString)
+    // and the map is about them and the larvae, not the whole layer
+    assert(map.bounds(0) > 153.5 && map.bounds(2) < 154.0, map.bounds.toString)
   }
 
-  it should "draw the reefs to the scale of the map: simplified, and without those too small to see" in {
-    // a reef round the map, 1 degree across, with 720 corners, and one 100 m across, over a map of about 3 degrees
-    val map = mapOfReefs(Seq(
-      (1, "Reef", disc(153.5, -28.0, 0.5, 720)),
-      (2, "Reef", disc(155.0, -26.0, 0.0005, 8)),
-      (3, "Reef", disc(152.0, -27.0, 0.1, 40))))
-    assert(map.reefs.map(_.patch) == Seq(1, 3), "the one too small to see is left out, the larger first")
-    assert(map.reefs.head.rings.head.size < 150, s"720 corners became ${map.reefs.head.rings.head.size}")
-    assert(map.reefs.head.rings.head.size > 8, "but it is still a disc")
-    assert(map.notes.exists(n => n.contains("2 of the 3 reefs")), map.notes.toString)
+  // ---- the land -------------------------------------------------------------------
+
+  private def landShapefile(): java.nio.file.Path = {
+    val dir = Files.createTempDirectory("zissou-land-test")
+    // a coast: land west of 153.72 east, from 20 south to 40 south (so it runs well outside the map), with a lake in it,
+    // an island east of the map, and, far off, a country the map does not reach
+    ShapefileTestUtil.writeReefParts(dir.resolve("land.shp").toFile, Seq(
+      (1, "Land", Seq(Seq((140.0, -40.0), (140.0, -20.0), (153.72, -20.0), (153.72, -40.0)))),
+      (2, "Land", Seq(Seq((170.0, -40.0), (170.0, -39.0), (171.0, -39.0), (171.0, -40.0))))))
+    dir.resolve("land.shp")
   }
 
-  // a star of `points` spikes, alternating between the radius and half of it: detail that survives simplification
-  private def star(lon: Double, lat: Double, radius: Double, points: Int): Seq[(Double, Double)] =
-    (0 until 2 * points).map { i =>
-      val r = if (i % 2 == 0) radius else radius / 2
-      (lon + r * math.cos(math.Pi * i / points), lat + r * math.sin(math.Pi * i / points))
-    }
-
-  it should "keep the largest reefs, up to a number of points, when there are very many" in {
-    // 19,600 stars of 20 corners on a grid 0.2 degrees across (a pixel is 0.00017 of it, a spike 0.0003): 392,000 points
-    val reefs = (0 until 19600).map { i =>
-      val radius = 0.0004 + (i % 7) * 0.00005
-      (i + 1, "Reef", star(153.0 + (i % 140) * 0.0014, -29.0 + (i / 140) * 0.0014, radius, 10))
-    }
-    val map = mapOfReefs(reefs)
-    val points = map.reefs.map(_.rings.map(_.size).sum).sum
-    assert(map.reefs.size < 19600 && map.reefs.size > 3000, s"${map.reefs.size} reefs kept")
-    assert(points <= 150000 && points > 100000, s"$points points")
-    assert(map.notes.exists(n => n.contains(s"${map.reefs.size} of the 19600 reefs")), map.notes.toString)
-    // the largest are the ones kept: the biggest of the seven sizes (patches 7, 14 ...) are all in, the smallest (1, 8 ...) mostly out
-    val kept = map.reefs.map(_.patch).toSet
-    assert((0 until 19600).filter(i => i % 7 == 6).forall(i => kept.contains(i + 1)))
-    assert(kept.count(_ % 7 == 1) < kept.count(_ % 7 == 0))
+  it should "draw the land that is inside the map, clipped to it" in {
+    val (run, base) = runWith(Seq(line(100), line(50)), Seq(line(30)))
+    val map = MapReader.read(run, base, 400, Some(landShapefile())).get
+    assert(map.land.size == 1, "the far country is left out")
+    val xs = map.land.head.map(_(0))
+    val ys = map.land.head.map(_(1))
+    assert(math.abs(xs.max - 153.72) < 1e-6, "the coast is where it is")
+    assert(xs.min >= map.bounds(0) - 1e-6 && ys.min >= map.bounds(1) - 1e-6 && ys.max <= map.bounds(3) + 1e-6,
+      s"clipped to the map ${map.bounds}: x from ${xs.min}, y ${ys.min} to ${ys.max}")
   }
 
-  it should "say nothing about the reefs when all are drawn" in {
-    val map = mapOfReefs(Seq((1, "Reef", disc(153.5, -28.0, 0.1, 12)), (2, "Reef", disc(153.8, -28.0, 0.1, 12))))
-    assert(map.reefs.size == 2 && map.notes.isEmpty, map.notes.toString)
+  it should "draw no land when there is no land file, or the file is missing" in {
+    val (run, base) = runWith(Seq(line(100)))
+    assert(MapReader.read(run, base, 400).get.land.isEmpty)
+    assert(MapReader.read(run, base, 400, Some(base.resolve("no-land.shp"))).get.land.isEmpty)
   }
 
   it should "skip records with no geometry, and explain when that is all there is" in {

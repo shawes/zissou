@@ -140,13 +140,21 @@ The launcher uses the throughput (Parallel) garbage collector, which suits a bat
 - start a run and watch it: the day it has reached, the larvae in the water, and the log as it is written
 - cancel a run, and keep a history of runs, each with its own folder holding the exact configuration, the log and the results
 - look at what a finished run produced (settlement by release site, the connectivity matrix, how far larvae travelled) and download its files
-- see a map of it: the reefs, the release sites, and the paths of the larvae that settled (and, optionally, a sample of all larvae), each coloured by the site it came from. To keep the page quick, a few hundred paths are drawn, thinned and simplified; the heading says how many there really were
+- see a map of it: the land, the reefs larvae were released from (not the thousands of others in a habitat layer), the release sites, and the paths of the larvae that settled (and, optionally, a sample of all larvae), each coloured by the site it came from. To keep the page quick, a few hundred paths are drawn, thinned and simplified; the heading says how many there really were
 
 Each run is a separate process, so a failure or running out of memory in a simulation cannot take the page down. One run goes at a time.
 
 ```
-scripts/zissou.sh ui --port 8787 --configs data/synthetic --runs runs
+scripts/zissou.sh ui --port 8787 --configs data/synthetic --runs runs --land data/land/ne_10m_land.shp
 ```
+
+The land on the map is drawn from a shapefile of the world's land, so that what is not land shows as water. It is not part of Zissou: get [Natural Earth's 10 m land](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-land/) (public domain, 3 MB) and unpack it where Zissou looks for it, or give another coastline with `--land`:
+
+```
+mkdir -p data/land && curl -L -o data/land/ne_10m_land.zip https://naturalearth.s3.amazonaws.com/10m_physical/ne_10m_land.zip && unzip -o data/land/ne_10m_land.zip -d data/land
+```
+
+Without it maps are drawn with no land. Only the part of the coast in view is sent to the page, simplified to about a pixel.
 
 Run it from the folder the configurations' relative paths refer to (the repository folder, for the bundled examples). By default it listens on this machine only. `--host 0.0.0.0` makes it reachable from other machines, for example to drive a Mac mini from a laptop, but **there is no login**: anyone who can reach the port can start runs and write configuration files, so only do that on a network you trust. Requests that do not come from the page itself (another website, an unexpected `Host`) are refused.
 

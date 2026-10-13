@@ -33,7 +33,7 @@ case class RunDetail(run: RunInfo, log: LogSummary, fraction: Option[Double]) de
   *
   * @param command the command line that runs the simulator on a configuration file
   */
-class RunManager(val runsDir: Path, val workDir: Path, command: Path => Seq[String]) {
+class RunManager(val runsDir: Path, val workDir: Path, command: Path => Seq[String], landFile: Option[Path] = None) {
 
   private val IdPattern = "^[0-9]{8}-[0-9]{6}-[A-Za-z0-9._-]+$".r
   private val Stamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
@@ -121,7 +121,7 @@ class RunManager(val runsDir: Path, val workDir: Path, command: Path => Seq[Stri
 
   def results(id: String): Option[Results] = dirOf(id).flatMap(ResultsReader.read)
 
-  def map(id: String, trackLimit: Int): Option[RunMap] = dirOf(id).flatMap(MapReader.read(_, workDir, trackLimit))
+  def map(id: String, trackLimit: Int): Option[RunMap] = dirOf(id).flatMap(MapReader.read(_, workDir, trackLimit, landFile))
 
   /** Removes a finished run and everything it wrote. A run still going cannot be deleted. */
   def delete(id: String): Either[String, Unit] = synchronized {

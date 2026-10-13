@@ -4,7 +4,7 @@ import java.nio.file.{Files, Path}
 import io.circe.Encoder
 import io.config.ConfigurationFile
 import io.GisShapeFile
-import org.locationtech.jts.geom.{Envelope, Geometry}
+import org.locationtech.jts.geom.{Envelope, Geometry, GeometryFactory}
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import scala.util.Try
 
@@ -17,6 +17,7 @@ case class RunMap(
     bounds: Seq[Double], // west, south, east, north
     sites: Seq[Site],
     reefs: Seq[Reef],
+    land: Seq[Seq[Seq[Double]]], // the rings of the land inside the map, to be drawn with holes left out
     settled: TrackSet,
     sampled: TrackSet,
     notes: Seq[String]
@@ -26,25 +27,19 @@ case class RunMap(
 object MapReader {
 
   private val MaxPointsPerTrack = 24
-  // The reefs of a large habitat layer, drawn at full detail, were a hundred megabytes of page for a
-  // statewide map. They are drawn to the scale of the map (about a pixel), the ones smaller than that are left out,
-  // and the largest are kept up to this many points.
-  private val MapPixels = 1200
-  private val MaxReefPoints = 150000
 
-  def read(runDir: Path, workDir: Path, trackLimit: Int): Option[RunMap] =
+  def read(runDir: Path, workDir: Path, trackLimit: Int, landFile: Option[Path] = None): Option[RunMap] =
     ResultsReader.outputDir(runDir).flatMap { outputDir =>
       new ConfigurationFile().parse(Files.readString(runDir.resolve("config.yaml"))).toOption.map { config =>
         val notes = Seq.newBuilder[String]
         val sites = config.spawn.spawningLocation.map(s => Site(s.name, s.patchNumber, s.site.latitude, s.site.longitude))
 
+        // Only the reefs larvae were released from: a habitat layer can hold tens of thousands of polygons, and the
+        // map is of where their larvae went
+        val releasePatches = sites.map(_.patch).toSet
         val reefs = readShapes(workDir.resolve(config.habitat.shapeFilePath)).fold(
           problem => { notes += problem; Seq.empty[Reef] },
-          features => {
-            val (drawn, note) = drawableReefs(features)
-            note.foreach(notes += _)
-            drawn
-          }
+          features => features.filter(f => releasePatches.contains(patchOf(f))).flatMap(reefOf)
         )
         def tracks(suffix: String): TrackSet = {
           val file = Option(outputDir.toFile.listFiles()).toSeq.flatten.find(_.getName.endsWith(suffix))
@@ -62,9 +57,38 @@ object MapReader {
         }
         val settled = tracks("-settled.shp")
         val sampled = tracks("-dispersal.shp")
-        RunMap(bounds(sites, reefs, settled.tracks ++ sampled.tracks), sites, reefs, settled, sampled, notes.result())
+        val box = bounds(sites, reefs, settled.tracks ++ sampled.tracks)
+        val land = landFile.filter(Files.isRegularFile(_)).map(landWithin(_, box)).getOrElse(Seq.empty)
+        RunMap(box, sites, reefs, land, settled, sampled, notes.result())
       }
     }
+
+  // The land layer, read once: a world coastline is megabytes, and a map is asked for again and again
+  private val landLayers = new java.util.concurrent.ConcurrentHashMap[Path, Seq[Geometry]]()
+
+  private def landLayer(file: Path): Seq[Geometry] =
+    landLayers.computeIfAbsent(file.toAbsolutePath, f => readShapes(f).toOption.toSeq.flatten.flatMap(geometryOf))
+
+  /**
+    * The rings of the land that lies within a map (west, south, east, north), clipped to it and simplified to the
+    * scale of the map (about a pixel), so a world coastline becomes a few kilobytes of the coast that is in view.
+    */
+  def landWithin(file: Path, box: Seq[Double]): Seq[Seq[Seq[Double]]] = {
+    val Seq(west, south, east, north) = box
+    val view = new Envelope(west, east, south, north)
+    val clip = new GeometryFactory().toGeometry(view)
+    val tolerance = math.max(east - west, north - south) / MapPixels
+    landLayer(file).filter(_.getEnvelopeInternal.intersects(view)).flatMap { g =>
+      Try(TopologyPreservingSimplifier.simplify(g.intersection(clip), tolerance)).toOption.toSeq.flatMap { clipped =>
+        (0 until clipped.getNumGeometries).map(clipped.getGeometryN).collect { case p: org.locationtech.jts.geom.Polygon => p }.flatMap { p =>
+          (p.getExteriorRing +: (0 until p.getNumInteriorRing).map(p.getInteriorRingN))
+            .map(_.getCoordinates.toSeq.map(c => Seq(round(c.x), round(c.y))))
+        }
+      }
+    }.filter(_.size >= 4)
+  }
+
+  private val MapPixels = 1200
 
   private def readShapes(file: Path): Either[String, Seq[org.geotools.api.feature.simple.SimpleFeature]] =
     if (!Files.isRegularFile(file)) Left(s"The shapefile ${file.getFileName} could not be found.")
@@ -76,44 +100,17 @@ object MapReader {
   private def lineOf(feature: org.geotools.api.feature.simple.SimpleFeature): Option[Seq[Seq[Double]]] =
     geometryOf(feature).map(_.getCoordinates.toSeq.map(c => Seq(round(c.x), round(c.y)))).filter(_.size >= 2)
 
-  /**
-    * The reefs to draw: each simplified to the scale of the map, those smaller than a pixel left out,
-    * and the largest kept up to a number of points, with a note of what was left out if anything was.
-    */
-  private def drawableReefs(features: Seq[org.geotools.api.feature.simple.SimpleFeature]): (Seq[Reef], Option[String]) = {
-    val shapes = features.flatMap(f => geometryOf(f).map(g => (f, g)))
-    val extent = new Envelope()
-    shapes.foreach { case (_, g) => extent.expandToInclude(g.getEnvelopeInternal) }
-    val tolerance = math.max(extent.getWidth, extent.getHeight) / MapPixels
-    val visible = shapes.filter { case (_, g) =>
-      val e = g.getEnvelopeInternal
-      math.max(e.getWidth, e.getHeight) >= tolerance
-    }
-    val simplified = visible.map { case (f, g) =>
-      (g.getArea, reefOf(f, if (tolerance > 0) TopologyPreservingSimplifier.simplify(g, tolerance) else g))
-    }.collect { case (area, Some(reef)) => (area, reef) }
-    var points = 0
-    val kept = simplified.sortBy(-_._1).takeWhile { case (_, reef) =>
-      points += reef.rings.map(_.size).sum
-      points <= MaxReefPoints
-    }.map(_._2)
-    val note =
-      if (kept.size == shapes.size) None
-      else Some(s"The map shows ${kept.size} of the ${shapes.size} reefs, the largest, simplified: the rest are smaller than a pixel or would make the page too large.")
-    (kept, note)
-  }
+  private def patchOf(feature: org.geotools.api.feature.simple.SimpleFeature): Int =
+    Option(feature.getAttribute("PATCH_NUM")).flatMap(a => Try(a.toString.toInt).toOption).getOrElse(-1)
 
   private def reefOf(feature: org.geotools.api.feature.simple.SimpleFeature): Option[Reef] =
-    geometryOf(feature).flatMap(g => reefOf(feature, g))
-
-  private def reefOf(feature: org.geotools.api.feature.simple.SimpleFeature, geometry: Geometry): Option[Reef] =
-    Option(geometry).filterNot(_.isEmpty).map { geometry =>
+    geometryOf(feature).map { geometry =>
       val polygons = (0 until geometry.getNumGeometries).map(geometry.getGeometryN).collect { case p: org.locationtech.jts.geom.Polygon => p }
       val rings = polygons.flatMap { p =>
         (p.getExteriorRing +: (0 until p.getNumInteriorRing).map(p.getInteriorRingN)).map(_.getCoordinates.toSeq.map(c => Seq(round(c.x), round(c.y))))
       }
       Reef(
-        Option(feature.getAttribute("PATCH_NUM")).flatMap(a => Try(a.toString.toInt).toOption).getOrElse(-1),
+        patchOf(feature),
         Option(feature.getAttribute("HABITAT")).map(_.toString).getOrElse(""),
         rings
       )

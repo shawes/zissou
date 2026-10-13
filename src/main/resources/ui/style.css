@@ -155,6 +155,7 @@ pre.log {
 
 .map { width: 100%; height: auto; max-height: 82vh; display: block; background: var(--code-bg); border-radius: var(--radius); }
 .map .grid { stroke: var(--line); stroke-width: 1; }
+.map .land { fill: color-mix(in srgb, var(--muted) 22%, var(--panel)); stroke: var(--muted); stroke-width: .7; fill-rule: evenodd; stroke-linejoin: round; }
 .map .reef { fill: color-mix(in srgb, var(--accent) 20%, transparent); stroke: var(--accent); stroke-width: 1; fill-rule: evenodd; }
 .map .reef.other { fill: color-mix(in srgb, var(--muted) 18%, transparent); stroke: var(--muted); }
 .map .track { fill: none; stroke-width: 1.1; stroke-linejoin: round; stroke-linecap: round; opacity: .55; }
