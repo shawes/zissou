@@ -96,28 +96,10 @@ class BiologicalModel(
 
   /** Moves the larva, returning false if it left the flow grid and was killed. */
   private def move(larva: Larva, recentlyDeveloped: Boolean): Boolean = {
-    val dampeningFactor: List[Double] = List(1.0)
-    val swimmingVelocity = larva.swim()
-    def moveLarva(larva: Larva, dampeningFactor: List[Double]): Unit = {
-      if (dampeningFactor.nonEmpty) {
-        integrator.integrate(
-          larva.position,
-          clock.now,
-          swimmingVelocity,
-          dampeningFactor.head
-        ) match {
-          case Some(newPosition) => larva.move(newPosition)
-          case None => {
-            moveLarva(larva, dampeningFactor.tail)
-          }
-        }
-      } else {
-        larva.move(larva.position)
-      }
-    }
     val stillInDomain =
       try {
-        moveLarva(larva, dampeningFactor)
+        // a step that would end on land leaves the larva where it is
+        integrator.integrate(larva.position, clock.now, larva.swim()).foreach(larva.move)
         true
       } catch {
         case _: CoordinateOutOfBoundsException =>

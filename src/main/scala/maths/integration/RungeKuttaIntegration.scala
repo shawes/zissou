@@ -25,14 +25,14 @@ class RungeKuttaIntegration(flow: FlowController, turbulence: Option[Turbulence]
   private val notSwimming = new Velocity(0, 0, 0)
 
   /** Where the larva is a time step on, or None where the flow does not take it (the sea floor or the coast). */
-  def integrate(coordinate: GeoCoordinate, time: LocalDateTime, swimming: Option[Velocity], dampening: Double): Option[GeoCoordinate] = {
+  def integrate(coordinate: GeoCoordinate, time: LocalDateTime, swimming: Option[Velocity]): Option[GeoCoordinate] = {
     val swim = swimming.getOrElse(notSwimming)
     val includeVerticalVelocity = flow.flow.includeVerticalVelocity
     val middle = time.plusMillis(timeStep * 500)
     val end = time.plusSeconds(timeStep)
 
     def flowAt(position: GeoCoordinate, at: LocalDateTime): Option[Velocity] =
-      flow.getVelocityOfCoordinate(position, at).map(_ * dampening)
+      flow.getVelocityOfCoordinate(position, at)
 
     // where the larva is, some seconds on from the start, moving at a velocity and swimming
     def after(seconds: Double, velocity: Velocity): GeoCoordinate =

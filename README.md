@@ -35,7 +35,9 @@ Zissou models connectivity patterns of marine larvae using offline hydrodynamic 
 
 ### Reaching land
 
-When the particles reach land they can either be killed, remain in the current position or move with a muted velocity
+When a time step would take a larva onto land, below the sea floor or onto the coast, it goes 10 m higher than that instead if there is sea there, and otherwise stays where it was for that step. A larva that drifts off the edge of the flow grid is killed, and the log says how many were.
+
+Earlier versions of this README said a larva reaching land could instead be killed or moved at a reduced speed; there has been no setting for either.
 
 
 ### Turbulence

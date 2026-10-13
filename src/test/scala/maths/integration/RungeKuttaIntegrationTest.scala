@@ -32,7 +32,7 @@ class RungeKuttaIntegrationTest extends AnyFlatSpec {
     val seconds = timeStep.totalSeconds
     for (step <- 0 until 20) { // five days, with the flow different on every step
       controller.advanceTo(time)
-      val moved = integrator.integrate(larva, time, None, 1.0).getOrElse(fail(s"step $step went nowhere"))
+      val moved = integrator.integrate(larva, time, None).getOrElse(fail(s"step $step went nowhere"))
 
       // the flow is a straight line in time, so its mean over the step is its value in the middle
       val middle = day(time.plusSeconds(seconds / 2))
@@ -70,7 +70,7 @@ class RungeKuttaIntegrationTest extends AnyFlatSpec {
     var time = first
     for (step <- 0 until days * 24 / hours) {
       controller.advanceTo(time)
-      larva = integrator.integrate(larva, time, None, 1.0).getOrElse(fail(s"step $step went nowhere"))
+      larva = integrator.integrate(larva, time, None).getOrElse(fail(s"step $step went nowhere"))
       time = time.plusHours(hours)
     }
     val (east, north) = EddyFlowDataset.metresFromCentre(larva.longitude, larva.latitude)
@@ -110,8 +110,8 @@ class RungeKuttaIntegrationTest extends AnyFlatSpec {
     val larva = new GeoCoordinate(-28.0, 153.2, 5.0)
 
     controller.advanceTo(first)
-    val drifting = integrator.integrate(larva, first, None, 1.0).get
-    val swimming = integrator.integrate(larva, first, Some(new Velocity(0.1, -0.05, 0.0)), 1.0).get
+    val drifting = integrator.integrate(larva, first, None).get
+    val swimming = integrator.integrate(larva, first, Some(new Velocity(0.1, -0.05, 0.0))).get
     val seconds = timeStep.totalSeconds
     val eastDegrees = 0.1 * seconds / Constants.EarthsRadius * (180 / math.Pi) / math.cos(larva.latitude * math.Pi / 180)
     val northDegrees = -0.05 * seconds / Constants.EarthsRadius * (180 / math.Pi)
