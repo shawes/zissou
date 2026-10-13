@@ -4,7 +4,8 @@ import java.nio.file.{Files, Path}
 import io.circe.Encoder
 import io.config.ConfigurationFile
 import io.GisShapeFile
-import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.{Envelope, Geometry}
+import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 import scala.util.Try
 
 case class Site(name: String, patch: Int, latitude: Double, longitude: Double) derives Encoder.AsObject
@@ -25,6 +26,11 @@ case class RunMap(
 object MapReader {
 
   private val MaxPointsPerTrack = 24
+  // The reefs of a large habitat layer, drawn at full detail, were a hundred megabytes of page for a
+  // statewide map. They are drawn to the scale of the map (about a pixel), the ones smaller than that are left out,
+  // and the largest are kept up to this many points.
+  private val MapPixels = 1200
+  private val MaxReefPoints = 150000
 
   def read(runDir: Path, workDir: Path, trackLimit: Int): Option[RunMap] =
     ResultsReader.outputDir(runDir).flatMap { outputDir =>
@@ -34,7 +40,11 @@ object MapReader {
 
         val reefs = readShapes(workDir.resolve(config.habitat.shapeFilePath)).fold(
           problem => { notes += problem; Seq.empty[Reef] },
-          features => features.flatMap(reefOf)
+          features => {
+            val (drawn, note) = drawableReefs(features)
+            note.foreach(notes += _)
+            drawn
+          }
         )
         def tracks(suffix: String): TrackSet = {
           val file = Option(outputDir.toFile.listFiles()).toSeq.flatten.find(_.getName.endsWith(suffix))
@@ -66,8 +76,38 @@ object MapReader {
   private def lineOf(feature: org.geotools.api.feature.simple.SimpleFeature): Option[Seq[Seq[Double]]] =
     geometryOf(feature).map(_.getCoordinates.toSeq.map(c => Seq(round(c.x), round(c.y)))).filter(_.size >= 2)
 
+  /**
+    * The reefs to draw: each simplified to the scale of the map, those smaller than a pixel left out,
+    * and the largest kept up to a number of points, with a note of what was left out if anything was.
+    */
+  private def drawableReefs(features: Seq[org.geotools.api.feature.simple.SimpleFeature]): (Seq[Reef], Option[String]) = {
+    val shapes = features.flatMap(f => geometryOf(f).map(g => (f, g)))
+    val extent = new Envelope()
+    shapes.foreach { case (_, g) => extent.expandToInclude(g.getEnvelopeInternal) }
+    val tolerance = math.max(extent.getWidth, extent.getHeight) / MapPixels
+    val visible = shapes.filter { case (_, g) =>
+      val e = g.getEnvelopeInternal
+      math.max(e.getWidth, e.getHeight) >= tolerance
+    }
+    val simplified = visible.map { case (f, g) =>
+      (g.getArea, reefOf(f, if (tolerance > 0) TopologyPreservingSimplifier.simplify(g, tolerance) else g))
+    }.collect { case (area, Some(reef)) => (area, reef) }
+    var points = 0
+    val kept = simplified.sortBy(-_._1).takeWhile { case (_, reef) =>
+      points += reef.rings.map(_.size).sum
+      points <= MaxReefPoints
+    }.map(_._2)
+    val note =
+      if (kept.size == shapes.size) None
+      else Some(s"The map shows ${kept.size} of the ${shapes.size} reefs, the largest, simplified: the rest are smaller than a pixel or would make the page too large.")
+    (kept, note)
+  }
+
   private def reefOf(feature: org.geotools.api.feature.simple.SimpleFeature): Option[Reef] =
-    geometryOf(feature).map { geometry =>
+    geometryOf(feature).flatMap(g => reefOf(feature, g))
+
+  private def reefOf(feature: org.geotools.api.feature.simple.SimpleFeature, geometry: Geometry): Option[Reef] =
+    Option(geometry).filterNot(_.isEmpty).map { geometry =>
       val polygons = (0 until geometry.getNumGeometries).map(geometry.getGeometryN).collect { case p: org.locationtech.jts.geom.Polygon => p }
       val rings = polygons.flatMap { p =>
         (p.getExteriorRing +: (0 until p.getNumInteriorRing).map(p.getInteriorRingN)).map(_.getCoordinates.toSeq.map(c => Seq(round(c.x), round(c.y))))
