@@ -12,42 +12,39 @@ import org.geotools.referencing.crs.DefaultGeographicCRS
 import org.locationtech.jts.geom.{Geometry, MultiPolygon}
 
 /**
-  * Turns pages of Seamap Australia's NSW seabed habitat layer (downloaded as shapefiles, one folder per
-  * page) into the one shapefile Zissou reads, with a PATCH_NUM and a HABITAT for each polygon, and
-  * lists the largest polygons round some places for choosing where larvae are released.
+  * Turns pages of Seamap Australia habitat layers (downloaded as shapefiles, one folder per page) into the one
+  * shapefile Zissou reads, with a PATCH_NUM and a HABITAT for each polygon. Several layers can be merged: each is
+  * `<pages dir>[:<id attribute>[:<offset>]]`, the number of a polygon being its id attribute (ID, or OBJECTID if it has
+  * none) plus the offset, so that the layers' numbers do not clash. The server answers with its axes in the order of
+  * EPSG:4326, latitude first, which this swaps back.
   *
-  * Run with: sbt "Test/runMain tools.SeamapReefs <pages dir> <output .shp> [name:lat:lon ...]"
+  * Run with: sbt "Test/runMain tools.SeamapReefs <output .shp> <pages dir>[:<id attribute>[:<offset>]] ..."
+  * e.g. NSW as it is, and Victoria's from 1,000,000: data/seamap/pages data/seamap/vic/pages:OID:1000000
   */
 object SeamapReefs {
 
   case class Reef(id: Int, depth: String, geometry: Geometry)
 
   def main(args: Array[String]): Unit = {
-    val pages = new File(args(0)).listFiles().filter(_.isDirectory).sortBy(_.getName)
-    val reefs = pages.flatMap(readPage).toSeq
-    println(s"READ ${reefs.size} polygons from ${pages.length} pages")
-    // paging by a key that was not unique repeated some polygons and missed others once; every polygon must be there once
+    val reefs = args.drop(1).flatMap { source =>
+      val parts = source.split(":")
+      val (dir, attribute, offset) = (parts(0), if (parts.length > 1) parts(1) else "ID", if (parts.length > 2) parts(2).toInt else 0)
+      val pages = new File(dir).listFiles().filter(_.isDirectory).sortBy(_.getName)
+      val here = pages.flatMap(readPage(_, attribute)).map(r => r.copy(id = r.id + offset)).toSeq
+      // paging by a key that was not unique repeated some polygons and missed others once; every polygon must be there once
+      val distinct = here.map(_.id).distinct.size
+      require(distinct == here.size, s"$dir: ${here.size} polygons but only $distinct different ids: a page overlaps another")
+      println(s"READ ${here.size} polygons from ${pages.length} pages of $dir (numbers from ${here.map(_.id).min} to ${here.map(_.id).max})")
+      here
+    }.toSeq
     val distinct = reefs.map(_.id).distinct.size
-    require(distinct == reefs.size, s"${reefs.size} polygons but only $distinct different ids: a page overlaps another")
+    require(distinct == reefs.size, s"the layers' patch numbers clash: ${reefs.size} polygons, $distinct numbers; give one an offset")
     println(s"DISTINCT ids: $distinct")
-    write(reefs, new File(args(1)))
-    println(s"WROTE ${args(1)}")
-    for (target <- args.drop(2)) {
-      val Array(name, lat, lon) = target.split(":")
-      val (la, lo) = (lat.toDouble, lon.toDouble)
-      val near = reefs.filter { r =>
-        val c = r.geometry.getCentroid
-        math.abs(c.getY - la) < 0.4 && math.abs(c.getX - lo) < 0.4
-      }.sortBy(r => -r.geometry.getArea).take(12)
-      println(s"TARGET $name ($la, $lo): ${near.size} largest within 0.4 degrees")
-      near.foreach { r =>
-        val c = r.geometry.getCentroid
-        println(f"  CANDIDATE $name id=${r.id} lat=${c.getY}%.4f lon=${c.getX}%.4f area=${r.geometry.getArea * 12321.0}%.2f km2 depth=${r.depth}")
-      }
-    }
+    write(reefs, new File(args(0)))
+    println(s"WROTE ${args(0)}")
   }
 
-  private def readPage(page: File): Seq[Reef] = {
+  private def readPage(page: File, attribute: String): Seq[Reef] = {
     val shp = page.listFiles().find(_.getName.endsWith(".shp")).get
     val store = new ShapefileDataStore(shp.toURI.toURL)
     try {
@@ -56,7 +53,11 @@ object SeamapReefs {
         val out = scala.collection.mutable.ArrayBuffer.empty[Reef]
         while (iterator.hasNext) {
           val f = iterator.next()
-          val id = f.getAttribute("ID") match { case n: Number => n.intValue; case _ => f.getAttribute("OBJECTID").asInstanceOf[Number].intValue }
+          val id = f.getAttribute(attribute) match {
+            case n: Number => n.intValue
+            case text: String if text.nonEmpty && text.forall(_.isDigit) => text.toInt
+            case _ => f.getAttribute("OBJECTID").asInstanceOf[Number].intValue
+          }
           out += Reef(id, String.valueOf(f.getAttribute("Depth")), swapAxes(f.getDefaultGeometry.asInstanceOf[Geometry]))
         }
         out.toSeq
