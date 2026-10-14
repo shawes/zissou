@@ -43,7 +43,9 @@ const ConfigForm = (() => {
     endurance: 0.5, reynoldsEffect: false, hatchSwimmingSpeed: 1,
   };
 
-  // A section is a list of fields drawn from `fields`; `show` hides a field that does not apply.
+  const TEMPERATURE_MORTALITY_DEFAULT = { referenceTemperature: 22, q10: 2 };
+
+  // A section is a list of fields drawn from `fields`; `show` hides a field, or a block, that does not apply.
   const SECTIONS = [
     { id: 'run', title: 'Run', fields: [
       { path: ['settings', 'randomSeed'], label: 'Random seed', kind: 'int', hint: 'The same seed gives the same run.' },
@@ -67,6 +69,15 @@ const ConfigForm = (() => {
         { path: ['larva', 'mortalityRate'], label: 'Mortality rate', kind: 'number', unit: 'per day', hint: 'A share from 0 to 1: 0.26 kills 26% of larvae a day.',
           show: (d) => d.larva && d.larva.isMortal === true, optional: true },
       ] },
+      // Mortality that depends on the temperature the larva is in: the rate above is the rate at the reference temperature
+      { title: 'Temperature-dependent mortality', optionalPath: ['larva', 'temperatureMortality'], optionalDefault: TEMPERATURE_MORTALITY_DEFAULT,
+        // only where larvae can die, or where it is already set, so that it can be seen and switched off
+        show: (d) => d.larva && (d.larva.isMortal === true || d.larva.temperatureMortality != null),
+        note: 'The mortality rate above becomes the rate at the reference temperature: warmer water kills faster and cooler water more slowly. It needs the ocean model’s temperature: a temp folder beside u, v and w, or ocean_temp files in the same directory on the server (BRAN2020 has them).',
+        fields: [
+          { path: ['larva', 'temperatureMortality', 'referenceTemperature'], label: 'Reference temperature', kind: 'number', unit: '°C', hint: 'The temperature at which the mortality rate above applies exactly.' },
+          { path: ['larva', 'temperatureMortality', 'q10'], label: 'Q10', kind: 'number', hint: 'The death rate is multiplied by this for every 10 degrees warmer, and divided by it for every 10 cooler: 2 doubles it, 1 makes temperature no difference.' },
+        ] },
       { title: 'Horizontal swimming', optionalPath: ['larva', 'swimming'], optionalDefault: SWIMMING_DEFAULT, fields: [
         { path: ['larva', 'swimming', 'strategy'], label: 'Strategy', kind: 'text' },
         { path: ['larva', 'swimming', 'ability'], label: 'Ability', kind: 'select', options: ['directed', 'undirected', 'passive'] },
@@ -460,6 +471,7 @@ output:
     // ---- layout ----
 
     function block(spec) {
+      if (spec.show && !spec.show(ctx.data || {})) return null;
       const body = spec.custom === 'nested' ? nested()
         : spec.profile ? profile(spec.profile)
         : h('div', {}, spec.note ? h('p', { class: 'hint' }, spec.note) : null, fieldsOf(spec.fields),
@@ -486,7 +498,7 @@ output:
       const err = h('span', { class: 'section-error' });
       ctx.errors.set(`section:${spec.id}`, err);
       const content = spec.custom === 'sites' ? sites()
-        : spec.blocks ? spec.blocks.map(block) : fieldsOf(spec.fields);
+        : spec.blocks ? spec.blocks.map(block).filter(Boolean) : fieldsOf(spec.fields);
       return h('section', { class: 'card form-section', id: `section-${spec.id}` }, h('h3', {}, spec.title, err), h('div', { class: 'section-problems' }), content);
     }
 
