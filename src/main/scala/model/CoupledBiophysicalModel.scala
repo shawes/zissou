@@ -65,9 +65,12 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
           val waited = math.round(ocean.takeWaitSeconds())
           // what the run waited for the flow, apart from its own work, so that a slow day can be told from a slow network
           val waiting = if (waited > 0) s" (waited $waited secs for flow data)" else ""
+          // how many are from each release site, in the order the sites release (the order of the configuration), for the web interface's chart
+          val counts = biology.pelagicLarvae.groupBy(_.birthplace.name).view.mapValues(_.size).toMap
+          val sites = if (counts.size > 1) biology.pelagicLarvae.map(_.birthplace.name).distinct.map(site => s"$site=${counts(site)}").mkString(" [by site: ", "|", "]") else ""
           info(
             "Day " + clock.now.toLocalDate + " has been completed in " + stepTimer
-              .stop() + " secs with " + biology.pelagicLarvae.size + " larvae" + waiting + "."
+              .stop() + " secs with " + biology.pelagicLarvae.size + " larvae" + waiting + sites + "."
           )
           stepTimer.start()
         }

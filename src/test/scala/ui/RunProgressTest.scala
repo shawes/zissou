@@ -31,6 +31,12 @@ class RunProgressTest extends AnyFlatSpec {
     assert(days == Seq(DayPoint("2019-11-14", 1209, 2, 0), DayPoint("2019-11-15", 4048, 91, 89)))
   }
 
+  it should "say how many larvae are from each release site, when the log does" in {
+    val line = "[main] INFO model.CoupledBiophysicalModel - Day 2019-11-15 has been completed in 91 secs with 4048 larvae (waited 89 secs for flow data) [by site: Eden (south)=1000|Sydney=3048]."
+    val day = RunProgress.parse(line).days.head
+    assert(day == DayPoint("2019-11-15", 4048, 91, 89, Seq(SiteCount("Eden (south)", 1000), SiteCount("Sydney", 3048))))
+  }
+
   it should "say when the run is waiting for flow data now, and for how long" in {
     val summary = RunProgress.parse(waitingLog)
     assert(summary.waiting.contains(FlowWait("2019-11-17", 20, "https://thredds.nci.org.au/thredds/dodsC/gb6/BRAN/BRAN2020/daily")))

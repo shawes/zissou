@@ -288,3 +288,8 @@ dialog.picker::backdrop { background: rgb(0 0 0 / .45); }
 dialog.picker.small { width: min(420px, 94vw); }
 dialog.picker.small .field { margin-top: 12px; }
 dialog.picker.small .field input, dialog.picker.small .field select { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); font: inherit; }
+
+.chart .band { opacity: .85; stroke: var(--card, #fff); stroke-width: .5; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; }
+.row-between { display: flex; justify-content: space-between; align-items: baseline; }

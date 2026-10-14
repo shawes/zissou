@@ -458,8 +458,29 @@ function buildRunPanel() {
   refs.results = h('div');
   refs.mapCard = h('div', { class: 'card', hidden: true });
   refs.log = h('pre', { class: 'log', tabindex: '0', 'aria-label': 'Run log' });
+  // the log as it was written, and the part of the last line that has not all arrived
+  state.run.rawLog = '';
+  state.run.logPending = '';
+  const full = h('input', { type: 'checkbox', onchange: (event) => { state.run.fullLog = event.target.checked; showLog(); } });
   clear($('#main'), refs.head, refs.progress, refs.metrics, refs.chart, refs.mapCard, refs.results,
-    h('div', { class: 'card' }, h('h3', {}, 'Log'), refs.log));
+    h('div', { class: 'card' }, h('div', { class: 'row-between' }, h('h3', {}, 'Log'),
+      h('label', { class: 'hint' }, full, ' Show everything')), refs.log));
+}
+
+// What the log window shows. The log of a run is mostly a line for each day, which the chart above it already shows,
+// each behind the name of the thread, the level and the class that wrote it, and the Java runtime's own notices: those
+// are left out unless everything is asked for, which still has them.
+function readableLog(raw) {
+  return raw.split('\n').filter((line) => line && !/ has been completed in \d+ secs with /.test(line) && !line.startsWith('WARNING:'))
+    .map((line) => line.replace(/^\[[^\]]*\] (INFO|DEBUG|TRACE) \S+ - /, '').replace(/^\[[^\]]*\] (WARN|ERROR) \S+ - /, '$1: '))
+    .join('\n');
+}
+
+function showLog() {
+  const box = state.run.refs.log;
+  const stuck = box.scrollTop + box.clientHeight >= box.scrollHeight - 24;
+  box.textContent = state.run.fullLog ? state.run.rawLog + state.run.logPending : readableLog(state.run.rawLog);
+  if (stuck) box.scrollTop = box.scrollHeight;
 }
 
 async function refreshRun() {
@@ -471,10 +492,12 @@ async function refreshRun() {
     if (id !== state.run.id) return; // the user moved to another run meanwhile
     state.run.detail = detail;
     if (log.text) {
-      const box = state.run.refs.log;
-      const stuck = box.scrollTop + box.clientHeight >= box.scrollHeight - 24;
-      box.append(log.text);
-      if (stuck) box.scrollTop = box.scrollHeight;
+      // only whole lines are kept: the rest of the last one comes with the next read
+      const text = state.run.logPending + log.text;
+      const end = text.lastIndexOf('\n') + 1;
+      state.run.rawLog += text.slice(0, end);
+      state.run.logPending = text.slice(end);
+      showLog();
     }
     state.run.logOffset = log.next;
     if (detail.run.status === 'succeeded' && !state.run.results) {
@@ -643,13 +666,19 @@ function niceStep(max) {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+const SITE_COLOURS = ['#3b6fb6', '#e07b39', '#3a9d6e', '#b5527f', '#8a6bd1', '#c9a227', '#2f9fb0', '#a65d3f'];
+
+// The larvae in the water by day. When the log says how many are from each release site they are stacked, a band for
+// each site; otherwise it is the one line for them all.
 function lineChart(days) {
   const width = 640, height = 190, left = 46, bottom = 26, top = 10, right = 10;
+  const names = [...new Set(days.flatMap((d) => d.sites.map((s) => s.site)))];
+  const split = names.length > 1;
+  const countOf = (d, name) => { const found = d.sites.find((s) => s.site === name); return found ? found.larvae : 0; };
   const max = Math.max(...days.map((d) => d.larvae), 1);
   const step = niceStep(max), ceiling = Math.ceil(max / step) * step;
   const x = (i) => left + (i / (days.length - 1)) * (width - left - right);
   const y = (v) => top + (1 - v / ceiling) * (height - top - bottom);
-  const points = days.map((d, i) => `${x(i).toFixed(1)},${y(d.larvae).toFixed(1)}`);
   const base = height - bottom;
 
   const grid = [];
@@ -664,36 +693,52 @@ function lineChart(days) {
     svg('line', { class: 'axis', x1: x(i), y1: base, x2: x(i), y2: base + 4 }),
     ...(k % every === 0 ? [textNode(x(i), height - 8, `${MONTHS[Number(d.date.slice(5, 7)) - 1]}${d.date.slice(5, 7) === '01' ? ' ' + d.date.slice(0, 4) : ''}`, 'middle')] : [])
   ]);
-  // the days the number in the water went up are days larvae were released: the others only lose larvae
-  const releases = days.flatMap((d, i) => i > 0 && d.larvae > days[i - 1].larvae
-    ? [svg('circle', { class: 'release', cx: x(i), cy: y(d.larvae), r: 2.5 })] : []);
+
+  let shapes;
+  if (split) {
+    // each band lies on the ones below it: its top is the running total of the sites up to it
+    const totals = days.map(() => 0);
+    shapes = names.map((name, k) => {
+      const lower = totals.slice();
+      days.forEach((d, i) => { totals[i] += countOf(d, name); });
+      const upper = days.map((d, i) => `${x(i).toFixed(1)},${y(totals[i]).toFixed(1)}`);
+      const back = days.map((d, i) => `${x(i).toFixed(1)},${y(lower[i]).toFixed(1)}`).reverse();
+      return svg('polygon', { class: 'band', points: [...upper, ...back].join(' '), fill: SITE_COLOURS[k % SITE_COLOURS.length] });
+    });
+  } else {
+    const points = days.map((d, i) => `${x(i).toFixed(1)},${y(d.larvae).toFixed(1)}`);
+    shapes = [
+      svg('polygon', { class: 'area', points: `${x(0)},${base} ${points.join(' ')} ${x(days.length - 1)},${base}` }),
+      svg('polyline', { class: 'line', points: points.join(' ') }),
+      // the days the number in the water went up are days larvae were released: the others only lose larvae
+      ...days.flatMap((d, i) => i > 0 && d.larvae > days[i - 1].larvae
+        ? [svg('circle', { class: 'release', cx: x(i), cy: y(d.larvae), r: 2.5 })] : [])
+    ];
+  }
 
   const marker = svg('line', { class: 'cursor', x1: 0, y1: top, x2: 0, y2: base, visibility: 'hidden' });
-  const dot = svg('circle', { class: 'cursor-dot', r: 4, visibility: 'hidden' });
   const readout = h('div', { class: 'chart-readout', hidden: true });
   const frame = svg('svg', { class: 'chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': 'Larvae in the water, by day' },
-    ...grid,
-    svg('polygon', { class: 'area', points: `${x(0)},${base} ${points.join(' ')} ${x(days.length - 1)},${base}` }),
-    svg('polyline', { class: 'line', points: points.join(' ') }),
-    ...releases, ...months, marker, dot);
+    ...grid, ...shapes, ...months, marker);
 
   frame.addEventListener('pointermove', (event) => {
     const box = frame.getBoundingClientRect();
     const px = ((event.clientX - box.left) / box.width) * width;
     const i = Math.max(0, Math.min(days.length - 1, Math.round(((px - left) / (width - left - right)) * (days.length - 1))));
-    const d = days[i], change = i > 0 ? d.larvae - days[i - 1].larvae : 0;
+    const d = days[i];
     marker.setAttribute('x1', x(i)); marker.setAttribute('x2', x(i)); marker.setAttribute('visibility', 'visible');
-    dot.setAttribute('cx', x(i)); dot.setAttribute('cy', y(d.larvae)); dot.setAttribute('visibility', 'visible');
     readout.hidden = false;
+    const change = i > 0 ? d.larvae - days[i - 1].larvae : 0;
     readout.textContent = `${d.date}: ${formatNumber(d.larvae)} larvae` +
-      (i > 0 ? ` (${change >= 0 ? '+' : '−'}${formatNumber(Math.abs(change))} on the day before${change > 0 ? ', a release' : ''})` : '');
+      (split ? ` (${names.filter((n) => countOf(d, n) > 0).map((n) => `${n} ${formatNumber(countOf(d, n))}`).join(', ')})`
+        : i > 0 ? ` (${change >= 0 ? '+' : '−'}${formatNumber(Math.abs(change))} on the day before${change > 0 ? ', a release' : ''})` : '');
   });
-  frame.addEventListener('pointerleave', () => {
-    marker.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); readout.hidden = true;
-  });
+  frame.addEventListener('pointerleave', () => { marker.setAttribute('visibility', 'hidden'); readout.hidden = true; });
 
-  return h('div', { class: 'chart-wrap' }, frame, readout,
-    h('p', { class: 'hint' }, 'Each rise (dots) is a release of larvae. Between releases the number falls as larvae die or settle on a reef.'));
+  const legend = split ? h('div', { class: 'legend' }, names.map((name, k) =>
+    h('span', {}, h('i', { style: `background:${SITE_COLOURS[k % SITE_COLOURS.length]}` }), name))) : null;
+  return h('div', { class: 'chart-wrap' }, legend, frame, readout,
+    h('p', { class: 'hint' }, 'Each rise is a release of larvae. Between releases the number falls as larvae die or settle on a reef.'));
 }
 
 function textNode(x, y, text, anchor) {
