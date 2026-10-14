@@ -1,0 +1,20 @@
+# Stage 1 of the sensitivity analysis (docs/sensitivity-analysis.md): how much the results vary with the random seed
+# alone, and how many larvae a release needs before the results stop changing.
+#
+#   scripts/zissou.sh sensitivity designs/stage1-noise.yaml
+baseline: data/experiments/configs/nsw-vic-12d-5pc.yaml
+output: data/sensitivity/stage1-noise
+parallel: 2
+# the 2019-20 season copied with: scripts/zissou.sh cache-flow data/experiments/configs/nsw-vic-12d-5pc.yaml data/flow/bran2020-nsw
+flow: data/flow/bran2020-nsw
+seeds: [1, 2, 3, 4, 5]
+regions:
+  victoria: [1000000, 1999999]
+runs:
+  - name: baseline
+  - name: larvae-300
+    set:
+      spawn.spawningLocation[*].numberOfLarvae: 300
+  - name: larvae-2700
+    set:
+      spawn.spawningLocation[*].numberOfLarvae: 2700

@@ -78,6 +78,7 @@ class CoupledBiophysicalModel(val config: Configuration, val name: String)
       }
       val time: Double = simulationTimer.stop() / 60.0
       info(f"Simulation run completed in $time%.2f minutes")
+      info(s"${biology.released} larvae were released")
       biology.temperatureMortalitySummary.foreach { case (mean, checks, unknown) =>
         val reference = config.larva.mortalityRate.getOrElse(0.0)
         info(f"Mortality by temperature: ${mean * 100}%.1f%% of the larvae died a day on average, where ${reference * 100}%.1f%% is the rate at ${config.larva.temperatureMortality.get.referenceTemperature}%.1f degrees" +

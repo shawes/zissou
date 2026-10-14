@@ -38,6 +38,8 @@ class BiologicalModel(
     config.habitat
   )
   var pelagicLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
+  /** How many larvae have been released so far, from every site. */
+  var released: Long = 0
   val stationaryLarvae: ArrayBuffer[Larva] = ArrayBuffer.empty
   private val lostFromDomain = new AtomicInteger(0)
 
@@ -210,6 +212,7 @@ class BiologicalModel(
           yield factory.create(site, clock.now)
     )
     pelagicLarvae ++= spawn
+    released += spawn.size
   }
 
   def isDispersing(time: LocalDateTime): Boolean = {

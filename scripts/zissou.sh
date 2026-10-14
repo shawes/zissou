@@ -4,6 +4,7 @@
 #   scripts/zissou.sh path/to/config.yaml     run a simulation from the command line
 #   scripts/zissou.sh ui [options]            start the local web UI (see --help)
 #   scripts/zissou.sh cache-flow CONFIG DIR   copy the flow a configuration reads into a folder
+#   scripts/zissou.sh sensitivity DESIGN      run a sensitivity design and sum up its runs
 #
 # Build first with `sbt stage`, which lays the program out in target/universal/stage.
 #
@@ -31,6 +32,7 @@ main=model.Simulator
 case "${1:-}" in
   ui) main=ui.Server; shift ;;
   cache-flow) main=io.FlowCache; shift ;;
+  sensitivity) main=analysis.Sensitivity; shift ;;
 esac
 
 # shellcheck disable=SC2086  # ZISSOU_JAVA_OPTS is meant to word-split

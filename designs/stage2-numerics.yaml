@@ -1,0 +1,15 @@
+# Stage 2 of the sensitivity analysis (docs/sensitivity-analysis.md): the results should not depend on the time step.
+# Turbulence is a random walk scaled to the step, so a shorter step changes only how finely it is followed.
+#
+#   scripts/zissou.sh sensitivity designs/stage2-numerics.yaml
+baseline: data/experiments/configs/nsw-vic-12d-5pc.yaml
+output: data/sensitivity/stage2-numerics
+parallel: 2
+flow: data/flow/bran2020-nsw
+seeds: [1, 2, 3]
+regions:
+  victoria: [1000000, 1999999]
+runs:
+  - name: baseline
+oneAtATime:
+  flow.timeStep.duration: [1, 3]

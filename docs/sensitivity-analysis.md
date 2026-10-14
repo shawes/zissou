@@ -48,9 +48,9 @@ The ranges are placeholders until a target species is chosen; they should then c
 | | Mortality | `larva.mortalityRate`, `temperatureMortality.q10` | 0–20% a day; Q10 1–3 |
 | | Development | `larva.ontogeny.flexion`, `postflexion` | ±50% |
 | Settlement | Settlement and smell distances | `habitat.buffer.settlement`, `olfactory` | 1–10 km; 5–20 km |
-| Physics | Diffusion | `turbulence.horizontalDiffusionCoefficient`, `verticalDiffusionCoefficient` | 0–100 m²/s |
+| Physics | Diffusion | `turbulence.horizontalDiffusionCoefficient`, `verticalDiffusionCoefficient` | 0–300 m²/s horizontal (baseline 300); 0–15 m²/s vertical (baseline 15) |
 | | Release depth | `spawn.spawningLocation[].site.depth` | 0–50 m |
-| Numerics | Time step, turbulence interval | `flow.timeStep`, `turbulence.interval` | 1, 2, 3 hours |
+| Numerics | Time step | `flow.timeStep.duration` | 1, 2, 3 hours |
 | | Larvae per release | `numberOfLarvae` | 300–2,700 per site |
 | Environment | Spawning season | `flow.period`, `releasePeriod` | 5 or more seasons (below) |
 | | Timing within the season | `releasePeriod`, `interval` | early, middle, late |
@@ -89,23 +89,33 @@ against the BRAN2020 record and ENSO and EAC indices before any runs:
 
 ### 0. Setup
 
-- **Batch tool:** A tool that expands a design file (a baseline plus factor values) into configurations, runs them in
-  parallel and collects the outputs above into one CSV. It replaces the ad hoc sweep script.
-- **Local flow cache:** A 12 day run takes about 8 minutes, and most of that is waiting for BRAN2020 over OPeNDAP.
-  Reading a local copy of the NSW subset would make a few hundred runs practical. The size of each season's subset is
-  to be checked before anything is downloaded.
-- **Metrics:** Add the outputs above that the results reader does not give yet (Bray–Curtis distance, links kept,
-  local retention, northward transport).
+- **Batch tool (done):** `scripts/zissou.sh sensitivity DESIGN` expands a design file (a baseline, named runs, factors
+  varied one at a time, seeds) into configurations, runs them in parallel, each in a process of its own, and writes
+  `summary.csv` with the outputs above, a row for each run. Runs that have results are not run again, so a design can
+  be stopped and started, or added to. The design format is described in `src/main/scala/analysis/Design.scala`; the
+  designs are in `designs/`.
+- **Local flow cache (tool done, not downloaded):** A 12 day run takes about 8 minutes, and most of that is waiting for
+  BRAN2020 over OPeNDAP. `scripts/zissou.sh cache-flow CONFIG DIR` copies the region and levels a configuration reads
+  into local monthly files, kept packed in 16 bits, and `--size` says how big the copy would be without reading any
+  values. For the NSW region (197 × 197 points, 15 levels), u, v and w come to **708 MB a season** (November to March);
+  the temperature, needed only for temperature-dependent mortality, adds about a third. Five seasons are about
+  3.5 GB, or 4.7 GB with temperature. BRAN2020 has every candidate season (its daily files run from January 1993 to
+  at least December 2023).
+- **Metrics (done):** the model logs how many larvae it released, so settlement success is known, and the summary has
+  Bray–Curtis distance and links kept against the baseline with the same seed, retention within 10 km, northward
+  transport and the share of settlers in each region of reef numbers (Victoria's reefs are numbered from 1,000,000).
 
 ### 1. Noise and convergence
 
 - Baseline with 5 seeds: the spread is the noise floor.
-- Baseline with 300, 900 and 2,700 larvae per site: the number above which the outputs stop changing.
+- Baseline with 300, 900 and 2,700 larvae per site, each with the 5 seeds: the number above which the outputs stop
+  changing (`designs/stage1-noise.yaml`, 15 runs).
 
 ### 2. Numerical checks
 
-- Time step of 1, 2 and 3 hours, and turbulence intervals to match. The results should not depend on them; if they do,
-  that is fixed before going on.
+- Time step of 1, 2 and 3 hours, with 3 seeds (`designs/stage2-numerics.yaml`). The results should not depend on it;
+  if they do, that is fixed before going on. (`turbulence.interval` is read but not used: turbulence is a random walk
+  scaled to the time step.)
 
 ### 3. One factor at a time
 
