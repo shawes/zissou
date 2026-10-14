@@ -3,6 +3,7 @@
 #
 #   scripts/zissou.sh path/to/config.yaml     run a simulation from the command line
 #   scripts/zissou.sh ui [options]            start the local web UI (see --help)
+#   scripts/zissou.sh cache-flow CONFIG DIR   copy the flow a configuration reads into a folder
 #
 # Build first with `sbt stage`, which lays the program out in target/universal/stage.
 #
@@ -27,10 +28,10 @@ if [ ! -d "$stage/lib" ]; then
 fi
 
 main=model.Simulator
-if [ "${1:-}" = "ui" ]; then
-  main=ui.Server
-  shift
-fi
+case "${1:-}" in
+  ui) main=ui.Server; shift ;;
+  cache-flow) main=io.FlowCache; shift ;;
+esac
 
 # shellcheck disable=SC2086  # ZISSOU_JAVA_OPTS is meant to word-split
 exec "$java_bin" -XX:+UseParallelGC ${ZISSOU_JAVA_OPTS:-} -cp "$stage/lib/*" "$main" "$@"
