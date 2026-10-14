@@ -124,6 +124,11 @@ class WebServer(host: String, port: Int, configs: ConfigStore, runs: RunManager)
       case ("GET", List("api", "runs", id)) => orNotFound(runs.detail(id))(d => json(200, d.asJson))
       case ("DELETE", List("api", "runs", id)) =>
         runs.delete(id).fold(m => error(409, m), _ => json(200, Json.obj("deleted" -> id.asJson)))
+      case ("POST", List("api", "runs", id, "archive")) =>
+        parse(request.body).flatMap(_.hcursor.get[Boolean]("archived").toOption).toRight("The request needs an 'archived' field.") match {
+          case Left(message) => error(400, message)
+          case Right(archived) => runs.setArchived(id, archived).fold(m => error(if (m == "No such run.") 404 else 409, m), info => json(200, info.asJson))
+        }
       case ("GET", List("api", "runs", id, "log")) =>
         val from = request.query.get("from").flatMap(s => Try(s.toLong).toOption).getOrElse(0L)
         orNotFound(runs.log(id, from)) { case (text, next) => json(200, Json.obj("text" -> text.asJson, "next" -> next.asJson)) }

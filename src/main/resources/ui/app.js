@@ -83,7 +83,7 @@ const state = {
 // ---- sidebar --------------------------------------------------------------
 
 // what the two lists are narrowed to, and whether the older runs are shown
-const sidebarFilter = { configs: '', runs: '', allRuns: false };
+const sidebarFilter = { configs: '', runs: '', allRuns: false, archived: false };
 const RECENT_RUNS = 12;
 
 const matches = (text, filter) => filter.split(/\s+/).filter(Boolean).every((word) => text.toLowerCase().includes(word.toLowerCase()));
@@ -92,10 +92,11 @@ function renderSidebar() {
   const selected = state.selected;
   const configsList = $('#configs'), runsList = $('#runs');
   redraw(configsList, [state.configs.map((c) => c.name), selected, sidebarFilter.configs], () => buildConfigList());
-  redraw(runsList, [state.runs.map((r) => [r.id, r.status, r.config, r.startedAt]), selected, sidebarFilter.runs, sidebarFilter.allRuns], () => buildRunList());
+  redraw(runsList, [state.runs.map((r) => [r.id, r.status, r.config, r.startedAt, r.archived]), selected, sidebarFilter.runs, sidebarFilter.allRuns, sidebarFilter.archived], () => buildRunList());
 }
 
 $('#config-filter').addEventListener('input', (event) => { sidebarFilter.configs = event.target.value; renderSidebar(); });
+$('#show-archived').addEventListener('change', (event) => { sidebarFilter.archived = event.target.checked; renderSidebar(); });
 $('#run-filter').addEventListener('input', (event) => { sidebarFilter.runs = event.target.value; renderSidebar(); });
 
 // ---- a new configuration ---------------------------------------------------
@@ -183,20 +184,31 @@ function dayHeading(ms) {
 function buildRunList() {
   // the runs that are running first, then the rest from the newest, under the day they started; only the latest few
   // unless the list is narrowed or the rest is asked for
-  const found = state.runs.filter((run) => matches(`${run.config} ${STATUS[run.status] || run.status}`, sidebarFilter.runs));
+  const archivedCount = state.runs.filter((run) => run.archived).length;
+  const found = state.runs.filter((run) => (sidebarFilter.archived || !run.archived)
+    && matches(`${run.config} ${STATUS[run.status] || run.status}`, sidebarFilter.runs));
+  const toggle = $('#archived-toggle');
+  toggle.hidden = archivedCount === 0;
+  toggle.querySelector('span').textContent = `Show ${archivedCount} archived`;
   const running = found.filter((run) => run.status === 'running');
   const rest = found.filter((run) => run.status !== 'running').sort((a, b) => b.startedAt - a.startedAt);
   const narrowed = sidebarFilter.runs.trim() !== '';
   const visible = narrowed || sidebarFilter.allRuns ? rest : rest.slice(0, RECENT_RUNS);
 
-  const row = (run) => h('li', {}, h('button', {
+  // a run that is going can be neither archived nor deleted; a cancelled one can be deleted from here
+  const row = (run) => h('li', { class: 'run-row' }, h('button', {
     class: 'item two-line', type: 'button', title: run.config,
     'aria-current': state.selected?.type === 'run' && state.selected.id === run.id,
     onclick: () => selectRun(run.id),
   },
     h('span', { class: 'name' }, run.config.replace(/\.ya?ml$/, ''),
-      h('span', { class: 'meta block' }, new Date(run.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))),
-    h('span', { class: `badge ${run.status}` }, STATUS[run.status] || run.status)));
+      h('span', { class: 'meta block' }, new Date(run.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), run.archived ? ' · archived' : '')),
+    h('span', { class: `badge ${run.status}` }, STATUS[run.status] || run.status)),
+    run.status === 'running' ? null : h('span', { class: 'row-actions' },
+      h('button', { class: 'mini', type: 'button', title: run.archived ? 'Bring this run back' : 'Put this run away',
+        onclick: () => archiveRun(run.id, !run.archived) }, run.archived ? 'Unarchive' : 'Archive'),
+      run.status === 'cancelled' ? h('button', { class: 'mini danger', type: 'button', title: 'Delete this run and its results',
+        onclick: () => deleteRun(run.id) }, 'Delete') : null));
 
   const items = [];
   if (running.length) items.push(h('li', { class: 'group' }, 'Running'), ...running.map(row));
@@ -565,10 +577,11 @@ function renderRun() {
   refs.badge.className = `badge ${run.status}`;
   refs.badge.textContent = STATUS[run.status] || run.status;
   refs.sub.textContent = `Started ${formatTime(run.startedAt)} · ${formatDuration(run.startedAt, run.endedAt || Date.now())}`;
-  redraw(refs.actions, run.status, () => clear(refs.actions,
+  redraw(refs.actions, [run.status, run.archived], () => clear(refs.actions,
     run.status === 'running'
       ? h('button', { class: 'btn danger', type: 'button', onclick: cancelRun }, 'Cancel run')
-      : h('button', { class: 'btn danger', type: 'button', onclick: deleteRun }, 'Delete run')));
+      : [h('button', { class: 'btn', type: 'button', onclick: () => archiveRun(run.id, !run.archived) }, run.archived ? 'Unarchive' : 'Archive'),
+         h('button', { class: 'btn danger', type: 'button', onclick: () => deleteRun(run.id) }, 'Delete run')]));
 
   const percent = run.status === 'succeeded' ? 100 : Math.round((detail.fraction || 0) * 100);
   const waiting = run.status === 'running' ? detail.log.waiting : null;
@@ -922,14 +935,25 @@ async function cancelRun() {
   catch (e) { alert(e.message); }
 }
 
-async function deleteRun() {
+async function archiveRun(id, archived) {
+  try {
+    await api('POST', `/api/runs/${id}/archive`, { archived });
+    await refreshRuns();
+    if (state.run.id === id) await refreshRun();
+  } catch (e) { alert(e.message); }
+}
+
+async function deleteRun(id) {
   if (!confirm('Delete this run and all of its results? This cannot be undone.')) return;
   try {
-    await api('DELETE', `/api/runs/${state.run.id}`);
-    state.selected = null;
-    state.run = { id: null, detail: null, results: null, map: undefined, mapOptions: { settled: true, sampled: false }, logOffset: 0, refs: {} };
+    await api('DELETE', `/api/runs/${id}`);
     await refreshRuns();
-    if (state.configs.length) { state.editor.name = null; selectConfig(state.configs[0].name); } else showWelcome();
+    // the run on show is gone: show a configuration instead
+    if (state.run.id === id) {
+      state.selected = null;
+      state.run = { id: null, detail: null, results: null, map: undefined, mapOptions: { settled: true, sampled: false }, logOffset: 0, refs: {} };
+      if (state.configs.length) { state.editor.name = null; selectConfig(state.configs[0].name); } else showWelcome();
+    }
   } catch (e) { alert(e.message); }
 }
 

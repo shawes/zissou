@@ -19,7 +19,8 @@ case class RunInfo(
     exitCode: Option[Int],
     message: Option[String],
     periodStart: String,
-    periodEnd: String
+    periodEnd: String,
+    archived: Option[Boolean] = None // put away, out of the list unless it is asked for
 ) derives Encoder.AsObject, Decoder
 
 case class RunDetail(run: RunInfo, log: LogSummary, fraction: Option[Double]) derives Encoder.AsObject
@@ -140,6 +141,18 @@ class RunManager(
 
   /** The rings of the land inside a box (west, south, east, north), for a map that is not of a run; empty with no land layer. */
   def land(box: Seq[Double]): Seq[Seq[Seq[Double]]] = landFile.map(MapReader.landWithin(_, box)).getOrElse(Seq.empty)
+
+  /** Puts a finished run away, or brings it back. A run still going cannot be archived. */
+  def setArchived(id: String, archived: Boolean): Either[String, RunInfo] = synchronized {
+    Option(entries.get(id)) match {
+      case None => Left("No such run.")
+      case Some(entry) if entry.info.status == "running" => Left("A run that is going cannot be archived.")
+      case Some(entry) =>
+        entry.info = entry.info.copy(archived = Some(archived).filter(identity))
+        save(entry.info)
+        Right(entry.info)
+    }
+  }
 
   /** Removes a finished run and everything it wrote. A run still going cannot be deleted. */
   def delete(id: String): Either[String, Unit] = synchronized {

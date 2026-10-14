@@ -141,6 +141,26 @@ class RunManagerTest extends AnyFlatSpec {
     assert(runs.list().map(_.id) == Seq(second, first))
   }
 
+  "Archiving a run" should "put it away and bring it back, and keep that over a restart" in {
+    val (runs, base) = manager(succeeds)
+    val id = runs.start("x.yaml", SampleConfig.yaml()).toOption.get.id
+    finished(runs, id)
+    assert(runs.get(id).get.archived.isEmpty)
+    assert(runs.setArchived(id, true).toOption.get.archived.contains(true))
+    val reopened = new RunManager(base.resolve("runs"), base, _ => Seq("true"))
+    assert(reopened.get(id).get.archived.contains(true))
+    assert(runs.setArchived(id, false).toOption.get.archived.isEmpty)
+    assert(runs.setArchived("20200101-000000-none", true) == Left("No such run."))
+  }
+
+  it should "refuse while the run is going" in {
+    val (runs, _) = manager(runsForAWhile)
+    val id = runs.start("x.yaml", SampleConfig.yaml()).toOption.get.id
+    assert(runs.setArchived(id, true) == Left("A run that is going cannot be archived."))
+    runs.cancel(id)
+    finished(runs, id)
+  }
+
   "Deleting a run" should "remove it and everything it wrote" in {
     val (runs, base) = manager(succeeds)
     val id = runs.start("x.yaml", SampleConfig.yaml()).toOption.get.id

@@ -193,6 +193,16 @@ class WebServerTest extends AnyFlatSpec with BeforeAndAfterAll {
     assert(get(s"/api/runs/$id").statusCode() == 404 && !Files.exists(base.resolve("runs").resolve(id)))
   }
 
+  it should "archive a finished run and bring it back" in {
+    val id = runAndWait("c.yaml")
+    assert(send("POST", s"/api/runs/$id/archive", Some("{}")).statusCode() == 400)
+    assert(send("POST", s"/api/runs/$id/archive", Some("""{"archived":true}""")).statusCode() == 200)
+    assert(runs.get(id).get.archived.contains(true))
+    assert(send("POST", s"/api/runs/$id/archive", Some("""{"archived":false}""")).statusCode() == 200)
+    assert(runs.get(id).get.archived.isEmpty)
+    assert(send("POST", "/api/runs/20200101-000000-none/archive", Some("""{"archived":true}""")).statusCode() == 404)
+  }
+
   "The server" should "refuse a request that is not JSON, which a web form could send" in {
     val response = send("POST", "/api/validate", Some("text=x"), Seq("Content-Type" -> "application/x-www-form-urlencoded"), json = false)
     assert(response.statusCode() == 415)
