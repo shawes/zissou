@@ -635,21 +635,65 @@ function mapSvg(map, options) {
 
 const metric = (value, label) => h('div', { class: 'metric' }, h('div', { class: 'value' }, value), h('div', { class: 'label' }, label));
 
+// A round number to put gridlines at: the largest of 1, 2, 5 times a power of ten that gives at least three lines
+function niceStep(max) {
+  const raw = max / 4, power = Math.pow(10, Math.floor(Math.log10(raw)));
+  return [1, 2, 5, 10].map((m) => m * power).find((step) => step >= raw);
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 function lineChart(days) {
-  const width = 640, height = 170, left = 46, bottom = 22, top = 8, right = 8;
+  const width = 640, height = 190, left = 46, bottom = 26, top = 10, right = 10;
   const max = Math.max(...days.map((d) => d.larvae), 1);
+  const step = niceStep(max), ceiling = Math.ceil(max / step) * step;
   const x = (i) => left + (i / (days.length - 1)) * (width - left - right);
-  const y = (v) => top + (1 - v / max) * (height - top - bottom);
+  const y = (v) => top + (1 - v / ceiling) * (height - top - bottom);
   const points = days.map((d, i) => `${x(i).toFixed(1)},${y(d.larvae).toFixed(1)}`);
-  return svg('svg', { class: 'chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': 'Larvae in the water, by day' },
-    svg('line', { class: 'axis', x1: left, y1: height - bottom, x2: width - right, y2: height - bottom }),
-    svg('line', { class: 'axis', x1: left, y1: top, x2: left, y2: height - bottom }),
-    svg('polygon', { class: 'area', points: `${x(0)},${height - bottom} ${points.join(' ')} ${x(days.length - 1)},${height - bottom}` }),
+  const base = height - bottom;
+
+  const grid = [];
+  for (let v = 0; v <= ceiling; v += step) {
+    grid.push(svg('line', { class: v === 0 ? 'axis' : 'gridline', x1: left, y1: y(v), x2: width - right, y2: y(v) }));
+    grid.push(textNode(left - 6, y(v) + 4, formatNumber(v), 'end'));
+  }
+  // a tick and a label at the first day of each month; with many months, a label for every other one
+  const firsts = days.map((d, i) => [d, i]).filter(([d]) => d.date.endsWith('-01'));
+  const every = Math.ceil(firsts.length / 8);
+  const months = firsts.flatMap(([d, i], k) => [
+    svg('line', { class: 'axis', x1: x(i), y1: base, x2: x(i), y2: base + 4 }),
+    ...(k % every === 0 ? [textNode(x(i), height - 8, `${MONTHS[Number(d.date.slice(5, 7)) - 1]}${d.date.slice(5, 7) === '01' ? ' ' + d.date.slice(0, 4) : ''}`, 'middle')] : [])
+  ]);
+  // the days the number in the water went up are days larvae were released: the others only lose larvae
+  const releases = days.flatMap((d, i) => i > 0 && d.larvae > days[i - 1].larvae
+    ? [svg('circle', { class: 'release', cx: x(i), cy: y(d.larvae), r: 2.5 })] : []);
+
+  const marker = svg('line', { class: 'cursor', x1: 0, y1: top, x2: 0, y2: base, visibility: 'hidden' });
+  const dot = svg('circle', { class: 'cursor-dot', r: 4, visibility: 'hidden' });
+  const readout = h('div', { class: 'chart-readout', hidden: true });
+  const frame = svg('svg', { class: 'chart', viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-label': 'Larvae in the water, by day' },
+    ...grid,
+    svg('polygon', { class: 'area', points: `${x(0)},${base} ${points.join(' ')} ${x(days.length - 1)},${base}` }),
     svg('polyline', { class: 'line', points: points.join(' ') }),
-    textNode(left - 6, top + 9, formatNumber(max), 'end'),
-    textNode(left - 6, height - bottom, '0', 'end'),
-    textNode(left, height - 6, days[0].date, 'start'),
-    textNode(width - right, height - 6, days[days.length - 1].date, 'end'));
+    ...releases, ...months, marker, dot);
+
+  frame.addEventListener('pointermove', (event) => {
+    const box = frame.getBoundingClientRect();
+    const px = ((event.clientX - box.left) / box.width) * width;
+    const i = Math.max(0, Math.min(days.length - 1, Math.round(((px - left) / (width - left - right)) * (days.length - 1))));
+    const d = days[i], change = i > 0 ? d.larvae - days[i - 1].larvae : 0;
+    marker.setAttribute('x1', x(i)); marker.setAttribute('x2', x(i)); marker.setAttribute('visibility', 'visible');
+    dot.setAttribute('cx', x(i)); dot.setAttribute('cy', y(d.larvae)); dot.setAttribute('visibility', 'visible');
+    readout.hidden = false;
+    readout.textContent = `${d.date}: ${formatNumber(d.larvae)} larvae` +
+      (i > 0 ? ` (${change >= 0 ? '+' : '−'}${formatNumber(Math.abs(change))} on the day before${change > 0 ? ', a release' : ''})` : '');
+  });
+  frame.addEventListener('pointerleave', () => {
+    marker.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); readout.hidden = true;
+  });
+
+  return h('div', { class: 'chart-wrap' }, frame, readout,
+    h('p', { class: 'hint' }, 'Each rise (dots) is a release of larvae. Between releases the number falls as larvae die or settle on a reef.'));
 }
 
 function textNode(x, y, text, anchor) {
