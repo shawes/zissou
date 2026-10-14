@@ -82,12 +82,21 @@ const state = {
 
 // ---- sidebar --------------------------------------------------------------
 
+// what the two lists are narrowed to, and whether the older runs are shown
+const sidebarFilter = { configs: '', runs: '', allRuns: false };
+const RECENT_RUNS = 12;
+
+const matches = (text, filter) => filter.split(/\s+/).filter(Boolean).every((word) => text.toLowerCase().includes(word.toLowerCase()));
+
 function renderSidebar() {
   const selected = state.selected;
   const configsList = $('#configs'), runsList = $('#runs');
-  redraw(configsList, [state.configs.map((c) => c.name), selected], () => buildConfigList());
-  redraw(runsList, [state.runs.map((r) => [r.id, r.status, r.config, r.startedAt]), selected], () => buildRunList());
+  redraw(configsList, [state.configs.map((c) => c.name), selected, sidebarFilter.configs], () => buildConfigList());
+  redraw(runsList, [state.runs.map((r) => [r.id, r.status, r.config, r.startedAt]), selected, sidebarFilter.runs, sidebarFilter.allRuns], () => buildRunList());
 }
+
+$('#config-filter').addEventListener('input', (event) => { sidebarFilter.configs = event.target.value; renderSidebar(); });
+$('#run-filter').addEventListener('input', (event) => { sidebarFilter.runs = event.target.value; renderSidebar(); });
 
 // ---- a new configuration ---------------------------------------------------
 
@@ -150,27 +159,59 @@ function renameOutputs(doc, oldStem, stem) {
 }
 
 function buildConfigList() {
-  const configs = state.configs.map((config) =>
+  const shown = state.configs.filter((config) => matches(config.name, sidebarFilter.configs));
+  const configs = shown.map((config) =>
     h('li', {}, h('button', {
-      class: 'item', type: 'button',
+      class: 'item', type: 'button', title: config.name,
       'aria-current': state.selected?.type === 'config' && state.selected.name === config.name,
       onclick: () => selectConfig(config.name),
     }, h('span', { class: 'name' }, config.name)))
   );
-  clear($('#configs'), configs.length ? configs : h('li', { class: 'empty' }, 'No configuration files found.'));
+  clear($('#configs'), configs.length ? configs
+    : h('li', { class: 'empty' }, state.configs.length ? 'No configuration matches.' : 'No configuration files found.'));
+}
+
+// The day a run started, as a heading for the runs of that day
+function dayHeading(ms) {
+  const day = new Date(ms), today = new Date();
+  const same = (a, b) => a.toDateString() === b.toDateString();
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+  return same(day, today) ? 'Today' : same(day, yesterday) ? 'Yesterday'
+    : day.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
 function buildRunList() {
-  const runs = state.runs.map((run) =>
-    h('li', {}, h('button', {
-      class: 'item', type: 'button',
-      'aria-current': state.selected?.type === 'run' && state.selected.id === run.id,
-      onclick: () => selectRun(run.id),
-    },
-      h('span', { class: 'name' }, run.config.replace(/\.ya?ml$/, ''), h('span', { class: 'meta' }, ` · ${formatTime(run.startedAt)}`)),
-      h('span', { class: `badge ${run.status}` }, STATUS[run.status] || run.status)))
-  );
-  clear($('#runs'), runs.length ? runs : h('li', { class: 'empty' }, 'No runs yet.'));
+  // the runs that are running first, then the rest from the newest, under the day they started; only the latest few
+  // unless the list is narrowed or the rest is asked for
+  const found = state.runs.filter((run) => matches(`${run.config} ${STATUS[run.status] || run.status}`, sidebarFilter.runs));
+  const running = found.filter((run) => run.status === 'running');
+  const rest = found.filter((run) => run.status !== 'running').sort((a, b) => b.startedAt - a.startedAt);
+  const narrowed = sidebarFilter.runs.trim() !== '';
+  const visible = narrowed || sidebarFilter.allRuns ? rest : rest.slice(0, RECENT_RUNS);
+
+  const row = (run) => h('li', {}, h('button', {
+    class: 'item two-line', type: 'button', title: run.config,
+    'aria-current': state.selected?.type === 'run' && state.selected.id === run.id,
+    onclick: () => selectRun(run.id),
+  },
+    h('span', { class: 'name' }, run.config.replace(/\.ya?ml$/, ''),
+      h('span', { class: 'meta block' }, new Date(run.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))),
+    h('span', { class: `badge ${run.status}` }, STATUS[run.status] || run.status)));
+
+  const items = [];
+  if (running.length) items.push(h('li', { class: 'group' }, 'Running'), ...running.map(row));
+  let heading = null;
+  visible.forEach((run) => {
+    const day = dayHeading(run.startedAt);
+    if (day !== heading) { items.push(h('li', { class: 'group' }, day)); heading = day; }
+    items.push(row(run));
+  });
+  if (!narrowed && rest.length > RECENT_RUNS) {
+    items.push(h('li', {}, h('button', { class: 'item more', type: 'button', onclick: () => { sidebarFilter.allRuns = !sidebarFilter.allRuns; renderSidebar(); } },
+      sidebarFilter.allRuns ? 'Show fewer' : `Show ${rest.length - RECENT_RUNS} older runs`)));
+  }
+  $('#run-count').textContent = state.runs.length ? (narrowed ? `${found.length} of ${state.runs.length}` : `${state.runs.length}`) : '';
+  clear($('#runs'), items.length ? items : h('li', { class: 'empty' }, state.runs.length ? 'No run matches.' : 'No runs yet.'));
 }
 
 function renderStatus() {

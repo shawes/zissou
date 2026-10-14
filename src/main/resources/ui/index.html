@@ -16,11 +16,13 @@
     <aside class="sidebar">
       <section>
         <div class="section-head"><h2>Configurations</h2><button id="new-config" class="btn small" type="button">New</button></div>
-        <ul id="configs" class="list"></ul>
+        <input id="config-filter" class="filter" type="search" placeholder="Filter configurations" aria-label="Filter configurations" autocomplete="off" spellcheck="false">
+        <ul id="configs" class="list scroll"></ul>
       </section>
       <section>
-        <h2>Runs</h2>
-        <ul id="runs" class="list"></ul>
+        <div class="section-head"><h2>Runs</h2><span id="run-count" class="meta"></span></div>
+        <input id="run-filter" class="filter" type="search" placeholder="Filter runs" aria-label="Filter runs" autocomplete="off" spellcheck="false">
+        <ul id="runs" class="list scroll"></ul>
       </section>
     </aside>
     <main id="main" class="main"></main>

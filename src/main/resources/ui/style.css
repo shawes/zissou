@@ -293,3 +293,11 @@ dialog.picker.small .field input, dialog.picker.small .field select { width: 100
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; }
 .row-between { display: flex; justify-content: space-between; align-items: baseline; }
+
+.filter { width: 100%; box-sizing: border-box; margin-bottom: 6px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; font: inherit; font-size: 13px; }
+.list.scroll { max-height: 34vh; overflow-y: auto; }
+.item .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item .meta.block { display: block; font-size: 12px; }
+.list .group { padding: 8px 10px 2px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.item.more { justify-content: center; color: var(--accent); font-size: 13px; }
+.section-head .meta { font-size: 12px; color: var(--muted); }
