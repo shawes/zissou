@@ -229,6 +229,16 @@ scripts/zissou.sh data/synthetic/smoke.yaml
 
 For a fixed `randomSeed` in the config, runs are reproducible: the output files are identical every time.
 
+## Known gaps
+
+What is known to be unfinished:
+
+- A larva's depth is clamped to 0 to 100 m (`Geometry.ceilingDepth`), whatever depth levels the flow has.
+- `turbulence.interval` is read from the configuration and nothing uses it: turbulence is applied on every step.
+- A larva swimming towards a reef it senses heads for the reef's centroid, and the heading (`GeometryAdaptor.direction`) is worked out in raw degrees of longitude and latitude, so it is off by up to about 4° at 28°S and 19° at 60°S.
+- "No swimming angle" is stored as −6 (`NoSwimmingAngleException`), which is also a legal heading in degrees.
+- Each larva keeps its position at every step it moves, so memory grows with the number of larvae times the number of steps, although the results only use a sample of the paths and the distances travelled.
+
 ## Versioning
 I use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/shawes/zissou/tags).
 
